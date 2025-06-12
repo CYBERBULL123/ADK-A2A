@@ -364,6 +364,8 @@ def show_multi_agent_systems():
                             result = coordinator.execute_complex_project(project_description)
                             
                             st.session_state.last_project_result = result
+                            st.session_state.last_coordinator = coordinator
+                            st.session_state.last_project_description = project_description
                             
                             if result["success"]:
                                 st.success("Project completed successfully!")
@@ -374,6 +376,63 @@ def show_multi_agent_systems():
                             st.error(f"Error: {e}")
                 else:
                     st.warning("Please enter a project description")
+            
+            # Continue Workflow button
+            if hasattr(st.session_state, 'last_project_result') and st.session_state.last_project_result:
+                st.markdown("---")
+                st.markdown("**Continue Incomplete Workflow**")
+                
+                additional_context = st.text_area(
+                    "Additional Context/Instructions:",
+                    placeholder="Provide additional context or specific instructions to continue the workflow...",
+                    height=80,
+                    key="continue_context"
+                )
+                
+                col_continue1, col_continue2 = st.columns(2)
+                
+                with col_continue1:
+                    if st.button("🔄 Continue Workflow", use_container_width=True):
+                        if hasattr(st.session_state, 'last_coordinator'):
+                            with st.spinner("Continuing workflow with additional context..."):
+                                try:
+                                    enhanced_context = (
+                                        f"Previous result was incomplete. "
+                                        f"Additional instructions: {additional_context if additional_context else 'Complete the full analysis'}"
+                                    )
+                                    
+                                    result = st.session_state.last_coordinator.continue_workflow(
+                                        st.session_state.last_project_description,
+                                        enhanced_context
+                                    )
+                                    
+                                    st.session_state.last_project_result = result
+                                    
+                                    if result["success"]:
+                                        st.success("Workflow continued successfully!")
+                                    else:
+                                        st.error("Workflow continuation failed")
+                                
+                                except Exception as e:
+                                    st.error(f"Error continuing workflow: {e}")
+                
+                with col_continue2:
+                    if st.button("🎯 Force Complete Research", use_container_width=True):
+                        if hasattr(st.session_state, 'last_coordinator'):
+                            with st.spinner("Forcing research completion..."):
+                                try:
+                                    research_result = st.session_state.last_coordinator.force_complete_research(
+                                        st.session_state.last_project_description
+                                    )
+                                    
+                                    if research_result.success:
+                                        st.success("Research completed successfully!")
+                                        st.session_state.force_research_result = research_result
+                                    else:
+                                        st.error("Research completion failed")
+                                
+                                except Exception as e:
+                                    st.error(f"Error forcing research: {e}")
         
         elif system_type == "Workflow Orchestrator":
             st.markdown("**Available Workflows:**")
@@ -411,8 +470,7 @@ def show_multi_agent_systems():
     
     with col2:
         st.subheader("Execution Results")
-        
-        # Show results if available
+          # Show results if available
         if 'last_project_result' in st.session_state:
             result = st.session_state.last_project_result
             
@@ -434,6 +492,17 @@ def show_multi_agent_systems():
             if result["success"]:
                 st.markdown("**Final Result:**")
                 st.text_area("Output:", value=result["final_result"], height=200, disabled=True)
+            
+            # Show forced research result if available
+            if 'force_research_result' in st.session_state:
+                st.markdown("---")
+                st.markdown("**🎯 Forced Research Result:**")
+                research_result = st.session_state.force_research_result
+                if research_result.success:
+                    st.success("Research completed successfully!")
+                    st.text_area("Research Output:", value=research_result.result, height=200, disabled=True)
+                else:
+                    st.error(f"Research failed: {research_result.result}")
         
         else:
             st.info("Execute a project to see results here")

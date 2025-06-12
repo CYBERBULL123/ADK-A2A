@@ -21,7 +21,7 @@ from aiohttp import web
 import websockets
 
 from config import config
-from utils import logger, timer, format_agent_response
+from utils import logger, timer, format_agent_response_for_ui, format_agent_response_for_logs
 
 
 class MessageType(Enum):

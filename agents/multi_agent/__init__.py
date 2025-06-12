@@ -13,12 +13,13 @@ import asyncio
 from datetime import datetime
 from dataclasses import dataclass
 
-from google.adk.agents import LlmAgent, BaseAgent
-from google.adk.tools import google_search
-from google.adk.runners import InMemoryRunner
+from google.adk.agents import Agent, LlmAgent, BaseAgent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
 
 from config import config
-from utils import logger, timer, format_agent_response
+from utils import logger, timer, format_agent_response_for_ui, format_agent_response_for_logs
 
 
 @dataclass
@@ -37,42 +38,107 @@ class ResearchAgent:
     
     def __init__(self, name: str = "ResearchAgent"):
         self.name = name
-        self.agent = LlmAgent(
+        self.agent = Agent(
             name=name,
             model=config.adk.default_model,
             instruction=(
-                "You are a research specialist. Conduct thorough research "
-                "on topics using available tools. Provide comprehensive, "
-                "well-structured reports with key findings and sources."
-            ),
-            description="Specialized agent for research and information gathering.",
-            tools=[google_search]
+                "You are a research specialist. You provide factual information and analysis "
+                "based on publicly available data and market trends. For investment-related topics, "
+                "provide educational information about market performance, company fundamentals, "
+                "and sector analysis. Always include appropriate disclaimers about consulting "
+                "financial advisors, but DO provide the requested research and analysis. "
+                "Your role is to inform, not to advise - present data and let users make decisions."            ),
+            description="Specialized agent for research and information gathering."
         )
-        self.runner = InMemoryRunner(agent=self.agent)
+        
+        # Set up session service and runner
+        self.session_service = InMemorySessionService()
+        self.runner = Runner(
+            agent=self.agent,
+            app_name="research_agent_app",
+            session_service=self.session_service
+        )
+        
+        # Session details
+        self.user_id = "default_user"
+        self.session_id = f"{name}_session"
+        self.session = None  # Will be initialized when needed
+    
+    async def _initialize_session(self):
+        """Initialize the session."""
+        if self.session is None:
+            try:
+                self.session = await self.session_service.create_session(
+                    app_name="research_agent_app",
+                    user_id=self.user_id,
+                    session_id=self.session_id
+                )
+            except Exception as e:
+                logger.error(f"Failed to initialize session: {e}")
+                raise
     
     @timer
     def research_topic(self, topic: str) -> TaskResult:
         """Conduct research on a specific topic."""
+        try:
+            return asyncio.run(self._research_topic_async(topic))
+        except Exception as e:
+            logger.error(f"Error in research agent: {e}")
+            return TaskResult(
+                agent_name=self.name,
+                task=f"Research: {topic}",
+                result=f"Error: {str(e)}",
+                success=False,
+                execution_time=0.0,
+                timestamp=datetime.now()
+            )
+        
+    async def _research_topic_async(self, topic: str) -> TaskResult:
+        """Async implementation of research topic."""
         start_time = datetime.now()
         
         try:
+            # Ensure session is initialized
+            await self._initialize_session()
+            
             prompt = (
                 f"Research the topic: {topic}\n"
                 "Provide a comprehensive report including:\n"
-                "1. Key findings\n"
-                "2. Current developments\n"
-                "3. Important considerations\n"
-                "4. Relevant sources"
+                "1. Key findings with specific data and examples\n"
+                "2. Current market developments and trends\n"
+                "3. Important considerations and factors\n"
+                "4. Relevant performance metrics where applicable\n"
+                "Note: Provide educational information and data analysis. "
+                "Include appropriate disclaimers but complete the full research analysis."
             )
             
-            events = list(self.runner.run(prompt))
-            result = self._extract_response(events)
+            # Create message content
+            content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            
+            # Get response from agent
+            final_response_text = "Agent did not produce a final response."
+            
+            async for event in self.runner.run_async(
+                user_id=self.user_id,
+                session_id=self.session_id,
+                new_message=content
+            ):
+                if event.is_final_response():
+                    if event.content and event.content.parts:
+                        final_response_text = event.content.parts[0].text
+                    elif event.actions and event.actions.escalate:
+                        final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+                    break
+            
             execution_time = (datetime.now() - start_time).total_seconds()
+            
+            logger.info(f"Research agent completed topic research")
+            logger.debug(format_agent_response_for_logs(final_response_text, self.name))
             
             return TaskResult(
                 agent_name=self.name,
                 task=f"Research: {topic}",
-                result=result,
+                result=format_agent_response_for_ui(final_response_text),
                 success=True,
                 execution_time=execution_time,
                 timestamp=datetime.now()
@@ -107,24 +173,69 @@ class AnalysisAgent:
     
     def __init__(self, name: str = "AnalysisAgent"):
         self.name = name
-        self.agent = LlmAgent(
+        self.agent = Agent(
             name=name,
             model=config.adk.default_model,
             instruction=(
-                "You are an analysis specialist. Analyze information, "
-                "identify patterns, draw insights, and provide recommendations. "
-                "Focus on logical reasoning and data-driven conclusions."
+                "You are an analysis specialist. Analyze information provided to you, "
+                "identify patterns, draw insights, and provide data-driven analysis. "
+                "For financial data, focus on objective metrics, trends, and patterns. "
+                "Present findings clearly and include appropriate disclaimers when needed. "
+                "Your role is analytical - provide insights based on the data given to you."
             ),
             description="Specialized agent for analysis and insights."
         )
-        self.runner = InMemoryRunner(agent=self.agent)
+        
+        # Set up session service and runner
+        self.session_service = InMemorySessionService()
+        self.runner = Runner(
+            agent=self.agent,
+            app_name="analysis_agent_app",
+            session_service=self.session_service
+        )
+        
+        # Session details
+        self.user_id = "default_user"
+        self.session_id = f"{name}_session"
+        self.session = None  # Will be initialized when needed
+
+    async def _initialize_session(self):
+        """Initialize the session."""
+        if self.session is None:
+            try:
+                self.session = await self.session_service.create_session(
+                    app_name="analysis_agent_app",
+                    user_id=self.user_id,
+                    session_id=self.session_id
+                )
+            except Exception as e:                
+                logger.error(f"Failed to initialize session: {e}")
+                raise
     
     @timer
     def analyze_data(self, data: str, analysis_type: str = "general") -> TaskResult:
         """Analyze provided data and generate insights."""
+        try:
+            return asyncio.run(self._analyze_data_async(data, analysis_type))
+        except Exception as e:
+            logger.error(f"Error in analysis agent: {e}")
+            return TaskResult(
+                agent_name=self.name,
+                task=f"Analysis: {analysis_type}",
+                result=f"Error: {str(e)}",
+                success=False,
+                execution_time=0.0,
+                timestamp=datetime.now()
+            )
+    
+    async def _analyze_data_async(self, data: str, analysis_type: str = "general") -> TaskResult:
+        """Async implementation of analyze data."""
         start_time = datetime.now()
         
         try:
+            # Ensure session is initialized
+            await self._initialize_session()
+            
             prompt = (
                 f"Analyze the following data using {analysis_type} analysis:\n\n"
                 f"{data}\n\n"
@@ -135,14 +246,33 @@ class AnalysisAgent:
                 "4. Next steps"
             )
             
-            events = list(self.runner.run(prompt))
-            result = self._extract_response(events)
+            # Create message content
+            content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            
+            # Get response from agent
+            final_response_text = "Agent did not produce a final response."
+            
+            async for event in self.runner.run_async(
+                user_id=self.user_id,
+                session_id=self.session_id,
+                new_message=content
+            ):
+                if event.is_final_response():
+                    if event.content and event.content.parts:
+                        final_response_text = event.content.parts[0].text                    
+                    elif event.actions and event.actions.escalate:
+                        final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+                    break
+            
             execution_time = (datetime.now() - start_time).total_seconds()
+            
+            logger.info(f"Analysis agent completed data analysis")
+            logger.debug(format_agent_response_for_logs(final_response_text, self.name))
             
             return TaskResult(
                 agent_name=self.name,
                 task=f"Analysis: {analysis_type}",
-                result=result,
+                result=format_agent_response_for_ui(final_response_text),
                 success=True,
                 execution_time=execution_time,
                 timestamp=datetime.now()
@@ -177,26 +307,70 @@ class WritingAgent:
     
     def __init__(self, name: str = "WritingAgent"):
         self.name = name
-        self.agent = LlmAgent(
+        self.agent = Agent(
             name=name,
             model=config.adk.default_model,
             instruction=(
                 "You are a writing specialist. Create high-quality content "
                 "including reports, summaries, articles, and documentation. "
-                "Focus on clarity, structure, and engaging presentation."
+                "Focus on clarity, structure, and engaging presentation. "
+                "When creating financial reports, present information objectively "
+                "with appropriate disclaimers. Always complete the full requested content."
             ),
             description="Specialized agent for content creation and writing."
         )
-        self.runner = InMemoryRunner(agent=self.agent)
+        
+        # Set up session service and runner
+        self.session_service = InMemorySessionService()
+        self.runner = Runner(
+            agent=self.agent,
+            app_name="writing_agent_app",
+            session_service=self.session_service
+        )
+        
+        # Session details
+        self.user_id = "default_user"
+        self.session_id = f"{name}_session"
+        self.session = None  # Will be initialized when needed
+    
+    async def _initialize_session(self):
+        """Initialize the session."""
+        if self.session is None:
+            try:
+                self.session = await self.session_service.create_session(
+                    app_name="writing_agent_app",
+                    user_id=self.user_id,
+                    session_id=self.session_id
+                )
+            except Exception as e:
+                logger.error(f"Failed to initialize session: {e}")
+                raise
     
     @timer
     def create_content(self, content_type: str, inputs: Dict[str, Any]) -> TaskResult:
         """Create content based on provided inputs."""
+        try:
+            return asyncio.run(self._create_content_async(content_type, inputs))
+        except Exception as e:
+            logger.error(f"Error in writing agent: {e}")
+            return TaskResult(
+                agent_name=self.name,
+                task=f"Create {content_type}",
+                result=f"Error: {str(e)}",
+                success=False,
+                execution_time=0.0,
+                timestamp=datetime.now()
+            )
+    
+    async def _create_content_async(self, content_type: str, inputs: Dict[str, Any]) -> TaskResult:
+        """Async implementation of create content."""
         start_time = datetime.now()
         
         try:
-            prompt = f"Create a {content_type} using the following inputs:\n\n"
+            # Ensure session is initialized
+            await self._initialize_session()
             
+            prompt = f"Create a {content_type} using the following inputs:\n\n"            
             for key, value in inputs.items():
                 prompt += f"{key}:\n{value}\n\n"
             
@@ -204,18 +378,36 @@ class WritingAgent:
                 f"Requirements:\n"
                 f"1. Professional and engaging tone\n"
                 f"2. Clear structure and organization\n"
-                f"3. Appropriate length for {content_type}\n"
-                f"4. Include relevant examples if applicable"
+                f"3. Appropriate length for {content_type}\n"                f"4. Include relevant examples if applicable"
             )
             
-            events = list(self.runner.run(prompt))
-            result = self._extract_response(events)
+            # Create message content
+            content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            
+            # Get response from agent
+            final_response_text = "Agent did not produce a final response."
+            
+            async for event in self.runner.run_async(
+                user_id=self.user_id,
+                session_id=self.session_id,
+                new_message=content
+            ):
+                if event.is_final_response():
+                    if event.content and event.content.parts:
+                        final_response_text = event.content.parts[0].text
+                    elif event.actions and event.actions.escalate:
+                        final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+                    break
+            
             execution_time = (datetime.now() - start_time).total_seconds()
+            
+            logger.info(f"Writing agent completed content creation")
+            logger.debug(format_agent_response_for_logs(final_response_text, self.name))
             
             return TaskResult(
                 agent_name=self.name,
                 task=f"Create {content_type}",
-                result=result,
+                result=format_agent_response_for_ui(final_response_text),
                 success=True,
                 execution_time=execution_time,
                 timestamp=datetime.now()
@@ -255,7 +447,7 @@ class CoordinatorAgent:
         self.writing_agent = WritingAgent("Writing_Specialist")
         
         # Create the main coordinator using ADK's multi-agent pattern
-        self.agent = LlmAgent(
+        self.agent = Agent(
             name=name,
             model=config.adk.default_model,
             instruction=(
@@ -273,7 +465,7 @@ class CoordinatorAgent:
         )
         
         self.task_history: List[TaskResult] = []
-    
+        # Set up session service and runner
     @timer
     def execute_complex_project(self, project_description: str) -> Dict[str, Any]:
         """Execute a complex project using multiple specialized agents."""
@@ -288,9 +480,17 @@ class CoordinatorAgent:
         }
         
         try:
-            # Step 1: Research phase
+            # Step 1: Research phase with enhanced prompt
             logger.info("Phase 1: Research")
-            research_result = self.research_agent.research_topic(project_description)
+            enhanced_research_prompt = (
+                f"{project_description}\n\n"
+                "IMPORTANT: Provide complete factual information and data. "
+                "Do not ask for permission to proceed. For financial/investment topics, "
+                "provide educational information including specific examples, metrics, "
+                "and data analysis. Include appropriate disclaimers but complete the full analysis."
+            )
+            
+            research_result = self.research_agent.research_topic(enhanced_research_prompt)
             project_results["tasks"].append(research_result)
             self.task_history.append(research_result)
             
@@ -298,10 +498,16 @@ class CoordinatorAgent:
                 project_results["final_result"] = "Project failed during research phase"
                 return project_results
             
-            # Step 2: Analysis phase
+            # Step 2: Analysis phase with research data
             logger.info("Phase 2: Analysis")
+            analysis_prompt = (
+                f"RESEARCH DATA PROVIDED:\n{research_result.result}\n\n"
+                f"Based on the above research data, perform {project_description} analysis. "
+                "Analyze the provided information and identify patterns, insights, and recommendations."
+            )
+            
             analysis_result = self.analysis_agent.analyze_data(
-                research_result.result, 
+                analysis_prompt, 
                 "strategic"
             )
             project_results["tasks"].append(analysis_result)
@@ -311,12 +517,13 @@ class CoordinatorAgent:
                 project_results["final_result"] = "Project failed during analysis phase"
                 return project_results
             
-            # Step 3: Writing phase
+            # Step 3: Writing phase with all data
             logger.info("Phase 3: Content Creation")
             writing_inputs = {
                 "Research Findings": research_result.result,
                 "Analysis Results": analysis_result.result,
-                "Project Goal": project_description
+                "Project Goal": project_description,
+                "Instructions": "Create a comprehensive, complete report. Do not ask for permission or additional information."
             }
             
             writing_result = self.writing_agent.create_content(
@@ -384,7 +591,48 @@ class CoordinatorAgent:
             },
             "by_agent": agent_performance
         }
-
+    
+    def continue_workflow(self, project_description: str, context: str = "") -> Dict[str, Any]:
+        """Continue an incomplete workflow with additional context."""
+        logger.info(f"Continuing workflow for: {project_description}")
+        
+        enhanced_description = f"{project_description}\n\nAdditional Context: {context}\n\nPlease provide a complete analysis without asking for permission to proceed."
+        
+        return self.execute_complex_project(enhanced_description)
+    
+    def force_complete_research(self, topic: str) -> TaskResult:
+        """Force completion of research task with explicit instructions."""
+        enhanced_prompt = (
+            f"Research the topic: {topic}\n"
+            "IMPORTANT: You must provide complete factual information. Do not ask for permission to proceed.\n"
+            "For financial topics, provide educational information about:\n"
+            "- Market performance data\n"
+            "- Company fundamentals\n"
+            "- Sector analysis\n"
+            "- Historical trends\n"
+            "Include disclaimers but complete the full analysis as requested."
+        )
+        
+        return self.research_agent.research_topic(enhanced_prompt)
+    
+    def retry_failed_phase(self, phase_name: str, original_input: str, additional_context: str = "") -> TaskResult:
+        """Retry a specific failed phase with enhanced instructions."""
+        logger.info(f"Retrying failed phase: {phase_name}")
+        
+        enhanced_input = (
+            f"{original_input}\n\n"
+            f"RETRY INSTRUCTIONS: {additional_context}\n"
+            "IMPORTANT: Provide complete information. Do not ask for permission or additional data."
+        )
+        
+        if phase_name.lower() == "research":
+            return self.research_agent.research_topic(enhanced_input)
+        elif phase_name.lower() == "analysis":
+            return self.analysis_agent.analyze_data(enhanced_input, "comprehensive")
+        elif phase_name.lower() == "writing":
+            return self.writing_agent.create_content("complete report", {"Content": enhanced_input})
+        else:
+            raise ValueError(f"Unknown phase: {phase_name}")
 
 # Advanced multi-agent workflow example
 class WorkflowOrchestrator:
