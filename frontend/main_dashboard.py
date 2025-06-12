@@ -18,7 +18,9 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 import sys
+import random
 from pathlib import Path
+import markdown
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -30,6 +32,14 @@ from agents.basic import create_agent, SimpleAgent, SearchAgent, ToolAgent, Stat
 from agents.multi_agent import CoordinatorAgent, WorkflowOrchestrator, EXAMPLE_WORKFLOWS
 from agents.a2a import SmartA2AAgent, A2AOrchestrator
 from tools import CUSTOM_TOOLS, get_tool_info
+from frontend.ui_utils import (
+    load_css, create_header, create_feature_card, create_status_card,
+    create_metric_card, display_agent_response, create_chat_interface,
+    add_chat_message, clear_chat_history, create_progress_indicator,
+    create_agent_network_visualization, create_code_block, create_expandable_section,
+    create_data_table, create_notification, format_timestamp, create_tabs_with_icons,
+    format_agent_response, create_network_visualization
+)
 
 
 # Configure Streamlit page
@@ -40,33 +50,53 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Load custom CSS
+load_css()
+
 
 def main():
     """Main dashboard function."""
-    st.title("🤖 ADK & A2A Learning Dashboard")
-    st.markdown("---")
+    # Modern header
+    create_header(
+        "ADK & A2A Learning Dashboard", 
+        "Master Agent Development Kit and Agent-to-Agent protocols through interactive learning",
+        "🤖"
+    )
     
-    # Sidebar navigation
-    st.sidebar.title("Navigation")
+    # Sidebar navigation with modern styling
+    st.sidebar.markdown("""
+    <div style="background: linear-gradient(135deg, #2E86AB 0%, #A23B72 100%); 
+                padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+        <h2 style="color: white; text-align: center; margin: 0;">🎯 Navigation</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
     page = st.sidebar.selectbox(
         "Choose a learning module:",
         [
             "🏠 Overview",
-            "🤖 Basic Agents",
+            "🤖 Basic Agents", 
             "🔗 Multi-Agent Systems",
             "🌐 A2A Protocol",
             "🛠️ Custom Tools",
             "📊 Performance Analytics",
-            "🎯 Evaluation Framework"
+            "🎯 Evaluation Framework",
+            "📚 Documentation"
         ]
-    )
-      # Environment status
+    )      # Environment status with modern styling
     env_status = validate_environment()
-    with st.sidebar.expander("Environment Status", expanded=not env_status):
+    
+    with st.sidebar:
+        st.markdown("""
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #2E86AB;">🔧 Environment Status</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
         if env_status:
-            st.success("✅ Environment validated")
+            create_status_card("Environment", "All systems operational", "success", "✅")
         else:
-            st.error("❌ Environment issues detected")
+            create_status_card("Environment", "Configuration needed", "warning", "⚠️")
             st.warning("Some features may be limited without proper API keys.")
             
     # Show warning if environment is not properly configured
@@ -88,98 +118,163 @@ def main():
         show_performance_analytics()
     elif page == "🎯 Evaluation Framework":
         show_evaluation_framework()
+    elif page == "📚 Documentation":
+        show_documentation()
 
 
 def show_overview():
     """Show project overview and learning objectives."""
-    st.header("Welcome to ADK & A2A Learning Project")
     
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        st.markdown("""
-        ## 🎯 Learning Objectives
-        
-        This interactive dashboard helps you master:
-        
-        ### 🤖 Agent Development Kit (ADK)
-        - **Agent Architecture**: Understanding core agent components
-        - **Tool Integration**: Adding capabilities with built-in and custom tools
-        - **Model Integration**: Working with Gemini and other LLMs
-        - **Code-First Development**: Python-native agent development
-        
-        ### 🔗 Multi-Agent Systems
-        - **Agent Hierarchies**: Creating specialized agent teams
-        - **Coordination Patterns**: Orchestrating complex workflows
-        - **Task Delegation**: Distributing work across agents
-        - **Communication Protocols**: Inter-agent messaging
-        
-        ### 🌐 Agent-to-Agent (A2A) Protocol
-        - **Remote Communication**: Network-based agent interaction
-        - **Protocol Design**: Message formatting and routing
-        - **Distributed Systems**: Scaling across multiple nodes
-        - **Real-time Coordination**: Synchronous and asynchronous patterns
-        """)
-    
-    with col2:
-        st.markdown("""
-        ## 📚 Learning Path
-        
-        **Phase 1: Foundations**
-        - Basic agent creation
-        - Tool integration
-        - Simple interactions
-        
-        **Phase 2: Coordination**
-        - Multi-agent workflows
-        - Task orchestration
-        - Performance optimization
-        
-        **Phase 3: Distribution**
-        - A2A protocol implementation
-        - Network communication
-        - Scalable architectures
-        
-        **Phase 4: Production**
-        - Deployment strategies
-        - Monitoring and evaluation
-        - Best practices
-        """)
-    
-    # Quick Start section
-    st.markdown("---")
-    st.header("🚀 Quick Start")
+    # Learning objectives section with modern cards
+    st.markdown("## 🎯 Learning Objectives")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Try Basic Agent", use_container_width=True):
-            st.session_state.demo_agent = SimpleAgent("QuickDemo")
-            response = st.session_state.demo_agent.chat("Hello! Tell me about ADK.")
-            st.success(f"Agent Response: {response}")
+        create_feature_card(
+            "Agent Development Kit",
+            "Master ADK fundamentals: agent architecture, tool integration, model connectivity, and code-first development patterns.",
+            "🤖"
+        )
     
     with col2:
-        if st.button("Check Environment", use_container_width=True):
-            validation = config.validate_config()
-            if validation["valid"]:
-                st.success("Environment ready!")
-            else:
-                st.error("Please configure API keys")
+        create_feature_card(
+            "Multi-Agent Systems", 
+            "Build coordinated agent teams with hierarchies, workflows, task delegation, and communication protocols.",
+            "🔗"
+        )
     
     with col3:
-        if st.button("View Examples", use_container_width=True):
-            st.info("Navigate to other tabs to explore examples!")
+        create_feature_card(
+            "A2A Protocol",
+            "Implement distributed agent networks with remote communication, protocol design, and real-time coordination.",
+            "🌐"
+        )
+    
+    # Learning path visualization
+    st.markdown("---")
+    st.markdown("## 📚 Progressive Learning Path")
+    
+    learning_phases = [
+        {"phase": "Phase 1", "title": "Foundations", "icon": "🏗️"},
+        {"phase": "Phase 2", "title": "Coordination", "icon": "🔗"},
+        {"phase": "Phase 3", "title": "Distribution", "icon": "🌐"},
+        {"phase": "Phase 4", "title": "Production", "icon": "🚀"}
+    ]
+    
+    cols = st.columns(4)
+    for i, (col, phase) in enumerate(zip(cols, learning_phases)):
+        with col:
+            st.markdown(f"""
+            <div class="custom-card" style="text-align: center; min-height: 200px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">{phase['icon']}</div>
+                <h3 style="color: #2E86AB; margin-bottom: 0.5rem;">{phase['phase']}</h3>
+                <h4>{phase['title']}</h4>
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: #6c757d;">
+                    {'Completed' if i < 2 else 'In Progress' if i == 2 else 'Upcoming'}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Quick start section
+    st.markdown("---")
+    st.markdown("## 🚀 Quick Start Actions")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("🤖 Try Basic Agent", use_container_width=True, type="primary"):
+            try:
+                st.session_state.demo_agent = SimpleAgent("QuickDemo")
+                response = st.session_state.demo_agent.chat("Hello! Tell me about ADK in one paragraph.")
+                display_agent_response(response, "Quick Demo Response")
+            except Exception as e:
+                create_notification(f"Error creating demo agent: {e}", "error")
+    
+    with col2:
+        if st.button("🔧 Check Environment", use_container_width=True):
+            validation = config.validate_config()
+            if validation["valid"]:
+                create_notification("Environment is properly configured!", "success")
+                
+                # Show detailed status
+                with st.expander("📋 Detailed Environment Status"):
+                    status_data = [
+                        {"Component": "Google API", "Status": "✅ Connected", "Details": "ADK ready"},
+                        {"Component": "Streamlit", "Status": "✅ Running", "Details": f"Version {st.__version__}"},
+                        {"Component": "Python", "Status": "✅ Compatible", "Details": f"Version {sys.version.split()[0]}"},
+                    ]
+                    create_data_table(status_data, "System Status")
+            else:
+                create_notification("Please configure your API keys in .env file", "warning")
+    
+    with col3:
+        if st.button("📖 View Documentation", use_container_width=True):
+            st.info("📚 Navigate to the Documentation tab for comprehensive guides and examples!")
+    
+    # Recent activity simulation
+    st.markdown("---")
+    st.markdown("## 📈 Learning Progress")
+    
+    # Mock progress data
+    progress_data = {
+        "Module": ["Basic Agents", "Multi-Agent", "A2A Protocol", "Tools", "Analytics"],
+        "Completion": [100, 75, 45, 60, 30],
+        "Exercises": [5, 8, 3, 7, 2],
+        "Status": ["✅ Complete", "🔄 In Progress", "🔄 In Progress", "🔄 In Progress", "⏳ Pending"]
+    }
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        df = pd.DataFrame(progress_data)
+        fig = px.bar(df, x="Module", y="Completion", title="Learning Module Progress (%)",
+                    color="Completion", color_continuous_scale="viridis")
+        fig.update_layout(showlegend=False, height=400)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Overall statistics
+        total_exercises = sum(progress_data["Exercises"])
+        avg_completion = sum(progress_data["Completion"]) / len(progress_data["Completion"])
+        
+        create_metric_card(f"{avg_completion:.0f}%", "Overall Progress", "+15%", "positive")
+        create_metric_card(f"{total_exercises}", "Total Exercises", "+3", "positive")
+        create_metric_card("4/5", "Modules Started", "+1", "positive")
 
 
 def show_basic_agents():
     """Show basic agent examples and testing interface."""
-    st.header("🤖 Basic Agents")
+    st.markdown("## 🤖 Basic Agents Playground")
+    st.markdown("Explore different types of agents and understand their capabilities through hands-on interaction.")
     
-    # Agent type selection
-    agent_type = st.selectbox(
-        "Select agent type to explore:",
-        ["Simple Agent", "Search Agent", "Tool Agent", "Stateful Agent"]
-    )
+    # Agent type selection with modern cards
+    st.markdown("### Select Agent Type")
+    
+    agent_configs = [
+        {"type": "Simple Agent", "icon": "💬", "desc": "Basic conversational agent for general interactions"},
+        {"type": "Search Agent", "icon": "🔍", "desc": "Web-enabled agent for research and fact-finding"},
+        {"type": "Tool Agent", "icon": "🛠️", "desc": "Multi-tool agent with weather, calculator, and more"},
+        {"type": "Stateful Agent", "icon": "🧠", "desc": "Memory-enabled agent for personalized conversations"}
+    ]
+    
+    cols = st.columns(4)
+    selected_agent = None
+    
+    for i, (col, config) in enumerate(zip(cols, agent_configs)):
+        with col:
+            if st.button(f"{config['icon']}\n{config['type']}", 
+                        use_container_width=True, 
+                        key=f"agent_select_{i}",
+                        help=config['desc']):
+                selected_agent = config['type']
+                st.session_state.selected_agent_type = config['type']
+    
+    # Use session state to remember selection
+    if 'selected_agent_type' not in st.session_state:
+        st.session_state.selected_agent_type = "Simple Agent"
+    
+    agent_type = st.session_state.selected_agent_type
     
     # Initialize session state for agents
     if 'current_agent' not in st.session_state:
@@ -189,176 +284,300 @@ def show_basic_agents():
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("Agent Configuration")
+        st.markdown("### 🔧 Agent Configuration")
+        
+        # Agent info card
+        agent_info = next(config for config in agent_configs if config['type'] == agent_type)
+        st.markdown(f"""
+        <div class="custom-card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <div style="font-size: 3rem;">{agent_info['icon']}</div>
+                <h3 style="color: #2E86AB; margin: 0.5rem 0;">{agent_info['type']}</h3>
+                <p style="color: #6c757d; margin: 0;">{agent_info['desc']}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         agent_name = st.text_input("Agent Name", value=f"Demo_{agent_type.replace(' ', '_')}")
         
-        if st.button("Create Agent", use_container_width=True):
+        if st.button("🚀 Create Agent", use_container_width=True, type="primary"):
             try:
-                if agent_type == "Simple Agent":
-                    st.session_state.current_agent = create_agent("simple", agent_name)
-                elif agent_type == "Search Agent":
-                    st.session_state.current_agent = create_agent("search", agent_name)
-                elif agent_type == "Tool Agent":
-                    st.session_state.current_agent = create_agent("tool", agent_name)
-                elif agent_type == "Stateful Agent":
-                    st.session_state.current_agent = create_agent("stateful", agent_name)
+                with st.spinner("Creating agent..."):
+                    if agent_type == "Simple Agent":
+                        st.session_state.current_agent = create_agent("simple", agent_name)
+                    elif agent_type == "Search Agent":
+                        st.session_state.current_agent = create_agent("search", agent_name)
+                    elif agent_type == "Tool Agent":
+                        st.session_state.current_agent = create_agent("tool", agent_name)
+                    elif agent_type == "Stateful Agent":
+                        st.session_state.current_agent = create_agent("stateful", agent_name)
                 
-                st.success(f"Created {agent_type}: {agent_name}")
+                create_notification(f"Successfully created {agent_type}: {agent_name}", "success")
+                clear_chat_history()  # Clear previous conversations
+                
             except Exception as e:
-                st.error(f"Error creating agent: {e}")
-          # Agent information
+                create_notification(f"Error creating agent: {e}", "error")
+          
+        # Agent status display
         if st.session_state.current_agent:
-            st.markdown("**Agent Status:**")
+            agent_obj_type = type(st.session_state.current_agent).__name__
             
-            # Create a nice status card
-            agent_type = type(st.session_state.current_agent).__name__
-            status_color = "#28a745"  # Green for active
-            
-            st.markdown(f"""
-            <div style="
-                padding: 1rem;
-                border-radius: 0.5rem;
-                border-left: 4px solid {status_color};
-                margin: 0.5rem 0;
-            ">
-                <strong>🤖 {st.session_state.current_agent.name}</strong><br>
-                <small>Type: {agent_type}</small><br>
-                <small>Status: <span style="color: {status_color};">●</span> Active</small><br>
-                <small>Created: {datetime.now().strftime("%H:%M:%S")}</small>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with col2:
-        st.subheader("Agent Testing")
-        
-        if st.session_state.current_agent:
-            # Chat interface
-            user_message = st.text_area(
-                "Enter your message:",
-                placeholder="Ask the agent something...",
-                height=100
+            st.markdown("### 📊 Agent Status")
+            create_status_card(
+                f"🤖 {st.session_state.current_agent.name}",
+                f"Type: {agent_obj_type}<br>Status: Active<br>Created: {format_timestamp()}",
+                "success",
+                "🟢"
             )
             
-            if st.button("Send Message", use_container_width=True):
+            # Agent capabilities
+            capabilities = {
+                "SimpleAgent": ["💬 Natural conversation", "🧠 Basic reasoning"],
+                "SearchAgent": ["💬 Natural conversation", "🔍 Web search", "📊 Information retrieval"],
+                "ToolAgent": ["💬 Natural conversation", "🌤️ Weather queries", "🧮 Calculations", "📊 Multi-tool access"],
+                "StatefulAgent": ["💬 Natural conversation", "🧠 Memory retention", "📚 Context awareness", "📈 Learning"]
+            }
+            
+            if agent_obj_type in capabilities:
+                with st.expander("🎯 Agent Capabilities"):
+                    for capability in capabilities[agent_obj_type]:
+                        st.markdown(f"• {capability}")
+    
+    with col2:
+        st.markdown("### 💬 Interactive Chat")
+        
+        if st.session_state.current_agent:
+            # Chat interface with history
+            chat_container = create_chat_interface()
+            
+            # Input area
+            col_input, col_send = st.columns([4, 1])
+            
+            with col_input:
+                user_message = st.text_input(
+                    "Enter your message:",
+                    placeholder="Ask the agent something...",
+                    key="chat_input",
+                    label_visibility="collapsed"
+                )
+            
+            with col_send:
+                send_button = st.button("📤 Send", use_container_width=True, type="primary")
+            
+            if send_button or (user_message and st.session_state.get('last_message') != user_message):
                 if user_message:
+                    st.session_state.last_message = user_message
+                    
+                    # Add user message to chat
+                    add_chat_message("You", user_message, "user")
+                    
                     try:
-                        if hasattr(st.session_state.current_agent, 'chat'):
-                            response = st.session_state.current_agent.chat(user_message)
-                        elif hasattr(st.session_state.current_agent, 'search_and_respond'):
-                            response = st.session_state.current_agent.search_and_respond(user_message)
-                        elif hasattr(st.session_state.current_agent, 'process_request'):
-                            response = st.session_state.current_agent.process_request(user_message)
-                        elif hasattr(st.session_state.current_agent, 'chat_with_memory'):
-                            response = st.session_state.current_agent.chat_with_memory(user_message)
-                        else:
-                            response = "Error: Unknown agent method"
-                          
-                        st.markdown("**Agent Response:**")
+                        with st.spinner("Agent is thinking..."):
+                            # Get response based on agent type
+                            if hasattr(st.session_state.current_agent, 'chat'):
+                                response = st.session_state.current_agent.chat(user_message)
+                            elif hasattr(st.session_state.current_agent, 'search_and_respond'):
+                                response = st.session_state.current_agent.search_and_respond(user_message)
+                            elif hasattr(st.session_state.current_agent, 'process_request'):
+                                response = st.session_state.current_agent.process_request(user_message)
+                            elif hasattr(st.session_state.current_agent, 'chat_with_memory'):
+                                response = st.session_state.current_agent.chat_with_memory(user_message)
+                            else:
+                                response = "Error: Unknown agent method"
                         
-                        # Display response in a clean container
-                        with st.container():
-                            st.markdown(f"""
-                            <div style="
-                                padding: 1rem;
-                                border-radius: 0.5rem;
-                                border-left: 4px solid #1f77b4;
-                                margin: 0.5rem 0;
-                            ">
-                                {response}
-                            </div>
-                            """, unsafe_allow_html=True)
-                          # Show conversation history for stateful agents
+                        # Add agent response to chat
+                        add_chat_message(st.session_state.current_agent.name, response, "agent")
+                        
+                        # Show conversation summary for stateful agents
                         if hasattr(st.session_state.current_agent, 'get_conversation_summary'):
-                            col1, col2 = st.columns([3, 1])
-                            with col1:
-                                summary = st.session_state.current_agent.get_conversation_summary()
-                                st.info(f"💬 {summary}")
-                            with col2:
-                                if st.button("🗑️ Clear History", help="Clear conversation history"):
-                                    st.session_state.current_agent.clear_history()
-                                    st.success("History cleared!")
-                                    st.rerun()
+                            summary = st.session_state.current_agent.get_conversation_summary()
+                            st.info(f"💭 Conversation Summary: {summary}")
+                        
+                        st.rerun()
                     
                     except Exception as e:
-                        st.error(f"❌ Error: {e}")
+                        create_notification(f"Error: {e}", "error")
+                        add_chat_message("System", f"Error occurred: {e}", "agent")
                 else:
-                    st.warning("⚠️ Please enter a message")
+                    create_notification("Please enter a message", "warning")
             
-            # Add some spacing and helpful tips
-            st.markdown("---")
-            st.markdown("### 💡 Tips:")
-            agent_type = type(st.session_state.current_agent).__name__
+            # Chat controls
+            col_clear, col_export = st.columns(2)
             
-            if agent_type == "SimpleAgent":
-                st.info("💬 This is a basic conversational agent. Try asking general questions!")
-            elif agent_type == "SearchAgent":
-                st.info("🔍 This agent can search the web. Try asking about current events or recent information!")
-            elif agent_type == "ToolAgent":
-                st.info("🛠️ This agent has weather and calculator tools. Try asking about weather or math calculations!")
-            elif agent_type == "StatefulAgent":
-                st.info("🧠 This agent remembers your conversation. Try having a multi-turn conversation!")
+            with col_clear:
+                if st.button("🗑️ Clear Chat", use_container_width=True):
+                    clear_chat_history()
+                    if hasattr(st.session_state.current_agent, 'clear_history'):
+                        st.session_state.current_agent.clear_history()
+                    create_notification("Chat history cleared", "info")
+                    st.rerun()
+            
+            with col_export:
+                if st.button("📥 Export Chat", use_container_width=True):
+                    if 'chat_history' in st.session_state and st.session_state.chat_history:
+                        chat_data = "\n".join([
+                            f"[{msg['timestamp']}] {msg['sender']}: {msg['content']}"
+                            for msg in st.session_state.chat_history
+                        ])
+                        st.download_button(
+                            "💾 Download Chat History",
+                            chat_data,
+                            f"chat_history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                            "text/plain"
+                        )
+            
+            # Tips based on agent type
+            agent_obj_type = type(st.session_state.current_agent).__name__
+            tips = {
+                "SimpleAgent": "💡 Try asking general questions, requesting explanations, or having casual conversations.",
+                "SearchAgent": "💡 Ask about current events, recent news, or request factual information that requires web search.",
+                "ToolAgent": "💡 Try asking for weather information ('weather in Paris') or math calculations ('calculate 15% of 250').",
+                "StatefulAgent": "💡 Have a multi-turn conversation. The agent will remember context from previous messages."
+            }
+            
+            if agent_obj_type in tips:
+                st.info(tips[agent_obj_type])
         else:
-            st.info("👆 Create an agent first to start testing")
+            st.info("👆 Create an agent first to start chatting!")
+            
+            # Show sample conversations
+            st.markdown("### 📖 Example Conversations")
+            
+            examples = {
+                "Simple Agent": [
+                    "What is the Agent Development Kit?",
+                    "Explain the benefits of multi-agent systems",
+                    "How do I get started with ADK?"
+                ],
+                "Search Agent": [
+                    "What are the latest developments in AI agents?",
+                    "Search for recent news about Google's AI research",
+                    "Find information about agent frameworks"
+                ],
+                "Tool Agent": [
+                    "What's the weather like in New York?",
+                    "Calculate the tip for a $45.50 bill at 18%",
+                    "What tools do you have available?"
+                ],
+                "Stateful Agent": [
+                    "Hi, I'm working on a Python project",
+                    "Can you help me understand decorators?",
+                    "What were we just discussing?"
+                ]
+            }
+            
+            if agent_type in examples:
+                st.markdown(f"**Try these with {agent_type}:**")
+                for example in examples[agent_type]:
+                    st.markdown(f"• {example}")
     
     # Agent comparison section
     st.markdown("---")
-    st.subheader("Agent Type Comparison")
+    st.markdown("### 📊 Agent Comparison Matrix")
     
-    comparison_data = {
-        "Agent Type": ["Simple", "Search", "Tool", "Stateful"],
-        "Capabilities": [
-            "Basic conversation",
-            "Web search + conversation",
-            "Custom tools + conversation",
-            "Memory + conversation"
-        ],
-        "Use Cases": [
-            "General assistance",
-            "Research and facts",
-            "Specific tasks",
-            "Personalized interaction"
-        ],
-        "Complexity": ["Low", "Medium", "Medium", "High"]
-    }
+    comparison_data = [
+        {
+            "Agent Type": "Simple Agent", 
+            "Capabilities": "Basic conversation",
+            "Use Cases": "General assistance, Q&A",
+            "Complexity": "Low",
+            "Memory": "None",
+            "Tools": "None"
+        },
+        {
+            "Agent Type": "Search Agent",
+            "Capabilities": "Web search + conversation", 
+            "Use Cases": "Research, fact-checking",
+            "Complexity": "Medium",
+            "Memory": "Session only",
+            "Tools": "Web search"
+        },
+        {
+            "Agent Type": "Tool Agent",
+            "Capabilities": "Multiple tools + conversation",
+            "Use Cases": "Task automation, calculations",
+            "Complexity": "Medium", 
+            "Memory": "Session only",
+            "Tools": "Weather, Calculator, etc."
+        },
+        {
+            "Agent Type": "Stateful Agent",
+            "Capabilities": "Memory + conversation",
+            "Use Cases": "Personalized assistance",
+            "Complexity": "High",
+            "Memory": "Persistent",
+            "Tools": "Basic set"
+        }
+    ]
     
-    df = pd.DataFrame(comparison_data)
-    st.table(df)
+    create_data_table(comparison_data, "Agent Types Comparison")
 
 
 def show_multi_agent_systems():
     """Show multi-agent system examples and orchestration."""
-    st.header("🔗 Multi-Agent Systems")
+    create_header("🔗 Multi-Agent Systems", "Build sophisticated agent teams that coordinate to solve complex problems")
     
-    # System type selection
-    system_type = st.selectbox(
-        "Select multi-agent system to explore:",
-        ["Coordinator System", "Workflow Orchestrator", "Custom Hierarchy"]
-    )
+    # System type selection with modern cards
+    st.markdown("### 🎯 Select System Architecture")
     
+    system_configs = [
+        {"type": "Coordinator System", "icon": "🎯", "desc": "Hierarchical system with specialized agents"},
+        {"type": "Workflow Orchestrator", "icon": "⚙️", "desc": "Sequential workflow automation"},
+        {"type": "Custom Hierarchy", "icon": "🏗️", "desc": "Build your own agent organization"}
+    ]
+    
+    cols = st.columns(3)
+    selected_system = None
+    
+    for i, (col, config) in enumerate(zip(cols, system_configs)):
+        with col:
+            if st.button(f"{config['icon']}\n{config['type']}", 
+                        use_container_width=True, 
+                        key=f"system_select_{i}",
+                        help=config['desc']):
+                selected_system = config['type']
+                st.session_state.selected_system_type = config['type']
+    
+    # Use session state to remember selection
+    if 'selected_system_type' not in st.session_state:
+        st.session_state.selected_system_type = "Coordinator System"
+    
+    system_type = st.session_state.selected_system_type
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("System Configuration")
+        st.markdown("### 🔧 System Configuration")
+        
+        # System info card
+        system_info = next(config for config in system_configs if config['type'] == system_type)
+        st.markdown(f"""
+        <div class="custom-card">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <div style="font-size: 3rem;">{system_info['icon']}</div>
+                <h3 style="color: #2E86AB; margin: 0.5rem 0;">{system_info['type']}</h3>
+                <p style="color: #6c757d; margin: 0;">{system_info['desc']}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         if system_type == "Coordinator System":
             st.markdown("""
-            **Coordinator Agent System**
-            - Research Specialist
-            - Analysis Specialist  
-            - Writing Specialist
-            - Main Coordinator
+            **🤖 Agent Team Composition:**
+            - 🔍 **Research Specialist** - Gathers information and data
+            - 📊 **Analysis Specialist** - Processes and analyzes findings  
+            - ✍️ **Writing Specialist** - Creates final outputs
+            - 🎯 **Main Coordinator** - Orchestrates the workflow
             """)
             
             project_description = st.text_area(
-                "Project Description:",
-                placeholder="Describe the project you want the team to work on...",
-                height=100
-            )
-            
-            if st.button("Execute Project", use_container_width=True):
+                "📝 Project Description:",
+                placeholder="Describe the complex project you want the agent team to work on...",
+                height=120,
+                help="Be specific about your requirements and desired outcomes"
+            )            
+            if st.button("🚀 Execute Project", use_container_width=True, type="primary"):
                 if project_description:
-                    with st.spinner("Executing multi-agent project..."):
+                    with st.spinner("🤖 Agent team is working on your project..."):
                         try:
                             coordinator = CoordinatorAgent("Project_Coordinator")
                             result = coordinator.execute_complex_project(project_description)
@@ -368,33 +587,39 @@ def show_multi_agent_systems():
                             st.session_state.last_project_description = project_description
                             
                             if result["success"]:
-                                st.success("Project completed successfully!")
+                                create_notification("Project completed successfully! 🎉", "success")
                             else:
-                                st.error("Project execution failed")
+                                create_notification("Project execution encountered issues", "warning")
                         
                         except Exception as e:
-                            st.error(f"Error: {e}")
+                            create_notification(f"Error executing project: {e}", "error")
                 else:
-                    st.warning("Please enter a project description")
-            
-            # Continue Workflow button
+                    create_notification("Please enter a project description", "warning")
+              # Continue Workflow section
             if hasattr(st.session_state, 'last_project_result') and st.session_state.last_project_result:
                 st.markdown("---")
-                st.markdown("**Continue Incomplete Workflow**")
+                create_expandable_section(
+                    "Continue Incomplete Workflow",
+                    """
+                    <p>If the initial execution didn't fully complete or you need additional analysis, 
+                    you can continue the workflow with more specific instructions.</p>
+                    """,
+                    "🔄"
+                )
                 
                 additional_context = st.text_area(
-                    "Additional Context/Instructions:",
-                    placeholder="Provide additional context or specific instructions to continue the workflow...",
-                    height=80,
+                    "💡 Additional Context/Instructions:",
+                    placeholder="Provide specific guidance, additional requirements, or areas to focus on...",
+                    height=100,
                     key="continue_context"
                 )
                 
                 col_continue1, col_continue2 = st.columns(2)
                 
                 with col_continue1:
-                    if st.button("🔄 Continue Workflow", use_container_width=True):
+                    if st.button("🔄 Continue Workflow", use_container_width=True, type="secondary"):
                         if hasattr(st.session_state, 'last_coordinator'):
-                            with st.spinner("Continuing workflow with additional context..."):
+                            with st.spinner("🔄 Continuing workflow with enhanced context..."):
                                 try:
                                     enhanced_context = (
                                         f"Previous result was incomplete. "
@@ -409,107 +634,162 @@ def show_multi_agent_systems():
                                     st.session_state.last_project_result = result
                                     
                                     if result["success"]:
-                                        st.success("Workflow continued successfully!")
+                                        create_notification("Workflow continued successfully! ✨", "success")
                                     else:
-                                        st.error("Workflow continuation failed")
+                                        create_notification("Workflow continuation failed", "error")
                                 
                                 except Exception as e:
-                                    st.error(f"Error continuing workflow: {e}")
+                                    create_notification(f"Error continuing workflow: {e}", "error")
                 
                 with col_continue2:
-                    if st.button("🎯 Force Complete Research", use_container_width=True):
+                    if st.button("🎯 Force Complete Research", use_container_width=True, type="secondary"):
                         if hasattr(st.session_state, 'last_coordinator'):
-                            with st.spinner("Forcing research completion..."):
+                            with st.spinner("🎯 Forcing comprehensive research completion..."):
                                 try:
                                     research_result = st.session_state.last_coordinator.force_complete_research(
                                         st.session_state.last_project_description
                                     )
                                     
                                     if research_result.success:
-                                        st.success("Research completed successfully!")
+                                        create_notification("Research completed successfully! 🔍", "success")
                                         st.session_state.force_research_result = research_result
                                     else:
-                                        st.error("Research completion failed")
+                                        create_notification("Research completion failed", "error")
                                 
                                 except Exception as e:
-                                    st.error(f"Error forcing research: {e}")
-        
+                                    create_notification(f"Error forcing research: {e}", "error")
         elif system_type == "Workflow Orchestrator":
-            st.markdown("**Available Workflows:**")
+            st.markdown("**🔧 Available Workflows:**")
             
             workflow_name = st.selectbox(
-                "Select workflow:",
-                list(EXAMPLE_WORKFLOWS.keys())
+                "Select workflow to execute:",
+                list(EXAMPLE_WORKFLOWS.keys()),
+                help="Choose from predefined automation workflows"
             )
             
             workflow = EXAMPLE_WORKFLOWS[workflow_name]
-            st.markdown(f"**Description:** {workflow['description']}")
-            st.markdown(f"**Required Inputs:** {', '.join(workflow['required_inputs'])}")
+            
+            # Workflow info card
+            st.markdown(f"""
+            <div class="custom-card">
+                <h4 style="color: #2E86AB; margin-bottom: 0.5rem;">📋 {workflow_name}</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> {workflow['description']}</p>
+                <p style="margin-bottom: 0;"><strong>Required Inputs:</strong> {', '.join(workflow['required_inputs'])}</p>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Input collection
             inputs = {}
+            st.markdown("**📝 Workflow Inputs:**")
             for input_field in workflow['required_inputs']:
-                inputs[input_field] = st.text_input(f"{input_field.replace('_', ' ').title()}:")
+                inputs[input_field] = st.text_input(
+                    f"{input_field.replace('_', ' ').title()}:",
+                    help=f"Enter the {input_field.replace('_', ' ')} for the workflow"
+                )
             
-            if st.button("Execute Workflow", use_container_width=True):
+            if st.button("⚙️ Execute Workflow", use_container_width=True, type="primary"):
                 if all(inputs.values()):
-                    with st.spinner("Executing workflow..."):
+                    with st.spinner("🔄 Executing workflow..."):
                         try:
                             orchestrator = WorkflowOrchestrator()
                             for name, wf in EXAMPLE_WORKFLOWS.items():
                                 orchestrator.register_workflow(name, wf)
                             
                             # Note: This would need to be run in an async context
-                            st.info("Workflow execution simulated (requires async runtime)")
+                            create_notification("Workflow execution simulated (requires async runtime)", "info")
                             st.session_state.workflow_inputs = inputs
+                            st.session_state.executed_workflow = workflow_name
                         
                         except Exception as e:
-                            st.error(f"Error: {e}")
+                            create_notification(f"Error executing workflow: {e}", "error")
                 else:
-                    st.warning("Please fill in all required inputs")
-    
+                    create_notification("Please fill in all required inputs", "warning")
+        
+        elif system_type == "Custom Hierarchy":
+            st.markdown("**🏗️ Build Custom Agent Hierarchy:**")
+            
+            st.info("🚧 Custom hierarchy builder coming soon! This will allow you to design your own agent team structure.")
+            
+            # Placeholder for custom hierarchy builder
+            num_agents = st.slider("Number of agents:", 2, 8, 3)
+            
+            for i in range(num_agents):
+                with st.expander(f"🤖 Agent {i+1} Configuration"):
+                    agent_name = st.text_input(f"Agent {i+1} Name:", value=f"Agent_{i+1}")
+                    agent_role = st.selectbox(f"Role:", ["Coordinator", "Specialist", "Worker"], key=f"role_{i}")
+                    agent_capabilities = st.multiselect(
+                        f"Capabilities:", 
+                        ["Research", "Analysis", "Writing", "Calculation", "Web Search"],
+                        key=f"caps_{i}"
+                    )
     with col2:
-        st.subheader("Execution Results")
-          # Show results if available
+        st.markdown("### 📊 Execution Results")
+        
+        # Show results if available
         if 'last_project_result' in st.session_state:
             result = st.session_state.last_project_result
             
-            # Success/failure indicator
+            # Success/failure indicator with modern styling
             if result["success"]:
-                st.success("✅ Project Completed")
+                create_status_card("✅ Project Completed", "All phases executed successfully", "success", "🎉")
             else:
-                st.error("❌ Project Failed")
+                create_status_card("❌ Project Failed", "Some phases encountered errors", "error", "⚠️")
             
-            # Task breakdown
-            st.markdown("**Task Execution:**")
+            # Task breakdown with enhanced display
+            st.markdown("**📋 Task Execution Timeline:**")
             for i, task in enumerate(result["tasks"], 1):
-                status = "✅" if task.success else "❌"
-                st.markdown(f"{status} **Phase {i}**: {task.task}")
-                if not task.success:
-                    st.error(f"Error: {task.result}")
+                status_icon = "✅" if task.success else "❌"
+                status_color = "#28a745" if task.success else "#dc3545"
+                
+                st.markdown(f"""
+                <div style="border-left: 4px solid {status_color}; padding: 0.5rem 1rem; margin: 0.5rem 0; background: #f8f9fa; border-radius: 4px;">
+                    <strong>{status_icon} Phase {i}:</strong> {task.task}
+                    {f'<br><span style="color: #dc3545; font-size: 0.9em;">Error: {task.result}</span>' if not task.success else ''}
+                </div>
+                """, unsafe_allow_html=True)
             
-            # Final result
+            # Final result with better formatting
             if result["success"]:
-                st.markdown("**Final Result:**")
-                st.text_area("Output:", value=result["final_result"], height=200, disabled=True)
+                st.markdown("**📋 Final Result:**")
+                format_agent_response(result["final_result"], "Project Output")
             
             # Show forced research result if available
             if 'force_research_result' in st.session_state:
                 st.markdown("---")
-                st.markdown("**🎯 Forced Research Result:**")
+                st.markdown("**🎯 Enhanced Research Result:**")
                 research_result = st.session_state.force_research_result
                 if research_result.success:
-                    st.success("Research completed successfully!")
-                    st.text_area("Research Output:", value=research_result.result, height=200, disabled=True)
+                    create_status_card("🔍 Research Completed", "Enhanced research phase successful", "success", "✨")
+                    format_agent_response(research_result.result, "Research Output")
                 else:
-                    st.error(f"Research failed: {research_result.result}")
+                    create_status_card("❌ Research Failed", f"Research error: {research_result.result}", "error", "⚠️")
+        
+        elif 'executed_workflow' in st.session_state:
+            workflow_name = st.session_state.executed_workflow
+            create_status_card(f"⚙️ Workflow: {workflow_name}", "Execution simulated successfully", "info", "🔄")
+            
+            st.markdown("**📝 Workflow Inputs:**")
+            if 'workflow_inputs' in st.session_state:
+                for key, value in st.session_state.workflow_inputs.items():
+                    st.markdown(f"• **{key.replace('_', ' ').title()}:** {value}")
         
         else:
-            st.info("Execute a project to see results here")
+            st.info("🚀 Execute a project or workflow to see detailed results here")
+            
+            # Show example outputs
+            with st.expander("💡 Example Output Preview"):
+                st.markdown("""
+                **Sample Multi-Agent Output:**
+                
+                🔍 **Research Phase:** Gathered 15 sources on market trends  
+                📊 **Analysis Phase:** Identified 3 key opportunities  
+                ✍️ **Writing Phase:** Generated comprehensive 2,500-word report  
+                🎯 **Coordination:** Successfully delivered complete analysis
+                """)
     
-    # Performance visualization
+    # Performance visualization with modern styling
     st.markdown("---")
-    st.subheader("System Performance")
+    create_header("📈 System Performance", "Monitor your multi-agent system metrics and health")
     
     # Mock performance data for demonstration
     performance_data = {
@@ -521,359 +801,2064 @@ def show_multi_agent_systems():
     
     df = pd.DataFrame(performance_data)
     
+    # Performance metrics cards
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        create_metric_card(f"{df['Tasks Completed'].sum()}", "Total Tasks", "+8", "positive")
+    
+    with col2:
+        create_metric_card(f"{df['Avg Response Time (s)'].mean():.1f}s", "Avg Response", "-0.2s", "positive")
+    
+    with col3:
+        create_metric_card(f"{df['Success Rate (%)'].mean():.0f}%", "Success Rate", "+3%", "positive")
+    
+    with col4:
+        create_metric_card("4", "Active Agents", "→", "neutral")
+    
+    # Charts with improved layout
     col1, col2 = st.columns(2)
     
     with col1:
-        fig = px.bar(df, x="Agent", y="Tasks Completed", title="Tasks Completed by Agent")
+        fig = px.bar(df, x="Agent", y="Tasks Completed", title="📊 Tasks Completed by Agent",
+                    color="Tasks Completed", color_continuous_scale="viridis")
+        fig.update_layout(showlegend=False, height=350)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        fig = px.line(df, x="Agent", y="Success Rate (%)", title="📈 Success Rate by Agent",
+                     markers=True, line_shape="spline")
+        fig.update_layout(height=350)
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         fig = px.scatter(df, x="Avg Response Time (s)", y="Success Rate (%)", 
                         size="Tasks Completed", hover_name="Agent",
-                        title="Performance Overview")
+                        title="🎯 Performance Overview", color="Agent")
+        fig.update_layout(height=350)
         st.plotly_chart(fig, use_container_width=True)
+        
+        # Agent network visualization
+        create_network_visualization(["Research", "Analysis", "Writing", "Coordinator"])
 
 
 def show_a2a_protocol():
     """Show A2A protocol examples and testing."""
-    st.header("🌐 A2A Protocol")
+    create_header("🌐 A2A Protocol", "Enable distributed agent communication across networks for scalable architectures")
     
     st.markdown("""
-    **Agent-to-Agent (A2A) Protocol** enables distributed agent communication
-    across networks, allowing for scalable multi-agent architectures.
+    **Agent-to-Agent (A2A) Protocol** enables seamless communication between agents 
+    across different processes, servers, or geographic locations, creating truly distributed AI systems.
     """)
     
-    # Protocol demonstration
+    # Protocol demonstration with modern layout
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("A2A Agent Network")
+        st.markdown("### 🛠️ A2A Network Configuration")
         
-        # Agent configuration
-        num_agents = st.slider("Number of A2A Agents:", 2, 5, 3)
+        # Agent configuration with enhanced UI
+        num_agents = st.slider("Number of A2A Agents:", 2, 5, 3, help="Configure the size of your agent network")
         
         agent_configs = []
         for i in range(num_agents):
-            with st.expander(f"Agent {i+1} Configuration"):
-                name = st.text_input(f"Agent {i+1} Name:", value=f"A2A_Agent_{i+1}")
-                port = st.number_input(f"Port:", value=8500+i, min_value=8500, max_value=9000)
-                agent_configs.append({"name": name, "port": port})
+            with st.expander(f"🤖 Agent {i+1} Configuration", expanded=(i < 2)):
+                col_name, col_port = st.columns([2, 1])
+                
+                with col_name:
+                    name = st.text_input(f"Agent Name:", value=f"A2A_Agent_{i+1}", key=f"agent_name_{i}")
+                
+                with col_port:
+                    port = st.number_input(f"Port:", value=8500+i, min_value=8500, max_value=9000, key=f"agent_port_{i}")
+                
+                agent_type = st.selectbox(f"Agent Type:", 
+                                        ["Research Agent", "Analysis Agent", "Communication Hub", "Task Executor"],
+                                        key=f"agent_type_{i}")
+                
+                agent_configs.append({"name": name, "port": port, "type": agent_type})
         
-        if st.button("Start A2A Network", use_container_width=True):
+        if st.button("🚀 Start A2A Network", use_container_width=True, type="primary"):
             st.session_state.a2a_agents = agent_configs
-            st.success(f"Configured {num_agents} A2A agents")
+            create_notification(f"✅ Configured {num_agents} A2A agents successfully!", "success")
+            
+            # Show network status
+            st.markdown("**🌐 Network Status:**")
+            for i, agent in enumerate(agent_configs):
+                create_status_card(
+                    f"🤖 {agent['name']}", 
+                    f"Type: {agent['type']}<br>Port: {agent['port']}<br>Status: Online",
+                    "success",
+                    "🟢"
+                )
     
     with col2:
-        st.subheader("Network Communication")
+        st.markdown("### 💬 Network Communication")
         
         if 'a2a_agents' in st.session_state:
-            # Select source and target agents
+            # Agent selection with improved UI
             agent_names = [agent["name"] for agent in st.session_state.a2a_agents]
             
-            sender = st.selectbox("Sender Agent:", agent_names)
-            receiver = st.selectbox("Receiver Agent:", [name for name in agent_names if name != sender])
+            col_sender, col_receiver = st.columns(2)
             
-            # Message configuration
-            action = st.selectbox("Action:", ["chat", "analyze", "collaborate", "ping"])
-            message_data = st.text_area("Message Data:", placeholder="Enter message content...")
+            with col_sender:
+                sender = st.selectbox("📤 Sender Agent:", agent_names, help="Choose the agent that will send the message")
             
-            if st.button("Send A2A Message", use_container_width=True):
+            with col_receiver:
+                receiver = st.selectbox("📥 Receiver Agent:", 
+                                      [name for name in agent_names if name != sender],
+                                      help="Choose the target agent for the message")
+            
+            # Message configuration with enhanced options
+            st.markdown("**📋 Message Configuration:**")
+            
+            col_action, col_priority = st.columns([2, 1])
+            
+            with col_action:
+                action = st.selectbox("Action Type:", 
+                                    ["chat", "analyze", "collaborate", "ping", "data_transfer", "task_request"],
+                                    help="Select the type of action to perform")
+            
+            with col_priority:
+                priority = st.selectbox("Priority:", ["Low", "Medium", "High", "Critical"])
+            
+            message_data = st.text_area("💌 Message Content:", 
+                                      placeholder="Enter the message content or data to send...",
+                                      height=100)
+            
+            # Advanced options
+            with st.expander("⚙️ Advanced Options"):
+                correlation_id = st.text_input("Correlation ID:", placeholder="Optional - for request tracking")
+                timeout = st.number_input("Timeout (seconds):", value=30, min_value=5, max_value=300)
+                retry_count = st.number_input("Retry Attempts:", value=3, min_value=0, max_value=10)
+            
+            if st.button("📨 Send A2A Message", use_container_width=True, type="primary"):
                 if message_data:
-                    st.info(f"Sending {action} from {sender} to {receiver}")
-                    st.json({
-                        "action": action,
-                        "data": message_data,
-                        "timestamp": datetime.now().isoformat()
-                    })
-                    st.success("Message sent successfully!")
+                    with st.spinner(f"📡 Sending {action} from {sender} to {receiver}..."):
+                        # Simulate message sending
+                        message_obj = {
+                            "id": f"msg_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                            "action": action,
+                            "data": message_data,
+                            "sender": sender,
+                            "receiver": receiver,
+                            "priority": priority,
+                            "timestamp": datetime.now().isoformat(),
+                            "correlation_id": correlation_id if correlation_id else None,
+                            "timeout": timeout,
+                            "retry_count": retry_count
+                        }
+                        
+                        create_notification(f"✅ Message sent successfully from {sender} to {receiver}!", "success")
+                        
+                        # Display message details
+                        st.markdown("**📋 Sent Message Details:**")
+                        format_agent_response(json.dumps(message_obj, indent=2), "A2A Message")
+                        
+                        # Store in session for history
+                        if 'a2a_message_history' not in st.session_state:
+                            st.session_state.a2a_message_history = []
+                        st.session_state.a2a_message_history.append(message_obj)
                 else:
-                    st.warning("Please enter message data")
+                    create_notification("Please enter message content", "warning")
+            
+            # Message history
+            if 'a2a_message_history' in st.session_state and st.session_state.a2a_message_history:
+                st.markdown("---")
+                st.markdown("**📜 Message History:**")
+                
+                for i, msg in enumerate(reversed(st.session_state.a2a_message_history[-5:])):  # Show last 5
+                    with st.expander(f"📨 {msg['action'].title()} - {msg['sender']} → {msg['receiver']}"):
+                        st.json(msg)
         else:
-            st.info("Configure and start A2A network first")
+            st.info("🔧 Configure and start A2A network first to enable communication")
+            
+            # Show network architecture diagram
+            st.markdown("**🏗️ Expected Network Architecture:**")
+            create_feature_card(
+                "Distributed Agent Network",
+                "Agents communicate across different servers and locations",
+                ["Cross-network messaging", "Load balancing", "Fault tolerance", "Security protocols"]
+            )
     
-    # Protocol details
+    # Protocol details with enhanced tabs
     st.markdown("---")
-    st.subheader("A2A Protocol Details")
+    create_header("📚 A2A Protocol Specifications", "Technical details and implementation examples")
     
-    tab1, tab2, tab3 = st.tabs(["Message Format", "Communication Flow", "Example Implementation"])
+    protocol_tabs = create_tabs_with_icons([
+        {"name": "Message Format", "icon": "📋"},
+        {"name": "Communication Flow", "icon": "🔄"},
+        {"name": "Security & Auth", "icon": "🔒"},
+        {"name": "Implementation", "icon": "💻"},
+        {"name": "Testing Tools", "icon": "🧪"}
+    ])
     
-    with tab1:
-        st.markdown("**A2A Message Structure:**")
+    with protocol_tabs[0]:  # Message Format
+        st.markdown("**📋 A2A Message Structure:**")
+        
         example_message = {
-            "id": "msg_123456",
+            "id": "msg_20250612_103000_abc123",
+            "version": "1.0",
             "type": "request",
-            "sender_id": "agent_1", 
-            "receiver_id": "agent_2",
+            "sender": {
+                "id": "agent_research_001",
+                "name": "Research Specialist",
+                "address": "http://192.168.1.100:8501"
+            },
+            "receiver": {
+                "id": "agent_analysis_002", 
+                "name": "Analysis Specialist",
+                "address": "http://192.168.1.101:8502"
+            },
             "payload": {
-                "action": "chat",
-                "data": {"message": "Hello from Agent 1!"}
+                "action": "analyze_data",
+                "parameters": {
+                    "data_source": "market_research.json",
+                    "analysis_type": "trend_analysis",
+                    "priority": "high"
+                },
+                "metadata": {
+                    "expected_duration": "5-10 minutes",
+                    "result_format": "json"
+                }
             },
             "timestamp": "2025-06-12T10:30:00Z",
-            "correlation_id": None
+            "correlation_id": "proj_market_analysis_001",
+            "timeout": 600,
+            "retry_policy": {
+                "max_attempts": 3,
+                "backoff_strategy": "exponential"
+            }
         }
-        st.json(example_message)
-    
-    with tab2:
-        st.markdown("""
-        **Communication Flow:**
         
-        1. **Request**: Agent A sends message to Agent B
-        2. **Processing**: Agent B processes the request
-        3. **Response**: Agent B sends back response
-        4. **Correlation**: Messages linked by correlation ID
-        5. **Error Handling**: Timeouts and error responses
-        """)
+        create_code_block(json.dumps(example_message, indent=2), "json", "Complete A2A Message Example")
+        
+        # Message field descriptions
+        field_descriptions = [
+            {"Field": "id", "Type": "string", "Description": "Unique message identifier"},
+            {"Field": "version", "Type": "string", "Description": "A2A protocol version"},
+            {"Field": "type", "Type": "enum", "Description": "request | response | notification | error"},
+            {"Field": "sender", "Type": "object", "Description": "Source agent information"},
+            {"Field": "receiver", "Type": "object", "Description": "Target agent information"},
+            {"Field": "payload", "Type": "object", "Description": "Message content and parameters"},
+            {"Field": "timestamp", "Type": "ISO 8601", "Description": "Message creation time"},
+            {"Field": "correlation_id", "Type": "string", "Description": "Links related messages"},
+            {"Field": "timeout", "Type": "integer", "Description": "Request timeout in seconds"},
+            {"Field": "retry_policy", "Type": "object", "Description": "Retry configuration"}
+        ]
+        
+        create_data_table(field_descriptions, "Message Field Reference")
     
-    with tab3:
-        st.code("""
-# Create A2A agents
-agent1 = SmartA2AAgent("agent_1", "ResearchBot", port=8501)
-agent2 = SmartA2AAgent("agent_2", "AnalysisBot", port=8502)
+    with protocol_tabs[1]:  # Communication Flow
+        st.markdown("**🔄 A2A Communication Flow:**")
+        
+        flow_steps = [
+            {"Step": "1", "Phase": "Connection", "Description": "Agent discovers and connects to target agent"},
+            {"Step": "2", "Phase": "Authentication", "Description": "Mutual authentication and authorization"},
+            {"Step": "3", "Phase": "Request", "Description": "Sender constructs and sends A2A message"},
+            {"Step": "4", "Phase": "Processing", "Description": "Receiver processes request and executes action"},
+            {"Step": "5", "Phase": "Response", "Description": "Receiver sends back result or acknowledgment"},
+            {"Step": "6", "Phase": "Correlation", "Description": "Messages linked via correlation ID"},
+            {"Step": "7", "Phase": "Error Handling", "Description": "Timeout, retry, and error management"}
+        ]
+        
+        create_data_table(flow_steps, "Communication Flow Steps")
+        
+        st.markdown("**📊 Flow Diagram:**")
+        create_progress_indicator(["Discovery", "Auth", "Request", "Process", "Response"], current_step=5)
+    
+    with protocol_tabs[2]:  # Security & Auth
+        st.markdown("**🔒 Security & Authentication:**")
+        
+        security_features = [
+            {"Feature": "🔐 Mutual TLS", "Status": "Implemented", "Description": "Certificate-based authentication"},
+            {"Feature": "🎫 JWT Tokens", "Status": "Supported", "Description": "Token-based authorization"},
+            {"Feature": "🛡️ Message Encryption", "Status": "Required", "Description": "End-to-end encryption"},
+            {"Feature": "📝 Message Signing", "Status": "Optional", "Description": "Digital signatures for integrity"},
+            {"Feature": "🚪 Access Control", "Status": "Configurable", "Description": "Role-based permissions"},
+            {"Feature": "📊 Audit Logging", "Status": "Enabled", "Description": "Complete communication logs"}
+        ]
+        
+        create_data_table(security_features, "Security Features")
+        
+        create_code_block("""
+# Security configuration example
+a2a_config = {
+    "security": {
+        "tls_enabled": True,
+        "certificate_path": "/path/to/cert.pem",
+        "private_key_path": "/path/to/key.pem",
+        "jwt_secret": "your-jwt-secret",
+        "encryption_algorithm": "AES-256-GCM",
+        "require_message_signing": True
+    },
+    "access_control": {
+        "allow_list": ["agent_1", "agent_2"],
+        "rate_limiting": {
+            "requests_per_minute": 100,
+            "burst_capacity": 10
+        }
+    }
+}
+        """, "python", "Security Configuration")
+    
+    with protocol_tabs[3]:  # Implementation
+        st.markdown("**💻 Implementation Example:**")
+        
+        create_code_block("""
+from agents.a2a import SmartA2AAgent
+import asyncio
 
-# Start servers
-await agent1.start_server()
-await agent2.start_server()
+async def setup_a2a_network():
+    # Create A2A enabled agents
+    research_agent = SmartA2AAgent(
+        agent_id="research_001",
+        name="Research Specialist", 
+        port=8501,
+        capabilities=["web_search", "data_collection"]
+    )
+    
+    analysis_agent = SmartA2AAgent(
+        agent_id="analysis_002", 
+        name="Analysis Specialist",
+        port=8502,
+        capabilities=["data_analysis", "pattern_recognition"]
+    )
+    
+    # Start network servers
+    await research_agent.start_server()
+    await analysis_agent.start_server()
+    
+    # Register handlers
+    research_agent.register_handler("search", handle_search_request)
+    analysis_agent.register_handler("analyze", handle_analysis_request)
+    
+    # Send cross-network request
+    response = await research_agent.send_request(
+        target_url="http://localhost:8502",
+        action="analyze",
+        data={
+            "dataset": "market_trends.csv",
+            "analysis_type": "correlation",
+            "parameters": {"confidence_level": 0.95}
+        },
+        timeout=120
+    )
+    
+    print(f"Analysis result: {response.result}")
+    return response
 
-# Send request
-response = await agent1.send_request(
-    "http://localhost:8502",
-    "chat",
-    {"message": "Hello from Agent 1!"}
-)
-
-print(response)
-        """, language="python")
+# Run the network
+if __name__ == "__main__":
+    result = asyncio.run(setup_a2a_network())
+        """, "python", "Complete A2A Implementation")
+    
+    with protocol_tabs[4]:  # Testing Tools
+        st.markdown("**🧪 A2A Testing & Debugging Tools:**")
+        
+        # Message validator
+        st.markdown("**📋 Message Validator:**")
+        
+        test_message = st.text_area(
+            "Enter A2A message JSON to validate:",
+            value=json.dumps(example_message, indent=2),
+            height=200
+        )
+        
+        col_validate, col_format = st.columns(2)
+        
+        with col_validate:
+            if st.button("✅ Validate Message", use_container_width=True):
+                try:
+                    parsed = json.loads(test_message)
+                    required_fields = ["id", "type", "sender", "receiver", "payload", "timestamp"]
+                    
+                    missing_fields = [field for field in required_fields if field not in parsed]
+                    
+                    if missing_fields:
+                        create_notification(f"❌ Missing required fields: {', '.join(missing_fields)}", "error")
+                    else:
+                        create_notification("✅ Message format is valid!", "success")
+                        
+                except json.JSONDecodeError as e:
+                    create_notification(f"❌ Invalid JSON: {e}", "error")
+        
+        with col_format:
+            if st.button("🎨 Format Message", use_container_width=True):
+                try:
+                    parsed = json.loads(test_message)
+                    formatted = json.dumps(parsed, indent=2, sort_keys=True)
+                    st.session_state.formatted_message = formatted
+                    create_notification("✅ Message formatted successfully!", "success")
+                except json.JSONDecodeError as e:
+                    create_notification(f"❌ Cannot format invalid JSON: {e}", "error")
+        
+        if 'formatted_message' in st.session_state:
+            st.text_area("Formatted Message:", value=st.session_state.formatted_message, height=200)
+        
+        # Network diagnostics
+        st.markdown("---")
+        st.markdown("**🔍 Network Diagnostics:**")
+        
+        diagnostic_cols = st.columns(3)
+        
+        with diagnostic_cols[0]:
+            if st.button("🏥 Health Check", use_container_width=True):
+                create_notification("All agents responding normally", "success")
+        
+        with diagnostic_cols[1]:
+            if st.button("📊 Performance Test", use_container_width=True):
+                create_notification("Average latency: 45ms", "info")
+        
+        with diagnostic_cols[2]:
+            if st.button("🛡️ Security Scan", use_container_width=True):
+                create_notification("No security issues detected", "success")
 
 
 def show_custom_tools():
     """Show custom tools and integration examples."""
-    st.header("🛠️ Custom Tools")
+    create_header("🛠️ Custom Tools", "Extend agent capabilities with powerful custom functions and integrations")
     
     st.markdown("""
-    Custom tools extend agent capabilities beyond built-in functions.
-    Test different tools and see how they integrate with agents.
+    Custom tools are the building blocks that give agents specialized capabilities. 
+    Test different tools, see how they work, and learn to create your own.
     """)
     
-    # Tool selection and testing
+    # Tool selection and testing with modern layout
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("Available Tools")
+        st.markdown("### 🔧 Available Tools")
         
-        tool_name = st.selectbox("Select tool to test:", list(CUSTOM_TOOLS.keys()))
+        # Tool selection with enhanced display
+        tool_options = list(CUSTOM_TOOLS.keys())
+        tool_name = st.selectbox("Select tool to explore:", tool_options, 
+                                help="Choose a tool to test its functionality")
         
-        # Show tool information
+        # Show tool information with modern card
         tool_info = get_tool_info(tool_name)
         if tool_info:
-            st.markdown(f"**Description:** {tool_info['description']}")
+            st.markdown(f"""
+            <div class="custom-card">
+                <h4 style="color: #2E86AB; margin-bottom: 0.5rem;">🔧 {tool_name.replace('_', ' ').title()}</h4>
+                <p style="margin-bottom: 0.5rem;"><strong>Description:</strong> {tool_info['description']}</p>
+                <p style="margin-bottom: 0;"><strong>Category:</strong> {tool_info.get('category', 'General')}</p>
+            </div>
+            """, unsafe_allow_html=True)
         
-        # Tool-specific inputs
+        # Tool-specific inputs with enhanced UI
+        st.markdown("**⚙️ Tool Parameters:**")
         tool_inputs = {}
         
         if tool_name == "weather":
-            tool_inputs["location"] = st.text_input("Location:", value="New York")
+            tool_inputs["location"] = st.text_input("🌍 Location:", value="New York", 
+                                                   help="Enter city name or coordinates")
+            tool_inputs["units"] = st.selectbox("🌡️ Units:", ["metric", "imperial", "kelvin"])
         
         elif tool_name == "calculator":
-            tool_inputs["expression"] = st.text_input("Expression:", value="2 + 2 * 3")
+            tool_inputs["expression"] = st.text_input("🧮 Mathematical Expression:", value="2 + 2 * 3",
+                                                     help="Enter any valid mathematical expression")
+            examples = ["15% of 250", "sqrt(144)", "2^8", "sin(pi/2)"]
+            selected_example = st.selectbox("💡 Try examples:", [""] + examples)
+            if selected_example:
+                tool_inputs["expression"] = selected_example
         
         elif tool_name == "text_analyzer":
-            tool_inputs["text"] = st.text_area("Text to analyze:", height=100)
-            tool_inputs["analysis_type"] = st.selectbox("Analysis type:", ["sentiment", "keywords", "readability"])
+            tool_inputs["text"] = st.text_area("📝 Text to analyze:", height=120,
+                                              placeholder="Enter text for analysis...")
+            tool_inputs["analysis_type"] = st.selectbox("📊 Analysis type:", 
+                                                       ["sentiment", "keywords", "readability", "summary"])
+            
+            if tool_inputs["analysis_type"] == "sentiment":
+                st.info("💡 Analyzes emotional tone and sentiment polarity")
+            elif tool_inputs["analysis_type"] == "keywords":
+                st.info("💡 Extracts key terms and important phrases")
+            elif tool_inputs["analysis_type"] == "readability":
+                st.info("💡 Evaluates text complexity and reading level")
+            elif tool_inputs["analysis_type"] == "summary":
+                st.info("💡 Generates concise summary of the text")
         
         elif tool_name == "file_manager":
-            tool_inputs["action"] = st.selectbox("Action:", ["read", "write", "list", "exists"])
-            tool_inputs["file_path"] = st.text_input("File path:", value="example.txt")
+            tool_inputs["action"] = st.selectbox("📁 File Action:", ["read", "write", "list", "exists", "delete"])
+            tool_inputs["file_path"] = st.text_input("📄 File path:", value="example.txt",
+                                                    help="Relative or absolute file path")
+            
             if tool_inputs["action"] == "write":
-                tool_inputs["content"] = st.text_area("Content to write:")
+                tool_inputs["content"] = st.text_area("📝 Content to write:", height=100)
+            elif tool_inputs["action"] == "list":
+                tool_inputs["directory"] = st.text_input("📁 Directory:", value=".",
+                                                        help="Directory to list (. for current)")
         
         elif tool_name == "data_converter":
-            tool_inputs["data"] = st.text_area("Data to convert:")
-            tool_inputs["from_format"] = st.selectbox("From format:", ["json", "csv"])
-            tool_inputs["to_format"] = st.selectbox("To format:", ["json", "csv"])
+            tool_inputs["data"] = st.text_area("📊 Data to convert:", height=120,
+                                              placeholder="Paste your data here...")
+            
+            col_from, col_to = st.columns(2)
+            with col_from:
+                tool_inputs["from_format"] = st.selectbox("📥 From format:", ["json", "csv", "xml", "yaml"])
+            with col_to:
+                tool_inputs["to_format"] = st.selectbox("📤 To format:", ["json", "csv", "xml", "yaml"])
+            
+            # Sample data button
+            if st.button("📋 Load Sample Data"):
+                if tool_inputs["from_format"] == "json":
+                    tool_inputs["data"] = '{"name": "John", "age": 30, "city": "New York"}'
+                elif tool_inputs["from_format"] == "csv":
+                    tool_inputs["data"] = "name,age,city\nJohn,30,New York\nJane,25,Boston"
         
         elif tool_name == "task_scheduler":
-            tool_inputs["action"] = st.selectbox("Action:", ["schedule", "list", "cancel"])
+            tool_inputs["action"] = st.selectbox("⏰ Scheduler Action:", ["schedule", "list", "cancel", "status"])
+            
             if tool_inputs["action"] in ["schedule", "cancel"]:
-                tool_inputs["task_name"] = st.text_input("Task name:")
+                tool_inputs["task_name"] = st.text_input("📋 Task name:", 
+                                                        placeholder="Enter descriptive task name")
+            
             if tool_inputs["action"] == "schedule":
-                tool_inputs["schedule_time"] = st.text_input("Schedule time (ISO format):", 
-                                                           value=datetime.now().isoformat())
-                tool_inputs["task_data"] = st.text_area("Task data:")
+                col_time, col_repeat = st.columns(2)
+                with col_time:
+                    tool_inputs["schedule_time"] = st.text_input("⏰ Schedule time (ISO format):", 
+                                                               value=datetime.now().isoformat())
+                with col_repeat:
+                    tool_inputs["repeat"] = st.selectbox("🔄 Repeat:", ["none", "daily", "weekly", "monthly"])
+                
+                tool_inputs["task_data"] = st.text_area("📄 Task data/parameters:", height=80)
+        
+        # Execute tool button with enhanced styling
+        if st.button("⚡ Execute Tool", use_container_width=True, type="primary"):
+            with st.spinner(f"🔄 Executing {tool_name} tool..."):
+                try:
+                    tool_function = CUSTOM_TOOLS[tool_name]
+                    
+                    # Execute tool with appropriate parameters
+                    if tool_name == "weather":
+                        result = tool_function(tool_inputs["location"], tool_inputs.get("units", "metric"))
+                    elif tool_name == "calculator":
+                        result = tool_function(tool_inputs["expression"])
+                    elif tool_name == "text_analyzer":
+                        result = tool_function(tool_inputs["text"], tool_inputs["analysis_type"])
+                    elif tool_name == "file_manager":
+                        if tool_inputs["action"] == "write":
+                            result = tool_function(tool_inputs["action"], tool_inputs["file_path"], 
+                                                 tool_inputs["content"])
+                        elif tool_inputs["action"] == "list":
+                            result = tool_function(tool_inputs["action"], tool_inputs.get("directory", "."))
+                        else:
+                            result = tool_function(tool_inputs["action"], tool_inputs["file_path"])
+                    elif tool_name == "data_converter":
+                        result = tool_function(tool_inputs["data"], tool_inputs["from_format"], 
+                                             tool_inputs["to_format"])
+                    elif tool_name == "task_scheduler":
+                        if tool_inputs["action"] == "schedule":
+                            result = tool_function(tool_inputs["action"], tool_inputs["task_name"],
+                                                 tool_inputs["schedule_time"], tool_inputs["task_data"])
+                        elif tool_inputs["action"] == "cancel":
+                            result = tool_function(tool_inputs["action"], tool_inputs["task_name"])
+                        else:
+                            result = tool_function(tool_inputs["action"])
+                    
+                    # Store result for display
+                    st.session_state.tool_result = result
+                    st.session_state.last_tool_executed = tool_name
+                    create_notification(f"✅ {tool_name} executed successfully!", "success")
+                
+                except Exception as e:
+                    create_notification(f"❌ Tool execution error: {e}", "error")
+                    st.session_state.tool_result = f"Error: {e}"
     
     with col2:
-        st.subheader("Tool Testing")
+        st.markdown("### 📊 Tool Results & Testing")
         
-        if st.button("Execute Tool", use_container_width=True):
-            try:
-                tool_function = CUSTOM_TOOLS[tool_name]
-                
-                # Execute tool with appropriate parameters
-                if tool_name == "weather":
-                    result = tool_function(tool_inputs["location"])
-                elif tool_name == "calculator":
-                    result = tool_function(tool_inputs["expression"])
-                elif tool_name == "text_analyzer":
-                    result = tool_function(tool_inputs["text"], tool_inputs["analysis_type"])
-                elif tool_name == "file_manager":
-                    if tool_inputs["action"] == "write":
-                        result = tool_function(tool_inputs["action"], tool_inputs["file_path"], 
-                                             tool_inputs["content"])
-                    else:
-                        result = tool_function(tool_inputs["action"], tool_inputs["file_path"])
-                elif tool_name == "data_converter":
-                    result = tool_function(tool_inputs["data"], tool_inputs["from_format"], 
-                                         tool_inputs["to_format"])
-                elif tool_name == "task_scheduler":
-                    if tool_inputs["action"] == "schedule":
-                        result = tool_function(tool_inputs["action"], tool_inputs["task_name"],
-                                             tool_inputs["schedule_time"], tool_inputs["task_data"])
-                    elif tool_inputs["action"] == "cancel":
-                        result = tool_function(tool_inputs["action"], tool_inputs["task_name"])
-                    else:
-                        result = tool_function(tool_inputs["action"])
-                
-                st.markdown("**Tool Result:**")
-                st.text_area("Output:", value=result, height=200, disabled=True)
+        # Display tool results
+        if 'tool_result' in st.session_state:
+            st.markdown(f"**⚡ Results from {st.session_state.get('last_tool_executed', 'Unknown')}:**")
+            format_agent_response(str(st.session_state.tool_result), "Tool Output")
             
-            except Exception as e:
-                st.error(f"Tool execution error: {e}")
+            # Export results
+            col_copy, col_download = st.columns(2)
+            
+            with col_copy:
+                if st.button("📋 Copy Result", use_container_width=True):
+                    create_notification("Result copied to clipboard!", "info")
+            
+            with col_download:
+                st.download_button(
+                    "💾 Download Result",
+                    str(st.session_state.tool_result),
+                    f"tool_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    "text/plain",
+                    use_container_width=True
+                )
+        else:
+            st.info("🔧 Execute a tool to see results here")
+            
+            # Show tool capabilities overview
+            st.markdown("**🎯 Tool Categories:**")
+            
+            tool_categories = [
+                {"category": "🌤️ External APIs", "tools": ["Weather", "News", "Maps"], "desc": "Connect to external services"},
+                {"category": "🧮 Computation", "tools": ["Calculator", "Statistics", "Math"], "desc": "Mathematical operations"},
+                {"category": "📝 Text Processing", "tools": ["Analyzer", "Translator", "Summarizer"], "desc": "Natural language processing"},
+                {"category": "📁 File Operations", "tools": ["File Manager", "CSV Parser", "JSON Handler"], "desc": "File system interactions"},
+                {"category": "🔄 Data Conversion", "tools": ["Format Converter", "Encoder", "Parser"], "desc": "Data transformation"},
+                {"category": "⏰ Automation", "tools": ["Task Scheduler", "Workflow Engine", "Notifier"], "desc": "Process automation"}
+            ]
+            
+            for category in tool_categories:
+                with st.expander(f"{category['category']} - {category['desc']}"):
+                    st.markdown(f"**Available tools:** {', '.join(category['tools'])}")
         
-        # Tool integration example
+        # Agent integration section
         st.markdown("---")
-        st.subheader("Agent Integration")
+        st.markdown("### 🤖 Agent Integration")
         
-        if st.button("Create Tool Agent", use_container_width=True):
-            try:
-                tool_agent = ToolAgent("Custom_Tool_Agent")
-                st.session_state.tool_agent = tool_agent
-                st.success("Tool agent created!")
-            except Exception as e:
-                st.error(f"Error creating tool agent: {e}")
+        create_feature_card(
+            "Tool-Enabled Agent",
+            "Create an agent with custom tool capabilities",
+            ["Multi-tool access", "Intelligent tool selection", "Error handling", "Result formatting"]
+        )
+        
+        col_create, col_test = st.columns(2)
+        
+        with col_create:
+            if st.button("🚀 Create Tool Agent", use_container_width=True, type="secondary"):
+                try:
+                    tool_agent = ToolAgent("Custom_Tool_Agent")
+                    st.session_state.tool_agent = tool_agent
+                    create_notification("🤖 Tool agent created successfully!", "success")
+                except Exception as e:
+                    create_notification(f"❌ Error creating tool agent: {e}", "error")
+        
+        with col_test:
+            test_agent_btn = st.button("🧪 Test Agent", use_container_width=True, type="secondary")
         
         if 'tool_agent' in st.session_state:
-            test_request = st.text_input("Test request:", 
-                                       placeholder="Ask the agent to use tools...")
+            st.markdown("**💬 Agent Chat Interface:**")
             
-            if st.button("Send to Agent"):
-                if test_request:
+            test_request = st.text_input("Ask the agent to use tools:", 
+                                       placeholder="e.g., 'What's the weather in Paris?' or 'Calculate 25% of 150'",
+                                       key="tool_agent_input")
+            
+            if st.button("📤 Send to Agent") or test_agent_btn:
+                if test_request or test_agent_btn:
+                    query = test_request if test_request else "What tools do you have available?"
+                    
                     try:
-                        response = st.session_state.tool_agent.process_request(test_request)
-                        st.markdown("**Agent Response:**")
-                        st.write(response)
+                        with st.spinner("🤖 Agent is processing your request..."):
+                            response = st.session_state.tool_agent.process_request(query)
+                        
+                        st.markdown("**🤖 Agent Response:**")
+                        format_agent_response(response, "Tool Agent")
+                        
+                        # Show tool usage analytics
+                        create_status_card(
+                            "📊 Tool Usage", 
+                            f"Agent used tools successfully<br>Response time: ~2.3s<br>Tools accessed: {len(CUSTOM_TOOLS)}",
+                            "info",
+                            "🎯"
+                        )
+                    
                     except Exception as e:
-                        st.error(f"Error: {e}")
+                        create_notification(f"❌ Agent error: {e}", "error")
+        
+        # Tool development guide
+        st.markdown("---")
+        with st.expander("🔨 Custom Tool Development Guide"):
+            st.markdown("""
+            **Creating Custom Tools:**
+            
+            1. **Function Definition**: Define your tool as a Python function
+            2. **Type Hints**: Use proper type annotations for parameters
+            3. **Documentation**: Add clear docstrings
+            4. **Error Handling**: Implement robust error handling
+            5. **Registration**: Register the tool with your agent
+            
+            **Example Tool:**
+            ```python
+            @Tool
+            def custom_calculator(expression: str) -> str:
+                \"\"\"Calculate mathematical expressions.\"\"\"
+                try:
+                    result = eval(expression)
+                    return f"Result: {result}"
+                except Exception as e:
+                    return f"Error: {e}"
+            ```
+            """)
+    
+    # Tool marketplace and library
+    st.markdown("---")
+    create_header("🏪 Tool Marketplace", "Discover and share custom tools with the community")
+    
+    marketplace_tabs = create_tabs_with_icons([
+        {"name": "Featured Tools", "icon": "⭐"},
+        {"name": "Recent Additions", "icon": "🆕"},
+        {"name": "Most Popular", "icon": "🔥"},
+        {"name": "Contribute", "icon": "➕"}
+    ])
+    
+    with marketplace_tabs[0]:  # Featured Tools
+        featured_tools = [
+            {"name": "🌐 Web Scraper", "author": "DevTeam", "downloads": "1.2K", "rating": "4.8"},
+            {"name": "📊 Data Visualizer", "author": "DataSci", "downloads": "856", "rating": "4.7"},
+            {"name": "🔍 Smart Search", "author": "AILabs", "downloads": "2.1K", "rating": "4.9"},
+            {"name": "📧 Email Automation", "author": "AutoTools", "downloads": "743", "rating": "4.6"}
+        ]
+        
+        create_data_table(featured_tools, "Featured Tools")
+    
+    with marketplace_tabs[1]:  # Recent Additions
+        st.markdown("**🆕 Recently Added Tools:**")
+        
+        recent_tools = [
+            "🎵 Audio Processor - Process and analyze audio files",
+            "🖼️ Image Generator - Create images from text descriptions", 
+            "🌍 Language Translator - Multi-language translation support",
+            "📱 QR Code Generator - Generate QR codes for any data",
+            "🔐 Password Generator - Create secure passwords"
+        ]
+        
+        for tool in recent_tools:
+            st.markdown(f"• {tool}")
+    
+    with marketplace_tabs[2]:  # Most Popular
+        st.markdown("**🔥 Most Downloaded This Week:**")
+        
+        # Mock popularity chart
+        popularity_data = {
+            "Tool": ["Web Scraper", "Data Viz", "Smart Search", "Email Auto", "Text Analyzer"],
+            "Downloads": [342, 289, 256, 198, 167],
+            "Category": ["Web", "Data", "Search", "Automation", "NLP"]
+        }
+        
+        df = pd.DataFrame(popularity_data)
+        fig = px.bar(df, x="Tool", y="Downloads", color="Category", 
+                    title="📈 Weekly Download Statistics")
+        fig.update_layout(height=350)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with marketplace_tabs[3]:  # Contribute
+        st.markdown("**➕ Contribute Your Tools:**")
+        
+        st.markdown("""
+        Share your custom tools with the community and help expand the ADK ecosystem.
+        
+        **Contribution Guidelines:**
+        - Well-documented code with examples
+        - Comprehensive error handling
+        - Unit tests included
+        - Clear use case descriptions
+        - Performance optimized
+        """)
+        
+        tool_name_contrib = st.text_input("🏷️ Tool Name:", placeholder="My Awesome Tool")
+        tool_description_contrib = st.text_area("📝 Description:", 
+                                               placeholder="Describe what your tool does...")
+        tool_category_contrib = st.selectbox("📂 Category:", 
+                                           ["Web", "Data", "NLP", "Automation", "Computation", "Other"])
+        
+        if st.button("📤 Submit Tool", use_container_width=True, type="primary"):
+            if tool_name_contrib and tool_description_contrib:
+                create_notification("🎉 Tool submitted for review! Thank you for contributing.", "success")
+            else:
+                create_notification("❌ Please fill in all required fields", "warning")
 
 
 def show_performance_analytics():
     """Show performance analytics and monitoring."""
-    st.header("📊 Performance Analytics")
+    create_header("📊 Performance Analytics", "Monitor, analyze, and optimize your agent systems")
     
-    # Generate mock performance data
+    # Generate enhanced mock performance data
     dates = pd.date_range(start='2025-06-01', end='2025-06-12', freq='D')
     
     performance_data = {
         'Date': dates,
-        'Requests': [50 + i*5 + (i%3)*10 for i in range(len(dates))],
-        'Response_Time': [1.2 + (i%4)*0.3 for i in range(len(dates))],
-        'Success_Rate': [95 + (i%2)*3 for i in range(len(dates))],
-        'Agent_Count': [3 + (i//3) for i in range(len(dates))]
+        'Requests': [50 + i*5 + (i%3)*10 + random.randint(-5, 15) for i in range(len(dates))],
+        'Response_Time': [1.2 + (i%4)*0.3 + random.uniform(-0.2, 0.5) for i in range(len(dates))],
+        'Success_Rate': [95 + (i%2)*3 + random.uniform(-2, 3) for i in range(len(dates))],
+        'Agent_Count': [3 + (i//3) for i in range(len(dates))],
+        'CPU_Usage': [15 + (i%5)*5 + random.randint(-3, 8) for i in range(len(dates))],
+        'Memory_Usage': [250 + i*10 + random.randint(-20, 30) for i in range(len(dates))]
     }
     
     df = pd.DataFrame(performance_data)
     
-    # Metrics overview
+    # Real-time metrics overview
+    st.markdown("### ⚡ Real-Time System Metrics")
+    
+    # Current metrics with enhanced cards
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("Total Requests", f"{df['Requests'].sum():,}", "+12%")
+        current_requests = df['Requests'].iloc[-1]
+        prev_requests = df['Requests'].iloc[-2]
+        change_requests = ((current_requests - prev_requests) / prev_requests) * 100
+        create_metric_card(
+            f"{current_requests:,}", 
+            "Daily Requests", 
+            f"{change_requests:+.1f}%", 
+            "positive" if change_requests > 0 else "negative"
+        )
     
     with col2:
-        st.metric("Avg Response Time", f"{df['Response_Time'].mean():.2f}s", "-0.3s")
+        current_response = df['Response_Time'].iloc[-1]
+        prev_response = df['Response_Time'].iloc[-2]
+        change_response = ((current_response - prev_response) / prev_response) * 100
+        create_metric_card(
+            f"{current_response:.2f}s", 
+            "Avg Response Time", 
+            f"{change_response:+.1f}%", 
+            "negative" if change_response > 0 else "positive"
+        )
     
     with col3:
-        st.metric("Success Rate", f"{df['Success_Rate'].mean():.1f}%", "+2.1%")
+        current_success = df['Success_Rate'].iloc[-1]
+        prev_success = df['Success_Rate'].iloc[-2]
+        change_success = current_success - prev_success
+        create_metric_card(
+            f"{current_success:.1f}%", 
+            "Success Rate", 
+            f"{change_success:+.1f}%", 
+            "positive" if change_success > 0 else "negative"
+        )
     
     with col4:
-        st.metric("Active Agents", f"{df['Agent_Count'].iloc[-1]}", "+1")
+        current_agents = df['Agent_Count'].iloc[-1]
+        prev_agents = df['Agent_Count'].iloc[-2]
+        change_agents = current_agents - prev_agents
+        create_metric_card(
+            f"{current_agents}", 
+            "Active Agents", 
+            f"{change_agents:+.0f}" if change_agents != 0 else "→", 
+            "positive" if change_agents > 0 else "neutral"
+        )
     
-    # Charts
+    # Performance charts with enhanced layout
     st.markdown("---")
+    st.markdown("### 📈 Performance Trends")
+    
+    # Chart selection tabs
+    chart_tabs = create_tabs_with_icons([
+        {"name": "Request Volume", "icon": "📊"},
+        {"name": "Response Times", "icon": "⚡"},
+        {"name": "Success Rates", "icon": "✅"},
+        {"name": "Resource Usage", "icon": "💻"},
+        {"name": "Comparative", "icon": "📈"}
+    ])
+    
+    with chart_tabs[0]:  # Request Volume
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            fig = px.line(df, x='Date', y='Requests', title='📊 Daily Request Volume',
+                         markers=True, line_shape="spline")
+            fig.update_layout(height=400)
+            fig.add_hline(y=df['Requests'].mean(), line_dash="dash", 
+                         annotation_text=f"Average: {df['Requests'].mean():.0f}")
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            # Request distribution
+            hourly_requests = [random.randint(2, 8) for _ in range(24)]
+            hours = list(range(24))
+            
+            fig_hourly = px.bar(x=hours, y=hourly_requests, title="⏰ Hourly Distribution")
+            fig_hourly.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig_hourly, use_container_width=True)
+        
+        # Request analytics
+        st.markdown("**📋 Request Analytics:**")
+        
+        analytics_data = [
+            {"Metric": "Total Requests", "Value": f"{df['Requests'].sum():,}", "Period": "12 days"},
+            {"Metric": "Peak Day", "Value": f"{df['Requests'].max()}", "Period": df[df['Requests'] == df['Requests'].max()]['Date'].dt.strftime('%Y-%m-%d').iloc[0]},
+            {"Metric": "Average Daily", "Value": f"{df['Requests'].mean():.0f}", "Period": "requests/day"},
+            {"Metric": "Growth Rate", "Value": f"{((df['Requests'].iloc[-1] - df['Requests'].iloc[0]) / df['Requests'].iloc[0] * 100):+.1f}%", "Period": "vs start"}
+        ]
+        
+        create_data_table(analytics_data, "Request Statistics")
+    
+    with chart_tabs[1]:  # Response Times
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            fig = px.line(df, x='Date', y='Response_Time', title='⚡ Response Time Trends',
+                         markers=True, line_shape="spline")
+            fig.update_layout(height=400)
+            fig.add_hline(y=2.0, line_dash="dash", line_color="red",
+                         annotation_text="SLA Threshold: 2.0s")
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            # Response time distribution
+            response_percentiles = {
+                "P50": df['Response_Time'].quantile(0.5),
+                "P90": df['Response_Time'].quantile(0.9),
+                "P95": df['Response_Time'].quantile(0.95),
+                "P99": df['Response_Time'].quantile(0.99)
+            }
+            
+            fig_perc = px.bar(x=list(response_percentiles.keys()), 
+                             y=list(response_percentiles.values()),
+                             title="📊 Response Time Percentiles")
+            fig_perc.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig_perc, use_container_width=True)
+        
+        # Performance status
+        avg_response = df['Response_Time'].mean()
+        if avg_response < 1.5:
+            status = "Excellent"
+            color = "success"
+        elif avg_response < 2.0:
+            status = "Good" 
+            color = "info"
+        else:
+            status = "Needs Attention"
+            color = "warning"
+        
+        create_status_card(
+            f"⚡ Performance: {status}",
+            f"Average response time: {avg_response:.2f}s<br>SLA compliance: {(df['Response_Time'] < 2.0).mean()*100:.1f}%",
+            color,
+            "🎯"
+        )
+    
+    with chart_tabs[2]:  # Success Rates
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            fig = px.line(df, x='Date', y='Success_Rate', title='✅ Success Rate Trends',
+                         markers=True, line_shape="spline")
+            fig.update_layout(height=400, yaxis_range=[90, 100])
+            fig.add_hline(y=95.0, line_dash="dash", line_color="orange",
+                         annotation_text="Target: 95%")
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            # Error breakdown (simulated)
+            error_types = ["Timeout", "API Error", "Network", "Invalid Input", "Unknown"]
+            error_counts = [5, 3, 2, 8, 1]
+            
+            fig_errors = px.pie(values=error_counts, names=error_types, 
+                               title="🔍 Error Type Distribution")
+            fig_errors.update_layout(height=400)
+            st.plotly_chart(fig_errors, use_container_width=True)
+        
+        # Success rate insights
+        success_avg = df['Success_Rate'].mean()
+        if success_avg >= 98:
+            insight = "System performing excellently with minimal errors"
+            color = "success"
+        elif success_avg >= 95:
+            insight = "Good performance, monitor for improvements"
+            color = "info"
+        else:
+            insight = "Success rate below target, investigate issues"
+            color = "warning"
+        
+        st.info(f"💡 **Insight:** {insight}")
+    
+    with chart_tabs[3]:  # Resource Usage
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig = px.line(df, x='Date', y='CPU_Usage', title='💻 CPU Usage Trends',
+                         markers=True, line_shape="spline")
+            fig.update_layout(height=350)
+            fig.add_hline(y=80, line_dash="dash", line_color="red",
+                         annotation_text="High Usage: 80%")
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            fig = px.line(df, x='Date', y='Memory_Usage', title='🧠 Memory Usage Trends',
+                         markers=True, line_shape="spline")
+            fig.update_layout(height=350)
+            fig.add_hline(y=500, line_dash="dash", line_color="red",
+                         annotation_text="Limit: 500MB")
+            st.plotly_chart(fig, use_container_width=True)
+        
+        # Resource utilization cards
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            cpu_avg = df['CPU_Usage'].mean()
+            cpu_status = "Low" if cpu_avg < 50 else "Medium" if cpu_avg < 75 else "High"
+            create_status_card(
+                f"💻 CPU: {cpu_avg:.1f}%",
+                f"Status: {cpu_status}<br>Peak: {df['CPU_Usage'].max():.1f}%",
+                "success" if cpu_avg < 50 else "warning" if cpu_avg < 75 else "error",
+                "⚡"
+            )
+        
+        with col2:
+            mem_avg = df['Memory_Usage'].mean()
+            mem_status = "Low" if mem_avg < 300 else "Medium" if mem_avg < 400 else "High"
+            create_status_card(
+                f"🧠 Memory: {mem_avg:.0f}MB",
+                f"Status: {mem_status}<br>Peak: {df['Memory_Usage'].max():.0f}MB",
+                "success" if mem_avg < 300 else "warning" if mem_avg < 400 else "error",
+                "📊"
+            )
+        
+        with col3:
+            # Calculate efficiency score
+            efficiency = 100 - (cpu_avg * 0.6 + (mem_avg/500) * 100 * 0.4)
+            create_status_card(
+                f"⚡ Efficiency: {efficiency:.0f}%",
+                f"Overall system efficiency<br>Based on resource usage",
+                "success" if efficiency > 70 else "warning" if efficiency > 50 else "error",
+                "🎯"
+            )
+    
+    with chart_tabs[4]:  # Comparative Analysis
+        st.markdown("**📊 Multi-Metric Comparison:**")
+        
+        # Normalize data for comparison
+        df_normalized = df.copy()
+        df_normalized['Requests_Norm'] = (df['Requests'] - df['Requests'].min()) / (df['Requests'].max() - df['Requests'].min()) * 100
+        df_normalized['Response_Time_Norm'] = (1 - (df['Response_Time'] - df['Response_Time'].min()) / (df['Response_Time'].max() - df['Response_Time'].min())) * 100
+        df_normalized['Success_Rate_Norm'] = df['Success_Rate']
+        
+        fig = px.line(df_normalized, x='Date', 
+                     y=['Requests_Norm', 'Response_Time_Norm', 'Success_Rate_Norm'],
+                     title='📈 Normalized Performance Comparison')
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Correlation analysis
+        correlation_data = df[['Requests', 'Response_Time', 'Success_Rate', 'CPU_Usage', 'Memory_Usage']].corr()
+        
+        fig_corr = px.imshow(correlation_data, 
+                            title="🔗 Metric Correlation Matrix",
+                            color_continuous_scale="RdBu",
+                            aspect="auto")
+        fig_corr.update_layout(height=400)
+        st.plotly_chart(fig_corr, use_container_width=True)
+    
+    # Agent-specific performance
+    st.markdown("---")
+    st.markdown("### 🤖 Agent-Specific Performance")
+    
+    # Mock agent performance data
+    agent_performance = {
+        "Agent": ["Research Agent", "Analysis Agent", "Writing Agent", "Coordinator", "Tool Agent"],
+        "Requests": [245, 189, 167, 98, 134],
+        "Avg Response (s)": [2.1, 1.8, 3.2, 0.8, 1.5],
+        "Success Rate (%)": [97.2, 98.8, 94.1, 99.5, 96.7],
+        "CPU Usage (%)": [22, 18, 35, 8, 15],
+        "Errors": [7, 2, 10, 1, 4]
+    }
+    
+    df_agents = pd.DataFrame(agent_performance)
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Agent performance comparison
+        fig = px.scatter(df_agents, x="Avg Response (s)", y="Success Rate (%)", 
+                        size="Requests", hover_name="Agent", color="Agent",
+                        title="🎯 Agent Performance Scatter Plot")
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Top performing agents
+        df_agents['Performance Score'] = (df_agents['Success Rate (%)'] * 0.4 + 
+                                        (100 - df_agents['Avg Response (s)'] * 20) * 0.3 +
+                                        (100 - df_agents['CPU Usage (%)']) * 0.3)
+        
+        df_top = df_agents.nlargest(3, 'Performance Score')[['Agent', 'Performance Score']]
+        
+        st.markdown("**🏆 Top Performers:**")
+        for i, (_, row) in enumerate(df_top.iterrows(), 1):
+            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉"
+            st.markdown(f"{medal} **{row['Agent']}** - Score: {row['Performance Score']:.1f}")
+    
+    # Performance alerts and recommendations
+    st.markdown("---")
+    st.markdown("### 🚨 Alerts & Recommendations")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        fig = px.line(df, x='Date', y='Requests', title='Daily Request Volume')
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("**⚠️ Current Alerts:**")
         
-        fig = px.line(df, x='Date', y='Success_Rate', title='Success Rate Trend')
-        st.plotly_chart(fig, use_container_width=True)
+        alerts = []
+        
+        # Check for performance issues
+        if df['Response_Time'].iloc[-1] > 2.0:
+            alerts.append({"type": "warning", "message": "Response time above SLA threshold"})
+        
+        if df['Success_Rate'].iloc[-1] < 95:
+            alerts.append({"type": "error", "message": "Success rate below target"})
+        
+        if df['CPU_Usage'].iloc[-1] > 75:
+            alerts.append({"type": "warning", "message": "High CPU usage detected"})
+        
+        if not alerts:
+            alerts.append({"type": "success", "message": "All systems operating normally"})
+        
+        for alert in alerts:
+            if alert["type"] == "success":
+                st.success(f"✅ {alert['message']}")
+            elif alert["type"] == "warning":
+                st.warning(f"⚠️ {alert['message']}")
+            elif alert["type"] == "error":
+                st.error(f"🚨 {alert['message']}")
     
     with col2:
-        fig = px.line(df, x='Date', y='Response_Time', title='Response Time Trend')
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("**💡 Optimization Recommendations:**")
         
-        fig = px.bar(df, x='Date', y='Agent_Count', title='Active Agent Count')
-        st.plotly_chart(fig, use_container_width=True)
+        recommendations = [
+            "Consider adding caching to reduce response times",
+            "Implement load balancing for high-traffic periods", 
+            "Optimize memory usage in analysis agents",
+            "Add more monitoring for proactive issue detection",
+            "Consider auto-scaling for peak demand periods"
+        ]
+        
+        for rec in recommendations[:3]:  # Show top 3
+            st.info(f"💡 {rec}")
+    
+    # Export and reporting
+    st.markdown("---")
+    st.markdown("### 📊 Export & Reporting")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📥 Download CSV Report", use_container_width=True):
+            csv_data = df.to_csv(index=False)
+            st.download_button(
+                "💾 Download Performance Data",
+                csv_data,
+                f"performance_report_{datetime.now().strftime('%Y%m%d')}.csv",
+                "text/csv"
+            )
+    
+    with col2:
+        if st.button("📈 Generate Summary", use_container_width=True):
+            create_notification("Performance summary generated successfully!", "success")
+    
+    with col3:
+        if st.button("⚙️ Configure Alerts", use_container_width=True):
+            create_notification("Alert configuration panel would open here", "info")
 
 
 def show_evaluation_framework():
     """Show evaluation framework and testing strategies."""
-    st.header("🎯 Evaluation Framework")
+    create_header("🎯 Evaluation Framework", "Comprehensive testing and validation tools for agent development")
     
     st.markdown("""
-    Comprehensive evaluation is crucial for agent development. This framework
-    provides tools for testing agent performance, reliability, and accuracy.
+    Comprehensive evaluation is crucial for reliable agent development. This framework provides
+    sophisticated tools for testing performance, reliability, accuracy, and production readiness.
     """)
     
-    # Evaluation categories
-    tab1, tab2, tab3 = st.tabs(["Functionality Tests", "Performance Tests", "Integration Tests"])
+    # Evaluation categories with enhanced tabs
+    eval_tabs = create_tabs_with_icons([
+        {"name": "Functionality Tests", "icon": "🔧"},
+        {"name": "Performance Tests", "icon": "⚡"},
+        {"name": "Integration Tests", "icon": "🔗"},
+        {"name": "Security Tests", "icon": "🛡️"},
+        {"name": "Load Testing", "icon": "📈"},
+        {"name": "Reports", "icon": "📊"}
+    ])
     
-    with tab1:
-        st.subheader("Functionality Testing")
+    with eval_tabs[0]:  # Functionality Tests
+        st.markdown("### 🔧 Functionality Testing Suite")
         
-        test_cases = [
-            {"name": "Basic Response", "description": "Agent responds to simple queries", "status": "✅ Pass"},
-            {"name": "Tool Usage", "description": "Agent correctly uses available tools", "status": "✅ Pass"},
-            {"name": "Error Handling", "description": "Agent handles errors gracefully", "status": "⚠️ Warning"},
-            {"name": "Context Retention", "description": "Agent maintains conversation context", "status": "✅ Pass"}
-        ]
+        # Test configuration
+        col1, col2 = st.columns([1, 1])
         
-        for test in test_cases:
-            col1, col2, col3 = st.columns([2, 3, 1])
-            with col1:
-                st.write(f"**{test['name']}**")
-            with col2:
-                st.write(test['description'])
-            with col3:
-                st.write(test['status'])
-    
-    with tab2:
-        st.subheader("Performance Testing")
+        with col1:
+            st.markdown("**📋 Test Configuration:**")
+            
+            selected_agent = st.selectbox("Agent to Test:", 
+                                        ["Simple Agent", "Tool Agent", "Search Agent", "Stateful Agent"])
+            
+            test_categories = st.multiselect("Test Categories:", 
+                                           ["Basic Response", "Tool Usage", "Error Handling", "Context Retention", "Edge Cases"],
+                                           default=["Basic Response", "Tool Usage"])
+            
+            test_severity = st.selectbox("Test Severity:", ["Light", "Standard", "Comprehensive", "Stress"])
+            
+            if st.button("🚀 Run Functionality Tests", use_container_width=True, type="primary"):
+                with st.spinner("🔄 Running functionality tests..."):
+                    # Simulate test execution
+                    st.session_state.func_test_results = {
+                        "total_tests": 25,
+                        "passed": 22,
+                        "failed": 2,
+                        "warnings": 1,
+                        "duration": "2.3s"
+                    }
+                    create_notification("Functionality tests completed!", "success")
         
-        # Performance metrics
-        metrics = {
-            "Metric": ["Response Time", "Throughput", "Memory Usage", "CPU Usage"],
-            "Current": ["1.2s", "45 req/min", "250MB", "15%"],
-            "Target": ["<2.0s", ">40 req/min", "<500MB", "<25%"],
-            "Status": ["✅ Good", "✅ Good", "✅ Good", "✅ Good"]
+        with col2:
+            st.markdown("**📊 Test Results:**")
+            
+            if 'func_test_results' in st.session_state:
+                results = st.session_state.func_test_results
+                
+                # Test summary cards
+                col_pass, col_fail, col_warn = st.columns(3)
+                
+                with col_pass:
+                    create_metric_card(f"{results['passed']}", "Passed", f"{(results['passed']/results['total_tests']*100):.0f}%", "positive")
+                
+                with col_fail:
+                    create_metric_card(f"{results['failed']}", "Failed", f"{(results['failed']/results['total_tests']*100):.0f}%", "negative")
+                
+                with col_warn:
+                    create_metric_card(f"{results['warnings']}", "Warnings", "→", "neutral")
+                
+                # Detailed test results
+                st.markdown("**📋 Detailed Results:**")
+                
+                test_details = [
+                    {"Test": "Basic Response", "Status": "✅ Pass", "Duration": "0.5s", "Score": "100%"},
+                    {"Test": "Tool Integration", "Status": "✅ Pass", "Duration": "1.2s", "Score": "95%"},
+                    {"Test": "Error Handling", "Status": "⚠️ Warning", "Duration": "0.3s", "Score": "85%"},
+                    {"Test": "Context Memory", "Status": "❌ Fail", "Duration": "0.8s", "Score": "60%"},
+                    {"Test": "Response Quality", "Status": "✅ Pass", "Duration": "0.7s", "Score": "92%"}
+                ]
+                
+                create_data_table(test_details, "Test Execution Results")
+            else:
+                st.info("🔄 Run tests to see detailed results here")
+        
+        # Test coverage analysis
+        st.markdown("---")
+        st.markdown("### 📊 Test Coverage Analysis")
+        
+        coverage_data = {
+            "Component": ["Core Functions", "Tool Integration", "Error Handling", "Memory Management", "API Calls"],
+            "Coverage (%)": [95, 88, 75, 82, 90],
+            "Critical": [True, True, True, False, True]
         }
         
-        df = pd.DataFrame(metrics)
-        st.table(df)
-    
-    with tab3:
-        st.subheader("Integration Testing")
+        import pandas as pd
+        df_coverage = pd.DataFrame(coverage_data)
         
-        integration_tests = [
-            "Multi-agent coordination",
-            "A2A protocol communication", 
-            "Tool chain execution",
-            "Error propagation",
-            "State synchronization"
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            import plotly.express as px
+            fig = px.bar(df_coverage, x="Component", y="Coverage (%)", 
+                        color="Critical", title="📈 Test Coverage by Component",
+                        color_discrete_map={True: "#dc3545", False: "#28a745"})
+            fig.update_layout(height=350)
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            avg_coverage = df_coverage["Coverage (%)"].mean()
+            min_coverage = df_coverage["Coverage (%)"].min()
+            
+            create_status_card(
+                f"📊 Overall Coverage: {avg_coverage:.0f}%",
+                f"Minimum: {min_coverage}%<br>Critical components covered<br>Target: 90%+",
+                "success" if avg_coverage >= 90 else "warning",
+                "🎯"
+            )
+            
+            # Coverage recommendations
+            st.markdown("**💡 Recommendations:**")
+            if min_coverage < 80:
+                st.warning("⚠️ Improve error handling coverage")
+            if avg_coverage < 90:
+                st.info("💡 Add more edge case tests")
+            else:
+                st.success("✅ Excellent test coverage!")
+    
+    with eval_tabs[1]:  # Performance Tests
+        st.markdown("### ⚡ Performance Testing Suite")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**⚙️ Performance Configuration:**")
+            
+            perf_test_type = st.selectbox("Test Type:", 
+                                        ["Response Time", "Throughput", "Memory Usage", "CPU Efficiency", "Concurrent Users"])
+            
+            load_level = st.selectbox("Load Level:", ["Light", "Normal", "Heavy", "Extreme"])
+            
+            duration = st.slider("Test Duration (minutes):", 1, 30, 5)
+            
+            if st.button("📊 Run Performance Tests", use_container_width=True, type="primary"):
+                with st.spinner("⚡ Running performance analysis..."):
+                    # Simulate performance test
+                    st.session_state.perf_results = {
+                        "avg_response": 1.2,
+                        "p95_response": 2.1,
+                        "p99_response": 3.5,
+                        "throughput": 45,
+                        "cpu_usage": 22,
+                        "memory_peak": 185
+                    }
+                    create_notification("Performance tests completed!", "success")
+        
+        with col2:
+            st.markdown("**📈 Performance Metrics:**")
+            
+            if 'perf_results' in st.session_state:
+                results = st.session_state.perf_results
+                
+                # Performance metrics
+                metric_cols = st.columns(2)
+                
+                with metric_cols[0]:
+                    create_metric_card(f"{results['avg_response']:.1f}s", "Avg Response", "-0.2s", "positive")
+                    create_metric_card(f"{results['throughput']}", "Req/min", "+5", "positive")
+                
+                with metric_cols[1]:
+                    create_metric_card(f"{results['cpu_usage']}%", "CPU Usage", "-3%", "positive")
+                    create_metric_card(f"{results['memory_peak']}MB", "Peak Memory", "+10MB", "neutral")
+                
+                # Performance benchmarks
+                st.markdown("**🎯 Benchmark Comparison:**")
+                
+                benchmark_data = [
+                    {"Metric": "Response Time", "Current": f"{results['avg_response']:.1f}s", "Target": "< 2.0s", "Status": "✅ Pass"},
+                    {"Metric": "Throughput", "Current": f"{results['throughput']}/min", "Target": "> 40/min", "Status": "✅ Pass"},
+                    {"Metric": "P99 Latency", "Current": f"{results['p99_response']:.1f}s", "Target": "< 5.0s", "Status": "✅ Pass"},
+                    {"Metric": "Memory Usage", "Current": f"{results['memory_peak']}MB", "Target": "< 500MB", "Status": "✅ Pass"}
+                ]
+                
+                create_data_table(benchmark_data, "Performance Benchmarks")
+            else:
+                st.info("📊 Run performance tests to see metrics")
+        
+        # Performance trends
+        st.markdown("---")
+        st.markdown("### 📈 Performance Trends")
+        
+        # Mock trend data
+        import random
+        dates = pd.date_range(start='2025-06-05', end='2025-06-12', freq='D')
+        trend_data = {
+            'Date': dates,
+            'Response_Time': [1.2 + random.uniform(-0.3, 0.3) for _ in range(len(dates))],
+            'Throughput': [45 + random.randint(-5, 8) for _ in range(len(dates))],
+            'Success_Rate': [98 + random.uniform(-2, 2) for _ in range(len(dates))]
+        }
+        
+        df_trends = pd.DataFrame(trend_data)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            fig = px.line(df_trends, x='Date', y='Response_Time', title='⚡ Response Time Trends',
+                         markers=True, line_shape="spline")
+            fig.add_hline(y=2.0, line_dash="dash", line_color="red", annotation_text="SLA: 2.0s")
+            fig.update_layout(height=300)
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            fig = px.line(df_trends, x='Date', y='Throughput', title='📊 Throughput Trends',
+                         markers=True, line_shape="spline")
+            fig.add_hline(y=40, line_dash="dash", line_color="orange", annotation_text="Target: 40/min")
+            fig.update_layout(height=300)
+            st.plotly_chart(fig, use_container_width=True)
+    
+    with eval_tabs[2]:  # Integration Tests
+        st.markdown("### 🔗 Integration Testing Suite")
+        
+        st.markdown("""
+        Integration tests validate how different components work together in complex scenarios.
+        """)
+        
+        # Integration test scenarios
+        test_scenarios = [
+            {
+                "name": "Multi-Agent Coordination",
+                "description": "Tests coordination between multiple agents",
+                "components": ["Coordinator", "Research Agent", "Analysis Agent"],
+                "status": "✅ Passing",
+                "last_run": "2025-06-12 10:30",
+                "duration": "45s"
+            },
+            {
+                "name": "A2A Protocol Communication", 
+                "description": "Tests cross-network agent communication",
+                "components": ["A2A Agent 1", "A2A Agent 2", "Message Router"],
+                "status": "⚠️ Warning",
+                "last_run": "2025-06-12 09:15",
+                "duration": "32s"
+            },
+            {
+                "name": "Tool Chain Execution",
+                "description": "Tests sequential tool usage and data flow",
+                "components": ["Tool Agent", "Weather API", "Calculator", "File Manager"],
+                "status": "✅ Passing",
+                "last_run": "2025-06-12 11:45",
+                "duration": "28s"
+            },
+            {
+                "name": "Error Propagation",
+                "description": "Tests how errors are handled across components",
+                "components": ["All Agents", "Error Handler", "Logger"],
+                "status": "❌ Failing",
+                "last_run": "2025-06-12 08:20",
+                "duration": "15s"
+            }
         ]
         
-        for test in integration_tests:
-            st.checkbox(test, value=True)
+        # Display integration test scenarios
+        for scenario in test_scenarios:
+            status_color = "success" if "✅" in scenario["status"] else "warning" if "⚠️" in scenario["status"] else "error"
+            
+            with st.expander(f"{scenario['status']} {scenario['name']}"):
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    st.markdown(f"**Description:** {scenario['description']}")
+                    st.markdown(f"**Components:** {', '.join(scenario['components'])}")
+                    
+                    if st.button(f"🔄 Run {scenario['name']}", key=f"run_{scenario['name']}"):
+                        with st.spinner(f"Running {scenario['name']}..."):
+                            create_notification(f"{scenario['name']} test completed!", "success")
+                
+                with col2:
+                    create_status_card(
+                        "Test Status",
+                        f"Last run: {scenario['last_run']}<br>Duration: {scenario['duration']}<br>Components: {len(scenario['components'])}",
+                        status_color,
+                        "🔍"
+                    )
+        
+        # Integration test matrix
+        st.markdown("---")
+        st.markdown("### 🧪 Integration Test Matrix")
+        
+        # Mock integration matrix
+        matrix_data = {
+            "Component A": ["Simple Agent", "Tool Agent", "Multi-Agent", "A2A Agent"],
+            "Component B": ["Tool Agent", "Search Agent", "A2A Agent", "Database"],
+            "Test Status": ["✅ Pass", "⚠️ Warning", "✅ Pass", "❌ Fail"],
+            "Compatibility": ["100%", "85%", "95%", "70%"],
+            "Issues": ["None", "Timeout occasionally", "None", "Connection errors"]
+        }
+        
+        create_data_table(matrix_data, "Component Integration Matrix")
+    
+    with eval_tabs[3]:  # Security Tests
+        st.markdown("### 🛡️ Security Testing Suite")
+        
+        st.markdown("""
+        Security testing ensures agents handle sensitive data properly and resist common attacks.
+        """)
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**🔒 Security Test Categories:**")
+            
+            security_tests = [
+                {"name": "Input Validation", "risk": "High", "status": "✅ Pass"},
+                {"name": "Authentication", "risk": "Critical", "status": "✅ Pass"},
+                {"name": "Data Encryption", "risk": "High", "status": "⚠️ Warning"},
+                {"name": "API Security", "risk": "Medium", "status": "✅ Pass"},
+                {"name": "Access Control", "risk": "High", "status": "❌ Fail"},
+                {"name": "Session Management", "risk": "Medium", "status": "✅ Pass"}
+            ]
+            
+            for test in security_tests:
+                risk_color = "error" if test["risk"] == "Critical" else "warning" if test["risk"] == "High" else "info"
+                status_icon = test["status"].split()[0]
+                
+                st.markdown(f"""
+                <div style="display: flex; align-items: center; padding: 0.5rem; margin: 0.5rem 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid {'#dc3545' if 'Critical' in test['risk'] else '#ffc107' if 'High' in test['risk'] else '#17a2b8'};">
+                    <div style="flex: 1;"><strong>{test['name']}</strong></div>
+                    <div style="margin: 0 1rem; color: #6c757d;">{test['risk']} Risk</div>
+                    <div>{test['status']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("**🎯 Security Score:**")
+            
+            # Calculate security score
+            passed_tests = sum(1 for test in security_tests if "✅" in test["status"])
+            total_tests = len(security_tests)
+            security_score = (passed_tests / total_tests) * 100
+            
+            create_metric_card(f"{security_score:.0f}%", "Security Score", "-5%", "negative" if security_score < 80 else "positive")
+            
+            # Security recommendations
+            st.markdown("**🚨 Security Alerts:**")
+            
+            alerts = [
+                {"type": "error", "message": "Access control failures detected"},
+                {"type": "warning", "message": "Data encryption needs improvement"},
+                {"type": "info", "message": "Regular security audits recommended"}
+            ]
+            
+            for alert in alerts:
+                if alert["type"] == "error":
+                    st.error(f"🚨 {alert['message']}")
+                elif alert["type"] == "warning":
+                    st.warning(f"⚠️ {alert['message']}")
+                else:
+                    st.info(f"💡 {alert['message']}")
+        
+        # Security compliance
+        st.markdown("---")
+        st.markdown("### 📋 Security Compliance")
+        
+        compliance_data = [
+            {"Standard": "OWASP Top 10", "Compliance": "85%", "Status": "⚠️ Partial", "Issues": "2 vulnerabilities"},
+            {"Standard": "ISO 27001", "Compliance": "92%", "Status": "✅ Compliant", "Issues": "Minor gaps"},
+            {"Standard": "GDPR", "Compliance": "78%", "Status": "❌ Non-compliant", "Issues": "Data handling"},
+            {"Standard": "SOC 2", "Compliance": "88%", "Status": "⚠️ Partial", "Issues": "Logging incomplete"}
+        ]
+        
+        create_data_table(compliance_data, "Security Compliance Status")
+    
+    with eval_tabs[4]:  # Load Testing
+        st.markdown("### 📈 Load Testing Suite")
+        
+        st.markdown("""
+        Load testing evaluates system behavior under various traffic conditions and identifies breaking points.
+        """)
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**⚙️ Load Test Configuration:**")
+            
+            test_type = st.selectbox("Load Test Type:", 
+                                   ["Stress Test", "Volume Test", "Spike Test", "Endurance Test"])
+            
+            concurrent_users = st.slider("Concurrent Users:", 1, 1000, 100)
+            test_duration = st.slider("Duration (minutes):", 1, 60, 10)
+            ramp_up_time = st.slider("Ramp-up Time (minutes):", 1, 30, 5)
+            
+            if st.button("🚀 Start Load Test", use_container_width=True, type="primary"):
+                with st.spinner("📈 Running load test..."):
+                    # Simulate load test
+                    st.session_state.load_test_results = {
+                        "max_users": concurrent_users,
+                        "avg_response": 2.1,
+                        "error_rate": 2.5,
+                        "throughput": 180,
+                        "breaking_point": 850
+                    }
+                    create_notification("Load test completed successfully!", "success")
+        
+        with col2:
+            st.markdown("**📊 Load Test Results:**")
+            
+            if 'load_test_results' in st.session_state:
+                results = st.session_state.load_test_results
+                
+                # Load test metrics
+                col_metric1, col_metric2 = st.columns(2)
+                
+                with col_metric1:
+                    create_metric_card(f"{results['max_users']}", "Max Users", f"+{results['max_users']//10}", "positive")
+                    create_metric_card(f"{results['error_rate']:.1f}%", "Error Rate", "+0.5%", "negative")
+                
+                with col_metric2:
+                    create_metric_card(f"{results['avg_response']:.1f}s", "Avg Response", "+0.3s", "negative")
+                    create_metric_card(f"{results['throughput']}", "Throughput", "+20", "positive")
+                
+                # Performance under load
+                st.markdown("**📈 Performance Under Load:**")
+                
+                # Simulate load curve data
+                user_counts = list(range(0, results['max_users'] + 1, results['max_users']//10))
+                response_times = [1.0 + (u/results['max_users']) * 2.5 for u in user_counts]
+                
+                fig = px.line(x=user_counts, y=response_times, 
+                             title="📊 Response Time vs User Load")
+                fig.add_hline(y=3.0, line_dash="dash", line_color="red", 
+                             annotation_text="Breaking Point")
+                fig.update_layout(height=300, 
+                                xaxis_title="Concurrent Users", 
+                                yaxis_title="Response Time (s)")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("🔄 Run load test to see performance metrics")
+        
+        # Load test history
+        st.markdown("---")
+        st.markdown("### 📊 Load Test History")
+        
+        history_data = [
+            {"Date": "2025-06-10", "Type": "Stress", "Max Users": 500, "Success Rate": "97%", "Breaking Point": "750 users"},
+            {"Date": "2025-06-08", "Type": "Volume", "Max Users": 1000, "Success Rate": "94%", "Breaking Point": "1200 users"},
+            {"Date": "2025-06-05", "Type": "Spike", "Max Users": 300, "Success Rate": "99%", "Breaking Point": "450 users"},
+            {"Date": "2025-06-03", "Type": "Endurance", "Max Users": 200, "Success Rate": "98%", "Breaking Point": "N/A"}
+        ]
+        
+        create_data_table(history_data, "Load Test History")
+    
+    with eval_tabs[5]:  # Reports
+        st.markdown("### 📊 Evaluation Reports")
+        
+        st.markdown("""
+        Comprehensive reports combining all testing results for stakeholder review and decision making.
+        """)
+        
+        # Report generation
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**📋 Report Configuration:**")
+            
+            report_type = st.selectbox("Report Type:", 
+                                     ["Executive Summary", "Technical Deep Dive", "Compliance Report", "Performance Analysis"])
+            
+            include_sections = st.multiselect("Include Sections:", 
+                                            ["Functionality", "Performance", "Security", "Integration", "Load Testing"],
+                                            default=["Functionality", "Performance", "Security"])
+            
+            report_format = st.selectbox("Output Format:", ["PDF", "HTML", "JSON", "CSV"])
+            
+            if st.button("📑 Generate Report", use_container_width=True, type="primary"):
+                with st.spinner("📊 Generating comprehensive report..."):
+                    create_notification("Report generated successfully!", "success")
+                    st.session_state.report_generated = True
+        
+        with col2:
+            st.markdown("**📈 Report Summary:**")
+            
+            if st.session_state.get('report_generated'):
+                # Overall scores
+                overall_scores = {
+                    "Functionality": 88,
+                    "Performance": 92,
+                    "Security": 76,
+                    "Integration": 85,
+                    "Load Testing": 89
+                }
+                
+                for category, score in overall_scores.items():
+                    color = "success" if score >= 90 else "warning" if score >= 75 else "error"
+                    create_status_card(
+                        f"{category}: {score}%",
+                        f"Score based on test results<br>Target: 85%+",
+                        color,
+                        "📊"
+                    )
+                
+                # Download buttons
+                st.markdown("**📥 Download Options:**")
+                
+                col_dl1, col_dl2 = st.columns(2)
+                
+                with col_dl1:
+                    if st.button("📄 Download PDF", use_container_width=True):
+                        create_notification("PDF report download started", "info")
+                
+                with col_dl2:
+                    if st.button("🔗 Share Report", use_container_width=True):
+                        create_notification("Report sharing link generated", "info")
+            else:
+                st.info("📋 Generate a report to see summary and download options")
+        
+        # Historical reporting
+        st.markdown("---")
+        st.markdown("### 📈 Historical Analysis")
+        
+        # Mock historical data
+        historical_dates = pd.date_range(start='2025-05-01', end='2025-06-12', freq='W')
+        historical_data = {
+            'Date': historical_dates,
+            'Overall_Score': [75 + i*3 + random.randint(-5, 5) for i in range(len(historical_dates))],
+            'Security_Score': [70 + i*2 + random.randint(-3, 7) for i in range(len(historical_dates))],
+            'Performance_Score': [80 + i*2 + random.randint(-4, 6) for i in range(len(historical_dates))]
+        }
+        
+        df_historical = pd.DataFrame(historical_data)
+        
+        fig = px.line(df_historical, x='Date', 
+                     y=['Overall_Score', 'Security_Score', 'Performance_Score'],
+                     title='📈 Evaluation Scores Over Time')
+        fig.update_layout(height=400, yaxis_title="Score (%)")
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Recommendations
+        st.markdown("### 💡 Recommendations")
+        
+        recommendations = [
+            {
+                "priority": "High",
+                "category": "Security",
+                "issue": "Access control implementation needed",
+                "impact": "Critical security vulnerability",
+                "effort": "2-3 weeks"
+            },
+            {
+                "priority": "Medium", 
+                "category": "Performance",
+                "issue": "Memory optimization opportunities",
+                "impact": "10-15% performance improvement",
+                "effort": "1 week"
+            },
+            {
+                "priority": "Low",
+                "category": "Integration",
+                "issue": "Enhanced error messaging",
+                "impact": "Better debugging experience",
+                "effort": "3-5 days"
+            }
+        ]
+        
+        for rec in recommendations:
+            priority_color = "error" if rec["priority"] == "High" else "warning" if rec["priority"] == "Medium" else "info"
+            
+            with st.expander(f"🔸 {rec['priority']} Priority: {rec['issue']}"):
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    st.markdown(f"**Category:** {rec['category']}")
+                    st.markdown(f"**Impact:** {rec['impact']}")
+                    st.markdown(f"**Estimated Effort:** {rec['effort']}")
+                
+                with col2:
+                    create_status_card(
+                        f"{rec['priority']} Priority",
+                        f"Category: {rec['category']}<br>Effort: {rec['effort']}",
+                        priority_color,
+                        "⚡"
+                    )
+
+
+def show_documentation():
+    """Show comprehensive project documentation."""
+    st.markdown("## 📚 Project Documentation")
+    st.markdown("Comprehensive guides, tutorials, and reference materials for mastering ADK & A2A.")
+    
+    # Documentation categories
+    doc_tabs = create_tabs_with_icons([
+        {"name": "Getting Started", "icon": "🚀"},
+        {"name": "Agent Development", "icon": "🤖"}, 
+        {"name": "Multi-Agent Systems", "icon": "🔗"},
+        {"name": "A2A Protocol", "icon": "🌐"},
+        {"name": "Best Practices", "icon": "💡"},
+        {"name": "API Reference", "icon": "📖"}
+    ])
+    
+    with doc_tabs[0]:  # Getting Started
+        st.markdown("""
+        ### 🚀 Getting Started Guide
+        
+        Welcome to your journey with the Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocols!
+        
+        #### Prerequisites
+        - Python 3.8 or higher
+        - Basic understanding of async/await patterns
+        - Familiarity with API integrations
+        
+        #### Quick Setup
+        """)
+        
+        create_code_block("""
+# 1. Clone and setup environment
+git clone <repository-url>
+cd MCP&A2A
+pip install -r requirements.txt
+
+# 2. Configure API keys
+cp .env.example .env
+# Edit .env with your API keys
+
+# 3. Launch dashboard
+streamlit run frontend/main_dashboard.py
+        """, "bash", "Environment Setup")
+        
+        st.markdown("""
+        #### First Steps
+        1. **Environment Validation**: Use the 'Check Environment' button in Overview
+        2. **Basic Agent**: Start with the Simple Agent to understand core concepts
+        3. **Tool Integration**: Explore the Tool Agent for practical applications
+        4. **Multi-Agent**: Progress to coordinated agent systems
+        5. **A2A Protocol**: Master distributed agent communication
+        """)
+    
+    with doc_tabs[1]:  # Agent Development
+        st.markdown("""
+        ### 🤖 Agent Development Guide
+        
+        Learn to build sophisticated agents using Google's ADK framework.
+        
+        #### Core Concepts
+        """)
+        
+        create_expandable_section(
+            "Agent Architecture",
+            """
+            <p><strong>Base Agent Structure:</strong></p>
+            <ul>
+                <li><strong>LLM Integration</strong>: Connect to Gemini, GPT, or other models</li>
+                <li><strong>Tool Management</strong>: Add capabilities through custom functions</li>
+                <li><strong>State Management</strong>: Handle conversation context and memory</li>
+                <li><strong>Error Handling</strong>: Robust error recovery and logging</li>
+            </ul>
+            """,
+            "🏗️"
+        )
+        
+        create_code_block("""
+from google.adk.agents import LlmAgent
+from google.adk.tools import Tool
+
+class CustomAgent(LlmAgent):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.add_tool(self.custom_function)
+    
+    @Tool
+    def custom_function(self, input_data: str) -> str:
+        \"\"\"Custom tool implementation.\"\"\"
+        # Your tool logic here
+        return f"Processed: {input_data}"
+        """, "python", "Basic Agent Example")
+        
+        create_expandable_section(
+            "Agent Types and Use Cases",
+            """
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 12px; border: 1px solid #dee2e6;">Agent Type</th>
+                    <th style="padding: 12px; border: 1px solid #dee2e6;">Best For</th>
+                    <th style="padding: 12px; border: 1px solid #dee2e6;">Example Use Cases</th>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Simple Agent</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">General conversation</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Customer support, Q&A, content generation</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Tool Agent</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Task automation</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Data processing, API calls, calculations</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Stateful Agent</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Personalized interaction</td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;">Personal assistants, learning systems</td>
+                </tr>
+            </table>
+            """,
+            "🎯"
+        )
+    
+    with doc_tabs[2]:  # Multi-Agent Systems
+        st.markdown("""
+        ### 🔗 Multi-Agent Systems Guide
+        
+        Build coordinated teams of agents that work together to solve complex problems.
+        
+        #### Key Concepts
+        """)
+        
+        create_expandable_section(
+            "Agent Coordination Patterns",
+            """
+            <p><strong>Common Coordination Patterns:</strong></p>
+            <ul>
+                <li><strong>Hierarchical</strong>: Coordinator agent manages specialized sub-agents</li>
+                <li><strong>Pipeline</strong>: Agents process data sequentially</li>
+                <li><strong>Parallel</strong>: Multiple agents work on different aspects simultaneously</li>
+                <li><strong>Market-based</strong>: Agents bid for tasks and negotiate</li>
+            </ul>
+            """,
+            "🔄"
+        )
+        
+        create_code_block("""
+class CoordinatorAgent(LlmAgent):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.research_agent = ResearchAgent("Researcher")
+        self.analysis_agent = AnalysisAgent("Analyzer") 
+        self.writing_agent = WritingAgent("Writer")
+    
+    async def execute_project(self, description: str):
+        # 1. Research phase
+        research_result = await self.research_agent.research(description)
+        
+        # 2. Analysis phase
+        analysis_result = await self.analysis_agent.analyze(research_result)
+        
+        # 3. Writing phase
+        final_result = await self.writing_agent.write(analysis_result)
+        
+        return final_result
+        """, "python", "Multi-Agent Coordinator")
+    
+    with doc_tabs[3]:  # A2A Protocol
+        st.markdown("""
+        ### 🌐 A2A Protocol Guide
+        
+        Implement distributed agent communication across networks.
+        
+        #### Protocol Overview
+        The A2A protocol enables agents to communicate across different processes, servers, or even geographic locations.
+        """)
+        
+        create_expandable_section(
+            "Message Structure",
+            """
+            <p><strong>A2A Message Format:</strong></p>
+            <pre style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+{
+  "id": "unique_message_id",
+  "type": "request|response|notification",
+  "sender_id": "agent_identifier",
+  "receiver_id": "target_agent_identifier", 
+  "payload": {
+    "action": "method_to_call",
+    "data": {...},
+    "metadata": {...}
+  },
+  "timestamp": "ISO_timestamp",
+  "correlation_id": "for_request_response_matching"
+}
+            </pre>
+            """,
+            "📨"
+        )
+        
+        create_code_block("""
+from agents.a2a import SmartA2AAgent
+
+# Create A2A enabled agents
+agent1 = SmartA2AAgent("agent_1", "ProcessorBot", port=8501)
+agent2 = SmartA2AAgent("agent_2", "AnalyzerBot", port=8502)
+
+# Start network servers
+await agent1.start_server()
+await agent2.start_server()
+
+# Send cross-network request
+response = await agent1.send_request(
+    "http://localhost:8502",
+    "analyze_data",
+    {"data": "sample_data", "format": "json"}
+)
+
+print(f"Response: {response}")
+        """, "python", "A2A Communication Example")
+    
+    with doc_tabs[4]:  # Best Practices
+        st.markdown("""
+        ### 💡 Best Practices
+        
+        #### Development Guidelines
+        """)
+        
+        best_practices = [
+            {
+                "Category": "Agent Design",
+                "Practice": "Single Responsibility",
+                "Description": "Each agent should have one clear purpose",
+                "Example": "ResearchAgent only does research, not analysis"
+            },
+            {
+                "Category": "Error Handling",
+                "Practice": "Graceful Degradation", 
+                "Description": "Agents should handle failures elegantly",
+                "Example": "Fallback to cached data when API fails"
+            },
+            {
+                "Category": "Performance",
+                "Practice": "Async Operations",
+                "Description": "Use async/await for I/O operations",
+                "Example": "Parallel API calls in multi-agent systems"
+            },
+            {
+                "Category": "Security",
+                "Practice": "Input Validation",
+                "Description": "Always validate and sanitize inputs",
+                "Example": "Type checking, range validation"
+            },
+            {
+                "Category": "Testing",
+                "Practice": "Unit Testing",
+                "Description": "Test each agent component individually",
+                "Example": "Mock external dependencies"
+            }
+        ]
+        
+        create_data_table(best_practices, "Development Best Practices")
+        
+        create_expandable_section(
+            "Production Deployment Tips",
+            """
+            <ul>
+                <li><strong>Environment Variables</strong>: Never hardcode API keys or secrets</li>
+                <li><strong>Logging</strong>: Implement comprehensive logging for debugging</li>
+                <li><strong>Monitoring</strong>: Track agent performance and health</li>
+                <li><strong>Rate Limiting</strong>: Respect API rate limits</li>
+                <li><strong>Graceful Shutdown</strong>: Handle termination signals properly</li>
+                <li><strong>Health Checks</strong>: Implement health check endpoints</li>
+            </ul>
+            """,
+            "🚀"
+        )
+    
+    with doc_tabs[5]:  # API Reference
+        st.markdown("""
+        ### 📖 API Reference
+        
+        #### Core Classes and Methods
+        """)
+        
+        api_sections = [
+            {
+                "class": "LlmAgent",
+                "description": "Base class for all LLM-powered agents",
+                "methods": [
+                    {"name": "chat(message: str)", "desc": "Send message and get response"},
+                    {"name": "add_tool(tool_func)", "desc": "Register a tool function"},
+                    {"name": "set_model(model_name)", "desc": "Configure the LLM model"}
+                ]
+            },
+            {
+                "class": "CoordinatorAgent", 
+                "description": "Manages multiple specialized agents",
+                "methods": [
+                    {"name": "execute_project(description)", "desc": "Run coordinated workflow"},
+                    {"name": "add_agent(agent)", "desc": "Add sub-agent to team"},
+                    {"name": "get_status()", "desc": "Get coordination status"}
+                ]
+            },
+            {
+                "class": "SmartA2AAgent",
+                "description": "Network-enabled agent for A2A communication", 
+                "methods": [
+                    {"name": "start_server()", "desc": "Start HTTP server for incoming requests"},
+                    {"name": "send_request(url, action, data)", "desc": "Send request to remote agent"},
+                    {"name": "register_handler(action, func)", "desc": "Register action handler"}
+                ]
+            }
+        ]
+        
+        for section in api_sections:
+            with st.expander(f"📘 {section['class']}"):
+                st.markdown(f"**Description:** {section['description']}")
+                st.markdown("**Methods:**")
+                for method in section['methods']:
+                    st.markdown(f"• `{method['name']}` - {method['desc']}")
+    
+    # Download documentation
+    st.markdown("---")
+    st.markdown("### 📥 Download Documentation")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📄 Download PDF Guide", use_container_width=True):
+            create_notification("PDF generation would be implemented here", "info")
+    
+    with col2:
+        if st.button("📁 Download Examples", use_container_width=True):
+            create_notification("Example files would be packaged here", "info")
+    
+    with col3:
+        if st.button("🔗 View Online Docs", use_container_width=True):
+            st.markdown("[Open Documentation Site](https://example.com/docs)", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
