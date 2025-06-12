@@ -1,0 +1,224 @@
+2025-06-12 11:50:12,900 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:50:12,915 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:50:12,919 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:50:12,925 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:50:12,969 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:50:12,976 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:54:19,276 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:54:19,288 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:54:19,294 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:54:19,302 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:54:19,306 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:54:19,311 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:59:17,393 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:59:17,402 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:59:17,408 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:59:17,413 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:59:17,417 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 11:59:17,424 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:17,252 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:17,262 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:17,267 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:17,274 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:17,282 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:17,287 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:11:51,382 - utils - ERROR - Error in agent chat: 'LlmAgent' object has no attribute 'run'
+2025-06-12 12:11:51,386 - utils - INFO - Function chat took 0.01 seconds
+2025-06-12 12:12:36,331 - utils - ERROR - Error in agent chat: 'LlmAgent' object has no attribute 'run'
+2025-06-12 12:12:36,337 - utils - INFO - Function chat took 0.01 seconds
+2025-06-12 12:29:42,612 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:29:42,625 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:29:42,630 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:29:42,636 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:29:42,641 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:29:42,645 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:30:39,387 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:30:39,392 - utils - INFO - Function chat took 0.01 seconds
+2025-06-12 12:33:39,469 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:33:39,478 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:33:39,483 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:33:39,488 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:33:39,491 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:33:39,495 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:33:40,515 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,519 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:33:40,524 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,528 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:33:40,531 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,534 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:33:40,537 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,541 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:33:40,544 - utils - ERROR - Error in tool agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,547 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:33:40,550 - utils - ERROR - Error in tool agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,553 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:33:40,556 - utils - ERROR - Error in tool agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,559 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:33:40,562 - utils - ERROR - Error in tool agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,565 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:33:40,569 - utils - ERROR - Error in stateful agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,572 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:33:40,576 - utils - ERROR - Error in stateful agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,580 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:33:40,584 - utils - ERROR - Error in stateful agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,587 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:33:40,591 - utils - ERROR - Error in stateful agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,595 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:33:40,598 - utils - ERROR - Error in stateful agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,602 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:33:40,607 - utils - ERROR - Error in search agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,611 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:33:40,614 - utils - ERROR - Error in search agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,618 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:33:40,622 - utils - ERROR - Error in search agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,627 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:33:40,630 - utils - ERROR - Error in search agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,635 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:33:40,640 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,644 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:33:40,649 - utils - ERROR - Error in tool agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,653 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:33:40,658 - utils - ERROR - Error in stateful agent: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:33:40,662 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:34:03,881 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:34:03,885 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:46:23,559 - utils - ERROR - Error in agent chat: Runner.run() takes 1 positional argument but 2 were given
+2025-06-12 12:46:23,563 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:55:48,326 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:55:48,335 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:55:48,340 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:55:48,346 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:55:48,350 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:55:48,354 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:54,457 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:54,466 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:54,471 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:54,476 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:54,480 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:54,485 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 12:57:55,381 - utils - ERROR - Error in agent chat: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,389 - utils - INFO - Function chat took 0.01 seconds
+2025-06-12 12:57:55,392 - utils - ERROR - Error in agent chat: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,395 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:57:55,399 - utils - ERROR - Error in agent chat: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,402 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:57:55,405 - utils - ERROR - Error in agent chat: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,408 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:57:55,423 - utils - ERROR - Error in tool agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,427 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:57:55,431 - utils - ERROR - Error in tool agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,434 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:57:55,437 - utils - ERROR - Error in tool agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,441 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:57:55,444 - utils - ERROR - Error in tool agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,447 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:57:55,451 - utils - ERROR - Error in stateful agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,455 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:57:55,458 - utils - ERROR - Error in stateful agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,461 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:57:55,464 - utils - ERROR - Error in stateful agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,468 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:57:55,471 - utils - ERROR - Error in stateful agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,474 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:57:55,478 - utils - ERROR - Error in stateful agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,481 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 12:57:55,485 - utils - ERROR - Error in search agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,489 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:57:55,493 - utils - ERROR - Error in search agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,496 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:57:55,499 - utils - ERROR - Error in search agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,502 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:57:55,505 - utils - ERROR - Error in search agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,508 - utils - INFO - Function search_and_respond took 0.00 seconds
+2025-06-12 12:57:55,512 - utils - ERROR - Error in agent chat: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,516 - utils - INFO - Function chat took 0.00 seconds
+2025-06-12 12:57:55,520 - utils - ERROR - Error in tool agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,523 - utils - INFO - Function process_request took 0.00 seconds
+2025-06-12 12:57:55,525 - utils - ERROR - Error in stateful agent: asyncio.run() cannot be called from a running event loop
+2025-06-12 12:57:55,528 - utils - INFO - Function chat_with_memory took 0.00 seconds
+2025-06-12 13:02:20,222 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:02:20,230 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:02:20,234 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:02:20,239 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:02:20,243 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:02:20,247 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:07:42,569 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:07:42,578 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:07:42,584 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:07:42,591 - google_adk.google.adk.models.registry - INFO - Updating LLM class for gemini-.* from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:07:42,596 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/endpoints\/.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:07:42,603 - google_adk.google.adk.models.registry - INFO - Updating LLM class for projects\/.+\/locations\/.+\/publishers\/google\/models\/gemini.+ from <class 'google.adk.models.google_llm.Gemini'> to <class 'google.adk.models.google_llm.Gemini'>
+2025-06-12 13:08:04,918 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: False
+2025-06-12 13:08:04,925 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+You are a helpful AI assistant. Provide clear, concise, and informative responses to user questions.
+
+You are an agent. Your internal name is "Demo_Simple_Agent".
+
+ The description about you is "A basic conversational agent for general assistance."
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"hii"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+2025-06-12 13:08:04,933 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2025-06-12 13:08:05,852 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 200 OK"
+2025-06-12 13:08:05,872 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Response:
+-----------------------------------------------------------
+Text:
+Hello! How can I help you today?
+
+-----------------------------------------------------------
+Function calls:
+
+-----------------------------------------------------------
+Raw response:
+{"candidates":[{"content":{"parts":[{"text":"Hello! How can I help you today?\n"}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.02711419463157654}],"model_version":"gemini-2.0-flash","usage_metadata":{"candidates_token_count":10,"candidates_tokens_details":[{"modality":"TEXT","token_count":10}],"prompt_token_count":52,"prompt_tokens_details":[{"modality":"TEXT","token_count":52}],"total_token_count":62},"automatic_function_calling_history":[]}
+-----------------------------------------------------------
+
+2025-06-12 13:08:05,882 - utils - INFO - Agent Demo_Simple_Agent responded to: hii...
+2025-06-12 13:08:05,890 - utils - INFO - Function chat took 2.64 seconds
+2025-06-12 13:08:35,393 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: False
+2025-06-12 13:08:35,397 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+You are a helpful AI assistant. Provide clear, concise, and informative responses to user questions.
+
+You are an agent. Your internal name is "Demo_Simple_Agent".
+
+ The description about you is "A basic conversational agent for general assistance."
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"hii"}],"role":"user"}
+{"parts":[{"text":"Hello! How can I help you today?\n"}],"role":"model"}
+{"parts":[{"text":"hii who  are you"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+2025-06-12 13:08:35,407 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2025-06-12 13:08:37,318 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 200 OK"
+2025-06-12 13:08:37,324 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Response:
+-----------------------------------------------------------
+Text:
+I am Demo_Simple_Agent, a basic conversational agent designed to provide general assistance.
+
+-----------------------------------------------------------
+Function calls:
+
+-----------------------------------------------------------
+Raw response:
+{"candidates":[{"content":{"parts":[{"text":"I am Demo_Simple_Agent, a basic conversational agent designed to provide general assistance.\n"}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.07553736159676}],"model_version":"gemini-2.0-flash","usage_metadata":{"candidates_token_count":19,"candidates_tokens_details":[{"modality":"TEXT","token_count":19}],"prompt_token_count":67,"prompt_tokens_details":[{"modality":"TEXT","token_count":67}],"total_token_count":86},"automatic_function_calling_history":[]}
+-----------------------------------------------------------
+
+2025-06-12 13:08:37,334 - utils - INFO - Agent Demo_Simple_Agent responded to: hii who  are you...
+2025-06-12 13:08:37,342 - utils - INFO - Function chat took 2.53 seconds

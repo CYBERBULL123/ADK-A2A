@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # Main ADK Dashboard Application
+  adk-dashboard:
+    build: 
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: adk-dashboard
+    ports:
+      - "8501:8501"  # Streamlit dashboard
+      - "8000:8000"  # Coordinator agent
+    environment:
+      - ENVIRONMENT=development
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - ../logs:/app/logs
+      - ../data:/app/data
+      - ../.env:/app/.env
+    networks:
+      - adk-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Weather Agent Service
+  weather-agent:
+    build: 
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: weather-agent
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=development
+      - AGENT_TYPE=weather
+      - AGENT_PORT=8001
+    command: ["python", "examples/example_03_a2a.py"]
+    volumes:
+      - ../logs:/app/logs
+    networks:
+      - adk-network
+    restart: unless-stopped
+    depends_on:
+      - adk-dashboard
+
+  # News Agent Service
+  news-agent:
+    build: 
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: news-agent
+    ports:
+      - "8002:8002"
+    environment:
+      - ENVIRONMENT=development
+      - AGENT_TYPE=news
+      - AGENT_PORT=8002
+    command: ["python", "examples/example_03_a2a.py"]
+    volumes:
+      - ../logs:/app/logs
+    networks:
+      - adk-network
+    restart: unless-stopped
+    depends_on:
+      - adk-dashboard
+
+  # Redis for agent state management (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: adk-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - adk-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: adk-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - adk-network
+    restart: unless-stopped
+    depends_on:
+      - adk-dashboard
+    profiles:
+      - production
+
+volumes:
+  redis-data:
+
+networks:
+  adk-network:
+    driver: bridge
