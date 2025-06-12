@@ -20,6 +20,8 @@ from typing import Dict, Any, List
 import sys
 import random
 from pathlib import Path
+import os
+from pathlib import Path
 import markdown
 
 # Add project root to path
@@ -52,6 +54,32 @@ st.set_page_config(
 
 # Load custom CSS
 load_css()
+
+
+def load_markdown_file(filename: str) -> str:
+    """Load markdown file from docs folder."""
+    try:
+        docs_path = Path(__file__).parent.parent / "docs" / filename
+        if docs_path.exists():
+            with open(docs_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        else:
+            return f"# Documentation Not Found\n\nThe file `{filename}` could not be located in the docs folder."
+    except Exception as e:
+        return f"# Error Loading Documentation\n\nError reading `{filename}`: {str(e)}"
+
+
+def render_markdown_content(content: str) -> None:
+    """Render markdown content with proper formatting."""
+    try:
+        # Remove the main title if it exists (we'll handle it in the UI)
+        lines = content.split('\n')
+        if lines and lines[0].startswith('# '):
+            content = '\n'.join(lines[1:])
+        
+        st.markdown(content)
+    except Exception as e:
+        st.error(f"Error rendering markdown: {e}")
 
 
 def main():
@@ -88,7 +116,7 @@ def main():
     
     with st.sidebar:
         st.markdown("""
-        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+        <div style="padding: 1rem; border-radius: 8px; margin: 1rem 0;">
             <h4 style="margin: 0 0 0.5rem 0; color: #2E86AB;">🔧 Environment Status</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -2524,341 +2552,178 @@ def show_evaluation_framework():
 
 
 def show_documentation():
-    """Show comprehensive project documentation."""
+    """Show comprehensive project documentation from markdown files."""
     st.markdown("## 📚 Project Documentation")
     st.markdown("Comprehensive guides, tutorials, and reference materials for mastering ADK & A2A.")
     
-    # Documentation categories
+    # Documentation categories mapped to actual markdown files
+    doc_files = {
+        "Getting Started": "getting-started.md",
+        "Agent Development": "agent-development.md", 
+        "Multi-Agent Systems": "multi-agent-systems.md",
+        "A2A Protocol": "a2a-protocol.md",
+        "Best Practices": "best-practices.md",
+        "Overview": "README.md"
+    }
+    
     doc_tabs = create_tabs_with_icons([
         {"name": "Getting Started", "icon": "🚀"},
         {"name": "Agent Development", "icon": "🤖"}, 
         {"name": "Multi-Agent Systems", "icon": "🔗"},
         {"name": "A2A Protocol", "icon": "🌐"},
         {"name": "Best Practices", "icon": "💡"},
-        {"name": "API Reference", "icon": "📖"}
+        {"name": "Overview", "icon": "📖"}
     ])
     
-    with doc_tabs[0]:  # Getting Started
-        st.markdown("""
-        ### 🚀 Getting Started Guide
-        
-        Welcome to your journey with the Agent Development Kit (ADK) and Agent-to-Agent (A2A) protocols!
-        
-        #### Prerequisites
-        - Python 3.8 or higher
-        - Basic understanding of async/await patterns
-        - Familiarity with API integrations
-        
-        #### Quick Setup
-        """)
-        
-        create_code_block("""
-# 1. Clone and setup environment
-git clone <repository-url>
-cd MCP&A2A
-pip install -r requirements.txt
-
-# 2. Configure API keys
-cp .env.example .env
-# Edit .env with your API keys
-
-# 3. Launch dashboard
-streamlit run frontend/main_dashboard.py
-        """, "bash", "Environment Setup")
-        
-        st.markdown("""
-        #### First Steps
-        1. **Environment Validation**: Use the 'Check Environment' button in Overview
-        2. **Basic Agent**: Start with the Simple Agent to understand core concepts
-        3. **Tool Integration**: Explore the Tool Agent for practical applications
-        4. **Multi-Agent**: Progress to coordinated agent systems
-        5. **A2A Protocol**: Master distributed agent communication
-        """)
+    # Define the tab mapping
+    tab_mapping = [
+        "Getting Started",
+        "Agent Development", 
+        "Multi-Agent Systems",
+        "A2A Protocol",
+        "Best Practices",
+        "Overview"
+    ]
     
-    with doc_tabs[1]:  # Agent Development
-        st.markdown("""
-        ### 🤖 Agent Development Guide
-        
-        Learn to build sophisticated agents using Google's ADK framework.
-        
-        #### Core Concepts
-        """)
-        
-        create_expandable_section(
-            "Agent Architecture",
-            """
-            <p><strong>Base Agent Structure:</strong></p>
-            <ul>
-                <li><strong>LLM Integration</strong>: Connect to Gemini, GPT, or other models</li>
-                <li><strong>Tool Management</strong>: Add capabilities through custom functions</li>
-                <li><strong>State Management</strong>: Handle conversation context and memory</li>
-                <li><strong>Error Handling</strong>: Robust error recovery and logging</li>
-            </ul>
-            """,
-            "🏗️"
-        )
-        
-        create_code_block("""
-from google.adk.agents import LlmAgent
-from google.adk.tools import Tool
-
-class CustomAgent(LlmAgent):
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.add_tool(self.custom_function)
+    # Render each tab with corresponding markdown content
+    for i, tab_name in enumerate(tab_mapping):
+        with doc_tabs[i]:
+            if tab_name in doc_files:
+                filename = doc_files[tab_name]
+                
+                # Load and render the markdown content
+                markdown_content = load_markdown_file(filename)
+                
+                # Add a header based on the tab name
+                if tab_name == "Getting Started":
+                    st.markdown("### 🚀 Getting Started Guide")
+                elif tab_name == "Agent Development":
+                    st.markdown("### 🤖 Agent Development Guide")
+                elif tab_name == "Multi-Agent Systems":
+                    st.markdown("### 🔗 Multi-Agent Systems Guide")
+                elif tab_name == "A2A Protocol":
+                    st.markdown("### 🌐 A2A Protocol Guide")
+                elif tab_name == "Best Practices":
+                    st.markdown("### 💡 Best Practices Guide")
+                elif tab_name == "Overview":
+                    st.markdown("### 📖 Project Overview")
+                
+                # Render the markdown content
+                render_markdown_content(markdown_content)
+                
+                # Add file information
+                docs_path = Path(__file__).parent.parent / "docs" / filename
+                if docs_path.exists():
+                    file_size = docs_path.stat().st_size
+                    modified_time = datetime.fromtimestamp(docs_path.stat().st_mtime)
+                    
+                    with st.expander("📄 Document Information"):
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("File Size", f"{file_size:,} bytes")
+                        with col2:
+                            st.metric("Last Modified", modified_time.strftime("%Y-%m-%d"))
+                        with col3:
+                            st.metric("File", filename)
+            else:
+                st.error(f"No documentation file mapped for {tab_name}")
     
-    @Tool
-    def custom_function(self, input_data: str) -> str:
-        \"\"\"Custom tool implementation.\"\"\"
-        # Your tool logic here
-        return f"Processed: {input_data}"
-        """, "python", "Basic Agent Example")
-        
-        create_expandable_section(
-            "Agent Types and Use Cases",
-            """
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr style="background: #f8f9fa;">
-                    <th style="padding: 12px; border: 1px solid #dee2e6;">Agent Type</th>
-                    <th style="padding: 12px; border: 1px solid #dee2e6;">Best For</th>
-                    <th style="padding: 12px; border: 1px solid #dee2e6;">Example Use Cases</th>
-                </tr>
-                <tr>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Simple Agent</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">General conversation</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Customer support, Q&A, content generation</td>
-                </tr>
-                <tr>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Tool Agent</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Task automation</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Data processing, API calls, calculations</td>
-                </tr>
-                <tr>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Stateful Agent</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Personalized interaction</td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;">Personal assistants, learning systems</td>
-                </tr>
-            </table>
-            """,
-            "🎯"
-        )
-    
-    with doc_tabs[2]:  # Multi-Agent Systems
-        st.markdown("""
-        ### 🔗 Multi-Agent Systems Guide
-        
-        Build coordinated teams of agents that work together to solve complex problems.
-        
-        #### Key Concepts
-        """)
-        
-        create_expandable_section(
-            "Agent Coordination Patterns",
-            """
-            <p><strong>Common Coordination Patterns:</strong></p>
-            <ul>
-                <li><strong>Hierarchical</strong>: Coordinator agent manages specialized sub-agents</li>
-                <li><strong>Pipeline</strong>: Agents process data sequentially</li>
-                <li><strong>Parallel</strong>: Multiple agents work on different aspects simultaneously</li>
-                <li><strong>Market-based</strong>: Agents bid for tasks and negotiate</li>
-            </ul>
-            """,
-            "🔄"
-        )
-        
-        create_code_block("""
-class CoordinatorAgent(LlmAgent):
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.research_agent = ResearchAgent("Researcher")
-        self.analysis_agent = AnalysisAgent("Analyzer") 
-        self.writing_agent = WritingAgent("Writer")
-    
-    async def execute_project(self, description: str):
-        # 1. Research phase
-        research_result = await self.research_agent.research(description)
-        
-        # 2. Analysis phase
-        analysis_result = await self.analysis_agent.analyze(research_result)
-        
-        # 3. Writing phase
-        final_result = await self.writing_agent.write(analysis_result)
-        
-        return final_result
-        """, "python", "Multi-Agent Coordinator")
-    
-    with doc_tabs[3]:  # A2A Protocol
-        st.markdown("""
-        ### 🌐 A2A Protocol Guide
-        
-        Implement distributed agent communication across networks.
-        
-        #### Protocol Overview
-        The A2A protocol enables agents to communicate across different processes, servers, or even geographic locations.
-        """)
-        
-        create_expandable_section(
-            "Message Structure",
-            """
-            <p><strong>A2A Message Format:</strong></p>
-            <pre style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
-{
-  "id": "unique_message_id",
-  "type": "request|response|notification",
-  "sender_id": "agent_identifier",
-  "receiver_id": "target_agent_identifier", 
-  "payload": {
-    "action": "method_to_call",
-    "data": {...},
-    "metadata": {...}
-  },
-  "timestamp": "ISO_timestamp",
-  "correlation_id": "for_request_response_matching"
-}
-            </pre>
-            """,
-            "📨"
-        )
-        
-        create_code_block("""
-from agents.a2a import SmartA2AAgent
-
-# Create A2A enabled agents
-agent1 = SmartA2AAgent("agent_1", "ProcessorBot", port=8501)
-agent2 = SmartA2AAgent("agent_2", "AnalyzerBot", port=8502)
-
-# Start network servers
-await agent1.start_server()
-await agent2.start_server()
-
-# Send cross-network request
-response = await agent1.send_request(
-    "http://localhost:8502",
-    "analyze_data",
-    {"data": "sample_data", "format": "json"}
-)
-
-print(f"Response: {response}")
-        """, "python", "A2A Communication Example")
-    
-    with doc_tabs[4]:  # Best Practices
-        st.markdown("""
-        ### 💡 Best Practices
-        
-        #### Development Guidelines
-        """)
-        
-        best_practices = [
-            {
-                "Category": "Agent Design",
-                "Practice": "Single Responsibility",
-                "Description": "Each agent should have one clear purpose",
-                "Example": "ResearchAgent only does research, not analysis"
-            },
-            {
-                "Category": "Error Handling",
-                "Practice": "Graceful Degradation", 
-                "Description": "Agents should handle failures elegantly",
-                "Example": "Fallback to cached data when API fails"
-            },
-            {
-                "Category": "Performance",
-                "Practice": "Async Operations",
-                "Description": "Use async/await for I/O operations",
-                "Example": "Parallel API calls in multi-agent systems"
-            },
-            {
-                "Category": "Security",
-                "Practice": "Input Validation",
-                "Description": "Always validate and sanitize inputs",
-                "Example": "Type checking, range validation"
-            },
-            {
-                "Category": "Testing",
-                "Practice": "Unit Testing",
-                "Description": "Test each agent component individually",
-                "Example": "Mock external dependencies"
-            }
-        ]
-        
-        create_data_table(best_practices, "Development Best Practices")
-        
-        create_expandable_section(
-            "Production Deployment Tips",
-            """
-            <ul>
-                <li><strong>Environment Variables</strong>: Never hardcode API keys or secrets</li>
-                <li><strong>Logging</strong>: Implement comprehensive logging for debugging</li>
-                <li><strong>Monitoring</strong>: Track agent performance and health</li>
-                <li><strong>Rate Limiting</strong>: Respect API rate limits</li>
-                <li><strong>Graceful Shutdown</strong>: Handle termination signals properly</li>
-                <li><strong>Health Checks</strong>: Implement health check endpoints</li>
-            </ul>
-            """,
-            "🚀"
-        )
-    
-    with doc_tabs[5]:  # API Reference
-        st.markdown("""
-        ### 📖 API Reference
-        
-        #### Core Classes and Methods
-        """)
-        
-        api_sections = [
-            {
-                "class": "LlmAgent",
-                "description": "Base class for all LLM-powered agents",
-                "methods": [
-                    {"name": "chat(message: str)", "desc": "Send message and get response"},
-                    {"name": "add_tool(tool_func)", "desc": "Register a tool function"},
-                    {"name": "set_model(model_name)", "desc": "Configure the LLM model"}
-                ]
-            },
-            {
-                "class": "CoordinatorAgent", 
-                "description": "Manages multiple specialized agents",
-                "methods": [
-                    {"name": "execute_project(description)", "desc": "Run coordinated workflow"},
-                    {"name": "add_agent(agent)", "desc": "Add sub-agent to team"},
-                    {"name": "get_status()", "desc": "Get coordination status"}
-                ]
-            },
-            {
-                "class": "SmartA2AAgent",
-                "description": "Network-enabled agent for A2A communication", 
-                "methods": [
-                    {"name": "start_server()", "desc": "Start HTTP server for incoming requests"},
-                    {"name": "send_request(url, action, data)", "desc": "Send request to remote agent"},
-                    {"name": "register_handler(action, func)", "desc": "Register action handler"}
-                ]
-            }
-        ]
-        
-        for section in api_sections:
-            with st.expander(f"📘 {section['class']}"):
-                st.markdown(f"**Description:** {section['description']}")
-                st.markdown("**Methods:**")
-                for method in section['methods']:
-                    st.markdown(f"• `{method['name']}` - {method['desc']}")
-    
-    # Download documentation
+    # Download documentation section
     st.markdown("---")
     st.markdown("### 📥 Download Documentation")
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📄 Download PDF Guide", use_container_width=True):
-            create_notification("PDF generation would be implemented here", "info")
+        if st.button("📄 Download All Docs", use_container_width=True):
+            # Create a combined markdown file
+            combined_content = "# ADK & A2A Documentation\n\n"
+            
+            for tab_name, filename in doc_files.items():
+                content = load_markdown_file(filename)
+                combined_content += f"\n\n---\n\n# {tab_name}\n\n{content}\n\n"
+            
+            st.download_button(
+                "💾 Download Combined Documentation",
+                combined_content,
+                f"adk_a2a_docs_{datetime.now().strftime('%Y%m%d')}.md",
+                "text/markdown",
+                use_container_width=True
+            )
     
     with col2:
-        if st.button("📁 Download Examples", use_container_width=True):
-            create_notification("Example files would be packaged here", "info")
+        if st.button("📁 Individual Files", use_container_width=True):
+            st.markdown("**📂 Available Documentation Files:**")
+            for tab_name, filename in doc_files.items():
+                docs_path = Path(__file__).parent.parent / "docs" / filename
+                if docs_path.exists():
+                    content = load_markdown_file(filename)
+                    st.download_button(
+                        f"📄 {tab_name}",
+                        content,
+                        filename,
+                        "text/markdown",
+                        key=f"download_{filename}"
+                    )
     
     with col3:
-        if st.button("🔗 View Online Docs", use_container_width=True):
-            st.markdown("[Open Documentation Site](https://example.com/docs)", unsafe_allow_html=True)
+        if st.button("🔗 Docs Folder", use_container_width=True):
+            docs_path = Path(__file__).parent.parent / "docs"
+            if docs_path.exists():
+                st.info(f"📁 Documentation folder: `{docs_path.absolute()}`")
+                
+                # List all markdown files in docs folder
+                md_files = list(docs_path.glob("*.md"))
+                if md_files:
+                    st.markdown("**📄 Available Files:**")
+                    for md_file in md_files:
+                        st.markdown(f"• `{md_file.name}`")
+                else:
+                    st.warning("No markdown files found in docs folder")
+            else:
+                st.error("Docs folder not found")
+    
+    # Documentation statistics
+    st.markdown("---")
+    st.markdown("### 📊 Documentation Statistics")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        total_files = len([f for f in doc_files.values() if (Path(__file__).parent.parent / "docs" / f).exists()])
+        create_metric_card(f"{total_files}", "Total Docs", f"+{total_files}", "positive")
+    
+    with col2:
+        # Calculate total word count
+        total_words = 0
+        for filename in doc_files.values():
+            content = load_markdown_file(filename)
+            total_words += len(content.split())
+        create_metric_card(f"{total_words:,}", "Total Words", f"+{total_words//10}", "positive")
+    
+    with col3:
+        # Calculate total lines
+        total_lines = 0
+        for filename in doc_files.values():
+            content = load_markdown_file(filename)
+            total_lines += len(content.split('\n'))
+        create_metric_card(f"{total_lines:,}", "Total Lines", f"+{total_lines//10}", "positive")
+    
+    with col4:
+        # Last update time
+        newest_time = datetime.min
+        for filename in doc_files.values():
+            docs_path = Path(__file__).parent.parent / "docs" / filename
+            if docs_path.exists():
+                file_time = datetime.fromtimestamp(docs_path.stat().st_mtime)
+                if file_time > newest_time:
+                    newest_time = file_time
+        
+        if newest_time != datetime.min:
+            days_ago = (datetime.now() - newest_time).days
+            create_metric_card(f"{days_ago}", "Days Since Update", "→", "neutral")
+        else:
+            create_metric_card("N/A", "Days Since Update", "→", "neutral")
 
 
 if __name__ == "__main__":
