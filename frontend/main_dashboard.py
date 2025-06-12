@@ -357,8 +357,7 @@ def show_basic_agents():
                 "success",
                 "🟢"
             )
-            
-            # Agent capabilities
+              # Agent capabilities
             capabilities = {
                 "SimpleAgent": ["💬 Natural conversation", "🧠 Basic reasoning"],
                 "SearchAgent": ["💬 Natural conversation", "🔍 Web search", "📊 Information retrieval"],
@@ -374,62 +373,59 @@ def show_basic_agents():
     with col2:
         st.markdown("### 💬 Interactive Chat")
         
-        if st.session_state.current_agent:
-            # Chat interface with history
+        if st.session_state.current_agent:            # Chat interface with history
             chat_container = create_chat_interface()
             
-            # Input area
-            col_input, col_send = st.columns([4, 1])
+            # Clear input trigger
+            if 'clear_input' not in st.session_state:
+                st.session_state.clear_input = False
             
-            with col_input:
-                user_message = st.text_input(
-                    "Enter your message:",
-                    placeholder="Ask the agent something...",
-                    key="chat_input",
-                    label_visibility="collapsed"
-                )
+            # Input area without columns - full width
+            input_key = f"chat_input_{st.session_state.get('input_counter', 0)}"
+            user_message = st.text_input(
+                "💬 Enter your message:",
+                placeholder="Ask the agent something...",
+                key=input_key
+            )
             
-            with col_send:
-                send_button = st.button("📤 Send", use_container_width=True, type="primary")
+            send_button = st.button("📤 Send Message", use_container_width=True, type="primary")
             
-            if send_button or (user_message and st.session_state.get('last_message') != user_message):
-                if user_message:
-                    st.session_state.last_message = user_message
+            if send_button and user_message:
+                # Add user message to chat
+                add_chat_message("You", user_message, "user")
+                
+                # Increment counter to clear input
+                st.session_state.input_counter = st.session_state.get('input_counter', 0) + 1
+                try:
+                    with st.spinner("Agent is thinking..."):
+                        # Get response based on agent type
+                        if hasattr(st.session_state.current_agent, 'chat'):
+                            response = st.session_state.current_agent.chat(user_message)
+                        elif hasattr(st.session_state.current_agent, 'search_and_respond'):
+                            response = st.session_state.current_agent.search_and_respond(user_message)
+                        elif hasattr(st.session_state.current_agent, 'process_request'):
+                            response = st.session_state.current_agent.process_request(user_message)
+                        elif hasattr(st.session_state.current_agent, 'chat_with_memory'):
+                            response = st.session_state.current_agent.chat_with_memory(user_message)
+                        else:
+                            response = "Error: Unknown agent method"
                     
-                    # Add user message to chat
-                    add_chat_message("You", user_message, "user")
+                    # Add agent response to chat
+                    add_chat_message(st.session_state.current_agent.name, response, "agent")
                     
-                    try:
-                        with st.spinner("Agent is thinking..."):
-                            # Get response based on agent type
-                            if hasattr(st.session_state.current_agent, 'chat'):
-                                response = st.session_state.current_agent.chat(user_message)
-                            elif hasattr(st.session_state.current_agent, 'search_and_respond'):
-                                response = st.session_state.current_agent.search_and_respond(user_message)
-                            elif hasattr(st.session_state.current_agent, 'process_request'):
-                                response = st.session_state.current_agent.process_request(user_message)
-                            elif hasattr(st.session_state.current_agent, 'chat_with_memory'):
-                                response = st.session_state.current_agent.chat_with_memory(user_message)
-                            else:
-                                response = "Error: Unknown agent method"
-                        
-                        # Add agent response to chat
-                        add_chat_message(st.session_state.current_agent.name, response, "agent")
-                        
-                        # Show conversation summary for stateful agents
-                        if hasattr(st.session_state.current_agent, 'get_conversation_summary'):
-                            summary = st.session_state.current_agent.get_conversation_summary()
-                            st.info(f"💭 Conversation Summary: {summary}")
-                        
-                        st.rerun()
+                    # Show conversation summary for stateful agents
+                    if hasattr(st.session_state.current_agent, 'get_conversation_summary'):
+                        summary = st.session_state.current_agent.get_conversation_summary()
+                        st.info(f"💭 Conversation Summary: {summary}")
                     
-                    except Exception as e:
-                        create_notification(f"Error: {e}", "error")
-                        add_chat_message("System", f"Error occurred: {e}", "agent")
-                else:
-                    create_notification("Please enter a message", "warning")
+                    st.rerun()
+                
+                except Exception as e:
+                    create_notification(f"Error: {e}", "error")
+                    add_chat_message("System", f"Error occurred: {e}", "agent")
             
             # Chat controls
+            st.markdown("---")
             col_clear, col_export = st.columns(2)
             
             with col_clear:
@@ -451,7 +447,8 @@ def show_basic_agents():
                             "💾 Download Chat History",
                             chat_data,
                             f"chat_history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                            "text/plain"
+                            "text/plain",
+                            use_container_width=True
                         )
             
             # Tips based on agent type
