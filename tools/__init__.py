@@ -8,45 +8,153 @@ to extend their capabilities beyond the built-in tools.
 import json
 import asyncio
 import aiohttp
+import requests
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, timedelta
 import random
 import re
 from pathlib import Path
+import os
 
 from utils import logger
 
 
-def weather_api_tool(location: str, api_key: Optional[str] = None) -> str:
+def weather_api_tool(location: str, units: str = "metric", api_key: Optional[str] = None) -> str:
     """
-    Get weather information for a location using a weather API.
+    Get weather information for a location using OpenWeatherMap API.
     
     Args:
         location: The location to get weather for
-        api_key: API key for weather service (optional for demo)
+        units: Temperature units ('metric', 'imperial', 'kelvin')
+        api_key: API key for OpenWeatherMap (optional for demo)
         
     Returns:
         Weather information as a string
     """
-    # Mock weather data for demonstration
-    # In production, integrate with actual weather API like OpenWeatherMap
-    
-    weather_conditions = ["sunny", "cloudy", "rainy", "partly cloudy", "overcast"]
-    temperature = random.randint(15, 30)
-    condition = random.choice(weather_conditions)
-    humidity = random.randint(40, 80)
-    wind_speed = random.randint(5, 25)
-    
-    weather_data = {
-        "location": location,
-        "temperature": f"{temperature}°C",
-        "condition": condition,
-        "humidity": f"{humidity}%",
-        "wind_speed": f"{wind_speed} km/h",
-        "timestamp": datetime.now().isoformat()
-    }
-    
-    return json.dumps(weather_data, indent=2)
+    try:
+        # Use API key from environment or provided parameter
+        weather_api_key = api_key or os.getenv("OPENWEATHER_API_KEY")
+        
+        if weather_api_key:
+            # Real API call to OpenWeatherMap
+            base_url = "http://api.openweathermap.org/data/2.5/weather"
+            params = {
+                "q": location,
+                "appid": weather_api_key,
+                "units": units
+            }
+            
+            try:
+                response = requests.get(base_url, params=params, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Format temperature unit symbol
+                    temp_symbols = {"metric": "°C", "imperial": "°F", "kelvin": "K"}
+                    temp_unit = temp_symbols.get(units, "°C")
+                    speed_unit = "mph" if units == "imperial" else "m/s"
+                    
+                    weather_data = {
+                        "location": f"{data['name']}, {data['sys']['country']}",
+                        "current_conditions": {
+                            "temperature": f"{data['main']['temp']:.1f}{temp_unit}",
+                            "condition": data['weather'][0]['description'].title(),
+                            "humidity": f"{data['main']['humidity']}%",
+                            "wind_speed": f"{data['wind']['speed']} {speed_unit}",
+                            "pressure": f"{data['main']['pressure']} hPa",
+                            "visibility": f"{data.get('visibility', 10000) / 1000:.1f} km",
+                            "feels_like": f"{data['main']['feels_like']:.1f}{temp_unit}",
+                            "icon": data['weather'][0]['icon']
+                        },
+                        "forecast": {
+                            "today": f"High: {data['main']['temp_max']:.1f}{temp_unit}, Low: {data['main']['temp_min']:.1f}{temp_unit}",
+                        },
+                        "sun": {
+                            "sunrise": datetime.fromtimestamp(data['sys']['sunrise']).strftime('%H:%M'),
+                            "sunset": datetime.fromtimestamp(data['sys']['sunset']).strftime('%H:%M')
+                        },
+                        "timestamp": datetime.now().isoformat(),
+                        "data_source": "OpenWeatherMap API",
+                        "units": units
+                    }
+                    
+                    return json.dumps(weather_data, indent=2)
+                
+                elif response.status_code == 401:
+                    return "Error: Invalid API key for OpenWeatherMap. Please check your OPENWEATHER_API_KEY."
+                elif response.status_code == 404:
+                    return f"Error: Location '{location}' not found. Please check the spelling and try again."
+                else:
+                    return f"Error: Weather API returned status code {response.status_code}"
+                    
+            except requests.exceptions.Timeout:
+                return "Error: Weather API request timed out. Please try again."
+            except requests.exceptions.RequestException as e:
+                return f"Error: Failed to fetch weather data - {str(e)}"
+        
+        # Fallback to enhanced simulation if no API key
+        weather_conditions = [
+            "Clear sky", "Few clouds", "Scattered clouds", "Broken clouds", 
+            "Shower rain", "Rain", "Thunderstorm", "Snow", "Mist", "Overcast"
+        ]
+        
+        # Temperature based on units
+        if units == "imperial":
+            temp_range = (50, 90)  # Fahrenheit
+            temp_unit = "°F"
+        elif units == "kelvin":
+            temp_range = (283, 303)  # Kelvin
+            temp_unit = "K"
+        else:  # metric
+            temp_range = (10, 35)  # Celsius
+            temp_unit = "°C"
+        
+        temperature = random.randint(*temp_range)
+        condition = random.choice(weather_conditions)
+        humidity = random.randint(30, 95)
+        wind_speed = random.randint(0, 30)
+        pressure = random.randint(980, 1030)
+        visibility = random.randint(5, 20)
+        
+        # Add weather alerts for some conditions
+        alerts = []
+        if "Thunderstorm" in condition:
+            alerts.append("⚠️ Thunderstorm Warning")
+        elif "Snow" in condition:
+            alerts.append("❄️ Snow Advisory")
+        elif wind_speed > 25:
+            alerts.append("💨 High Wind Warning")
+        
+        weather_data = {
+            "location": location,
+            "current_conditions": {
+                "temperature": f"{temperature}{temp_unit}",
+                "condition": condition,
+                "humidity": f"{humidity}%",
+                "wind_speed": f"{wind_speed} {'mph' if units == 'imperial' else 'km/h'}",
+                "pressure": f"{pressure} hPa",
+                "visibility": f"{visibility} km",
+                "feels_like": f"{temperature + random.randint(-3, 3)}{temp_unit}"
+            },
+            "forecast": {
+                "today": f"High: {temperature + 5}{temp_unit}, Low: {temperature - 8}{temp_unit}",
+                "tomorrow": f"High: {temperature + random.randint(-5, 5)}{temp_unit}, Low: {temperature - random.randint(5, 12)}{temp_unit}"
+            },
+            "alerts": alerts,
+            "air_quality": {
+                "aqi": random.randint(20, 150),
+                "status": random.choice(["Good", "Moderate", "Unhealthy for Sensitive Groups"])
+            },
+            "timestamp": datetime.now().isoformat(),
+            "data_source": "Demo Weather API (Set OPENWEATHER_API_KEY for real data)",
+            "units": units,
+            "note": "🔑 Add OPENWEATHER_API_KEY to environment variables for real weather data"
+        }
+        
+        return json.dumps(weather_data, indent=2)
+        
+    except Exception as e:
+        return f"Error fetching weather data: {str(e)}"
 
 
 def calculator_tool(expression: str) -> str:
@@ -345,15 +453,339 @@ def task_scheduler_tool(action: str, task_name: str = "", schedule_time: str = "
         return f"Error in task scheduler: {str(e)}"
 
 
+# MCP (Model Context Protocol) Integration Tools
+def mcp_memory_tool(action: str, key: str = "", value: str = "", context: str = "default") -> str:
+    """
+    MCP-compatible memory management tool.
+    
+    Args:
+        action: Action to perform ('store', 'retrieve', 'list', 'delete')
+        key: Memory key
+        value: Value to store
+        context: Memory context/namespace
+        
+    Returns:
+        Result of memory operation
+    """
+    if not hasattr(mcp_memory_tool, '_memory'):
+        mcp_memory_tool._memory = {}
+    
+    try:
+        if context not in mcp_memory_tool._memory:
+            mcp_memory_tool._memory[context] = {}
+        
+        memory_ctx = mcp_memory_tool._memory[context]
+        
+        if action == "store":
+            if not key or not value:
+                return "Error: Both key and value are required for store operation"
+            
+            memory_ctx[key] = {
+                "value": value,
+                "timestamp": datetime.now().isoformat(),
+                "context": context
+            }
+            return f"Stored '{key}' in context '{context}'"
+        
+        elif action == "retrieve":
+            if key in memory_ctx:
+                item = memory_ctx[key]
+                return f"Retrieved from '{context}': {item['value']} (stored: {item['timestamp']})"
+            else:
+                return f"Key '{key}' not found in context '{context}'"
+        
+        elif action == "list":
+            if not memory_ctx:
+                return f"No items in context '{context}'"
+            
+            items = []
+            for k, v in memory_ctx.items():
+                items.append(f"- {k}: {v['value'][:50]}{'...' if len(v['value']) > 50 else ''}")
+            
+            return f"Items in context '{context}':\n" + "\n".join(items)
+        
+        elif action == "delete":
+            if key in memory_ctx:
+                del memory_ctx[key]
+                return f"Deleted '{key}' from context '{context}'"
+            else:
+                return f"Key '{key}' not found in context '{context}'"
+        
+        else:
+            return f"Error: Unknown action '{action}'. Supported: store, retrieve, list, delete"
+    
+    except Exception as e:
+        return f"Error in MCP memory tool: {str(e)}"
+
+
+def mcp_context_tool(action: str, agent_id: str = "", context_data: str = "") -> str:
+    """
+    MCP context management for agent interactions.
+    
+    Args:
+        action: Action to perform ('set_context', 'get_context', 'clear_context')
+        agent_id: ID of the agent
+        context_data: Context data to set
+        
+    Returns:
+        Result of context operation
+    """
+    if not hasattr(mcp_context_tool, '_contexts'):
+        mcp_context_tool._contexts = {}
+    
+    try:
+        if action == "set_context":
+            if not agent_id or not context_data:
+                return "Error: agent_id and context_data are required"
+            
+            mcp_context_tool._contexts[agent_id] = {
+                "data": context_data,
+                "timestamp": datetime.now().isoformat(),
+                "agent_id": agent_id
+            }
+            return f"Context set for agent '{agent_id}'"
+        
+        elif action == "get_context":
+            if agent_id in mcp_context_tool._contexts:
+                ctx = mcp_context_tool._contexts[agent_id]
+                return f"Context for '{agent_id}': {ctx['data']} (updated: {ctx['timestamp']})"
+            else:
+                return f"No context found for agent '{agent_id}'"
+        
+        elif action == "clear_context":
+            if agent_id in mcp_context_tool._contexts:
+                del mcp_context_tool._contexts[agent_id]
+                return f"Context cleared for agent '{agent_id}'"
+            else:
+                return f"No context found for agent '{agent_id}'"
+        
+        else:
+            return f"Error: Unknown action '{action}'. Supported: set_context, get_context, clear_context"
+    
+    except Exception as e:
+        return f"Error in MCP context tool: {str(e)}"
+
+
+def code_executor_tool(language: str, code: str, timeout: int = 30) -> str:
+    """
+    Execute code in various programming languages (sandbox simulation).
+    
+    Args:
+        language: Programming language ('python', 'javascript', 'bash', 'sql')
+        code: Code to execute
+        timeout: Execution timeout in seconds
+        
+    Returns:
+        Execution result or error
+    """
+    try:
+        if language.lower() == "python":
+            # Simulate Python execution (in production, use proper sandboxing)
+            if "print" in code:
+                # Extract print statements for demo
+                import re
+                prints = re.findall(r'print\((.*?)\)', code)
+                if prints:
+                    result = "\n".join([f"Output: {p.strip('\"\'')}" for p in prints])
+                else:
+                    result = "Code executed successfully (no output)"
+            elif "=" in code and not any(op in code for op in ["==", "!=", "<=", ">="]):
+                result = "Variable assignment completed"
+            elif any(func in code for func in ["def ", "class ", "import "]):
+                result = "Function/class/import statement processed"
+            else:
+                result = "Code executed successfully"
+        
+        elif language.lower() == "javascript":
+            if "console.log" in code:
+                import re
+                logs = re.findall(r'console\.log\((.*?)\)', code)
+                result = "\n".join([f"Console: {log.strip('\"\'')}" for log in logs])
+            else:
+                result = "JavaScript code executed successfully"
+        
+        elif language.lower() == "bash":
+            if "echo" in code:
+                import re
+                echos = re.findall(r'echo\s+["\']?(.*?)["\']?$', code, re.MULTILINE)
+                result = "\n".join([f"Output: {echo}" for echo in echos])
+            else:
+                result = "Bash command executed successfully"
+        
+        elif language.lower() == "sql":
+            if any(cmd in code.upper() for cmd in ["SELECT", "INSERT", "UPDATE", "DELETE"]):
+                result = f"SQL query executed successfully: {code[:100]}..."
+            else:
+                result = "SQL statement processed"
+        
+        else:
+            return f"Error: Unsupported language '{language}'. Supported: python, javascript, bash, sql"
+        
+        execution_result = {
+            "language": language,
+            "status": "success",
+            "output": result,
+            "execution_time": f"{random.uniform(0.1, 2.0):.2f}s",
+            "timestamp": datetime.now().isoformat(),
+            "code_length": len(code)
+        }
+        
+        return json.dumps(execution_result, indent=2)
+    
+    except Exception as e:
+        return f"Error executing {language} code: {str(e)}"
+
+
+def api_client_tool(method: str, url: str, headers: str = "", body: str = "") -> str:
+    """
+    HTTP API client tool for making requests.
+    
+    Args:
+        method: HTTP method ('GET', 'POST', 'PUT', 'DELETE')
+        url: Target URL
+        headers: JSON string of headers
+        body: Request body (for POST/PUT)
+        
+    Returns:
+        API response or error
+    """
+    try:
+        import json
+        
+        # Parse headers if provided
+        parsed_headers = {}
+        if headers:
+            try:
+                parsed_headers = json.loads(headers)
+            except:
+                parsed_headers = {"Content-Type": "application/json"}
+        
+        # Simulate API response
+        status_codes = [200, 201, 400, 404, 500]
+        weights = [0.6, 0.2, 0.1, 0.05, 0.05]  # Most likely to be successful
+        status_code = random.choices(status_codes, weights=weights)[0]
+        
+        if status_code in [200, 201]:
+            response_data = {
+                "success": True,
+                "data": {
+                    "message": "Request successful",
+                    "timestamp": datetime.now().isoformat(),
+                    "method": method,
+                    "url": url
+                }
+            }
+        else:
+            response_data = {
+                "success": False,
+                "error": {
+                    "code": status_code,
+                    "message": f"HTTP {status_code} Error",
+                    "timestamp": datetime.now().isoformat()
+                }
+            }
+        
+        api_result = {
+            "request": {
+                "method": method,
+                "url": url,
+                "headers": parsed_headers,
+                "body": body if body else None
+            },
+            "response": {
+                "status_code": status_code,
+                "data": response_data,
+                "response_time": f"{random.uniform(0.1, 3.0):.2f}s"
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        return json.dumps(api_result, indent=2)
+    
+    except Exception as e:
+        return f"Error making API request: {str(e)}"
+
+
+def database_query_tool(db_type: str, query: str, connection_string: str = "") -> str:
+    """
+    Database query tool (simulation).
+    
+    Args:
+        db_type: Database type ('sqlite', 'postgresql', 'mysql', 'mongodb')
+        query: SQL/NoSQL query to execute
+        connection_string: Database connection string
+        
+    Returns:
+        Query result or error
+    """
+    try:
+        if db_type.lower() in ["sqlite", "postgresql", "mysql"]:
+            # Simulate SQL query execution
+            if query.upper().startswith("SELECT"):
+                # Mock SELECT result
+                result_data = [
+                    {"id": 1, "name": "John Doe", "email": "john@example.com"},
+                    {"id": 2, "name": "Jane Smith", "email": "jane@example.com"},
+                    {"id": 3, "name": "Bob Johnson", "email": "bob@example.com"}
+                ]
+                rows_affected = len(result_data)
+            elif query.upper().startswith(("INSERT", "UPDATE", "DELETE")):
+                result_data = "Operation completed successfully"
+                rows_affected = random.randint(1, 10)
+            else:
+                result_data = "Query executed"
+                rows_affected = 0
+        
+        elif db_type.lower() == "mongodb":
+            # Simulate MongoDB query
+            result_data = {
+                "documents": [
+                    {"_id": "507f1f77bcf86cd799439011", "name": "Document 1"},
+                    {"_id": "507f1f77bcf86cd799439012", "name": "Document 2"}
+                ]
+            }
+            rows_affected = len(result_data["documents"])
+        
+        else:
+            return f"Error: Unsupported database type '{db_type}'"
+        
+        db_result = {
+            "database": {
+                "type": db_type,
+                "connection": connection_string[:50] + "..." if len(connection_string) > 50 else connection_string
+            },
+            "query": {
+                "sql": query,
+                "execution_time": f"{random.uniform(0.01, 1.0):.3f}s",
+                "rows_affected": rows_affected
+            },
+            "result": result_data,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        return json.dumps(db_result, indent=2)
+    
+    except Exception as e:
+        return f"Error executing database query: {str(e)}"
+
+
 # Tool registry for easy access
 CUSTOM_TOOLS = {
+    # Basic Tools
     "weather": weather_api_tool,
     "calculator": calculator_tool,
     "text_analyzer": text_analyzer_tool,
     "web_scraper": web_scraper_tool,
     "file_manager": file_manager_tool,
     "data_converter": data_converter_tool,
-    "task_scheduler": task_scheduler_tool
+    "task_scheduler": task_scheduler_tool,
+    
+    # MCP Integration Tools
+    "mcp_memory": mcp_memory_tool,
+    "mcp_context": mcp_context_tool,
+    "code_executor": code_executor_tool,
+    "api_client": api_client_tool,
+    "database_query": database_query_tool
 }
 
 

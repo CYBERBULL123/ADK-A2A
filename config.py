@@ -56,12 +56,12 @@ class StreamlitConfig:
 
 class Config:
     """Main configuration class."""
-    
     def __init__(self):
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
         self.google_cloud_project = os.getenv("GOOGLE_CLOUD_PROJECT")
+        self.openweather_api_key = os.getenv("OPENWEATHER_API_KEY")
         
         # Model configurations
         self.models = {

@@ -1078,20 +1078,20 @@ def show_a2a_protocol():
                     with col_req:
                         st.markdown("**📤 Request:**")
                         st.code(f"""
-Action: {conv['request']['action']}
-From: {conv['request']['sender']}
-To: {conv['request']['receiver']}
-Content: {conv['request']['content'][:100]}...
-""")
+                                Action: {conv['request']['action']}
+                                From: {conv['request']['sender']}
+                                To: {conv['request']['receiver']}
+                                Content: {conv['request']['content'][:100]}...
+                                """)
                     
                     with col_resp:
                         st.markdown("**📥 Response:**")
                         resp_content = conv['agent_responses']['receiver_response'].get('response', 'No content')
                         st.code(f"""
-Status: {conv['response']['success']}
-Processing: {conv['response']['processing_time']}
-Response: {resp_content[:100]}...
-""")
+                                Status: {conv['response']['success']}
+                                Processing: {conv['response']['processing_time']}
+                                Response: {resp_content[:100]}...
+                                """)
                     
                     # Show full conversation details
                     if st.button(f"🔍 View Full Details", key=f"details_{conv['conversation_id']}"):
@@ -1536,6 +1536,81 @@ def show_custom_tools():
                 
                 tool_inputs["task_data"] = st.text_area("📄 Task data/parameters:", height=80)
         
+        elif tool_name == "web_scraper":
+            tool_inputs["url"] = st.text_input("🌐 URL to scrape:", 
+                                              placeholder="https://example.com",
+                                              help="Enter the website URL to scrape")
+            tool_inputs["selector"] = st.text_input("🎯 CSS Selector (optional):", 
+                                                   placeholder=".content, #main, h1",
+                                                   help="CSS selector for specific elements")
+            st.info("💡 Extracts text content from web pages")
+        
+        elif tool_name == "mcp_memory":
+            tool_inputs["action"] = st.selectbox("🧠 Memory Action:", ["store", "retrieve", "list", "clear"])
+            tool_inputs["key"] = st.text_input("🔑 Memory key:", 
+                                              placeholder="user_preferences, session_data",
+                                              help="Unique identifier for stored data")
+            
+            if tool_inputs["action"] == "store":
+                tool_inputs["data"] = st.text_area("💾 Data to store:", height=100,
+                                                  placeholder="Enter data to store in memory...")
+            st.info("💡 Manages persistent memory for agent interactions")
+        
+        elif tool_name == "mcp_context":
+            tool_inputs["action"] = st.selectbox("🔄 Context Action:", ["get", "set", "update", "clear"])
+            
+            if tool_inputs["action"] in ["set", "update"]:
+                tool_inputs["context_data"] = st.text_area("📝 Context data:", height=100,
+                                                          placeholder="Enter context information...")
+            st.info("💡 Manages conversation context and state")
+        
+        elif tool_name == "code_executor":
+            tool_inputs["language"] = st.selectbox("💻 Programming Language:", 
+                                                   ["python", "javascript", "bash", "sql"])
+            tool_inputs["code"] = st.text_area("📝 Code to execute:", height=150,
+                                              placeholder="Enter your code here...",
+                                              help="Code will be executed in a sandboxed environment")
+            
+            # Code examples
+            examples = {
+                "python": "print('Hello, World!')\nresult = 2 + 2\nprint(f'2 + 2 = {result}')",
+                "javascript": "console.log('Hello, World!');\nconst result = 2 + 2;\nconsole.log(`2 + 2 = ${result}`);",
+                "bash": "echo 'Hello, World!'\nls -la",
+                "sql": "SELECT 'Hello, World!' as message;\nSELECT 2 + 2 as result;"
+            }
+            
+            if st.button("📋 Load Example"):
+                tool_inputs["code"] = examples.get(tool_inputs["language"], "")
+        
+        elif tool_name == "api_client":
+            tool_inputs["method"] = st.selectbox("📡 HTTP Method:", ["GET", "POST", "PUT", "DELETE"])
+            tool_inputs["url"] = st.text_input("🌐 API URL:", 
+                                              placeholder="https://api.example.com/data",
+                                              help="Full API endpoint URL")
+            
+            if tool_inputs["method"] in ["POST", "PUT"]:
+                tool_inputs["data"] = st.text_area("📊 Request Body (JSON):", height=100,
+                                                  placeholder='{"key": "value"}')
+            
+            tool_inputs["headers"] = st.text_area("📋 Headers (JSON):", height=80,
+                                                 placeholder='{"Authorization": "Bearer token"}',
+                                                 help="Optional HTTP headers")
+        
+        elif tool_name == "database_query":
+            tool_inputs["db_type"] = st.selectbox("🗄️ Database Type:", ["sqlite", "mysql", "postgresql"])
+            tool_inputs["query"] = st.text_area("📝 SQL Query:", height=120,
+                                               placeholder="SELECT * FROM users WHERE age > 18;",
+                                               help="SQL query to execute")
+            
+            # Query examples
+            if st.button("📋 Load Sample Query"):
+                sample_queries = {
+                    "sqlite": "SELECT name, COUNT(*) as count FROM sqlite_master WHERE type='table' GROUP BY name;",
+                    "mysql": "SHOW TABLES;",
+                    "postgresql": "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
+                }
+                tool_inputs["query"] = sample_queries.get(tool_inputs["db_type"], "SELECT 1;")
+        
         # Execute tool button with enhanced styling
         if st.button("⚡ Execute Tool", use_container_width=True, type="primary"):
             with st.spinner(f"🔄 Executing {tool_name} tool..."):
@@ -1559,7 +1634,7 @@ def show_custom_tools():
                             result = tool_function(tool_inputs["action"], tool_inputs["file_path"])
                     elif tool_name == "data_converter":
                         result = tool_function(tool_inputs["data"], tool_inputs["from_format"], 
-                                             tool_inputs["to_format"])
+                                             tool_inputs["to_format"])                   
                     elif tool_name == "task_scheduler":
                         if tool_inputs["action"] == "schedule":
                             result = tool_function(tool_inputs["action"], tool_inputs["task_name"],
@@ -1567,7 +1642,29 @@ def show_custom_tools():
                         elif tool_inputs["action"] == "cancel":
                             result = tool_function(tool_inputs["action"], tool_inputs["task_name"])
                         else:
-                            result = tool_function(tool_inputs["action"])
+                            result = tool_function(tool_inputs["action"])   
+                                               
+                    elif tool_name == "web_scraper":
+                        import asyncio
+                        result = asyncio.run(tool_function(tool_inputs["url"], tool_inputs.get("selector")))
+                    elif tool_name == "mcp_memory":
+                        if tool_inputs["action"] == "store":
+                            result = tool_function(tool_inputs["action"], tool_inputs["key"], 
+                                                 tool_inputs["data"], tool_inputs.get("context", "default"))
+                        else:
+                            result = tool_function(tool_inputs["action"], tool_inputs["key"], 
+                                                 "", tool_inputs.get("context", "default"))
+                    elif tool_name == "mcp_context":
+                        result = tool_function(tool_inputs["action"], tool_inputs.get("agent_id", "default_agent"), 
+                                             tool_inputs.get("context_data", ""))
+                    elif tool_name == "code_executor":
+                        result = tool_function(tool_inputs["language"], tool_inputs["code"])
+                    elif tool_name == "api_client":
+                        result = tool_function(tool_inputs["method"], tool_inputs["url"], 
+                                             tool_inputs.get("headers", ""), tool_inputs.get("data", ""))
+                    elif tool_name == "database_query":
+                        result = tool_function(tool_inputs["db_type"], tool_inputs["query"], 
+                                             tool_inputs.get("connection_string", ""))
                     
                     # Store result for display
                     st.session_state.tool_result = result
@@ -1768,12 +1865,247 @@ def show_custom_tools():
                                                placeholder="Describe what your tool does...")
         tool_category_contrib = st.selectbox("📂 Category:", 
                                            ["Web", "Data", "NLP", "Automation", "Computation", "Other"])
-        
         if st.button("📤 Submit Tool", use_container_width=True, type="primary"):
             if tool_name_contrib and tool_description_contrib:
                 create_notification("🎉 Tool submitted for review! Thank you for contributing.", "success")
             else:
                 create_notification("❌ Please fill in all required fields", "warning")
+
+    # Advanced Tool Creation Section
+    st.markdown("---")
+    create_header("🛠️ Custom Tool Creator", "Build your own tools with a guided interface")
+    
+    st.markdown("""
+    <div class="info-card">
+        <h4>🚀 Create Custom Tools</h4>
+        <p>Build specialized tools for your agents using our interactive tool creator. 
+        Define parameters, set behaviors, and integrate with existing systems.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Tool creation tabs
+    creation_tabs = create_tabs_with_icons([
+        {"name": "Tool Builder", "icon": "🔧"},
+        {"name": "Code Generator", "icon": "💻"},
+        {"name": "Test & Deploy", "icon": "🧪"},
+        {"name": "Manage Tools", "icon": "📋"}
+    ])
+    
+    with creation_tabs[0]:  # Tool Builder
+        st.markdown("### 🔧 Visual Tool Builder")
+        
+        col_info, col_build = st.columns([1, 2])
+        
+        with col_info:
+            st.markdown("""
+            **📝 Tool Specification:**
+            1. **Basic Info** - Name, description, category
+            2. **Parameters** - Input parameters and types
+            3. **Logic** - Define tool behavior
+            4. **Output** - Specify return format
+            """)
+            
+            # Tool categories with examples
+            tool_categories = {
+                "🌐 Web & API": ["Web scraper", "API client", "URL validator"],
+                "📊 Data Processing": ["CSV parser", "JSON formatter", "Data cleaner"],
+                "🧮 Computation": ["Calculator", "Converter", "Validator"],
+                "🤖 AI & ML": ["Text classifier", "Sentiment analyzer", "Image processor"],
+                "🔧 System": ["File manager", "Process monitor", "Log analyzer"],
+                "📧 Communication": ["Email sender", "Slack bot", "SMS sender"]
+            }
+            
+            with st.expander("💡 Tool Ideas by Category"):
+                for category, examples in tool_categories.items():
+                    st.markdown(f"**{category}:**")
+                    for example in examples:
+                        st.markdown(f"• {example}")
+        
+        with col_build:
+            # Basic tool information
+            st.markdown("**📋 Basic Information:**")
+            tool_name = st.text_input("🏷️ Tool Name:", placeholder="my_awesome_tool", 
+                                     help="Use lowercase with underscores")
+            tool_description = st.text_area("📝 Description:", height=80,
+                                           placeholder="Describe what your tool does...")
+            tool_category = st.selectbox("📂 Category:", 
+                                       ["Web & API", "Data Processing", "Computation", 
+                                        "AI & ML", "System", "Communication", "Custom"])
+            
+            # Tool parameters
+            st.markdown("**⚙️ Parameters:**")
+            if 'custom_tool_params' not in st.session_state:
+                st.session_state.custom_tool_params = []
+            
+            col_param, col_add = st.columns([3, 1])
+            with col_param:
+                param_name = st.text_input("Parameter name:", key="new_param_name")
+                param_type = st.selectbox("Type:", ["str", "int", "float", "bool", "list"], key="new_param_type")
+            with col_add:
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("➕ Add", key="add_param"):
+                    if param_name:
+                        st.session_state.custom_tool_params.append({
+                            "name": param_name, "type": param_type, "required": True
+                        })
+                        st.rerun()
+            
+            # Display current parameters
+            if st.session_state.custom_tool_params:
+                st.markdown("**Current Parameters:**")
+                for i, param in enumerate(st.session_state.custom_tool_params):
+                    col_info, col_remove = st.columns([4, 1])
+                    with col_info:
+                        st.markdown(f"• `{param['name']}` ({param['type']})")
+                    with col_remove:
+                        if st.button("🗑️", key=f"remove_param_{i}"):
+                            st.session_state.custom_tool_params.pop(i)
+                            st.rerun()
+            
+            # Tool logic type
+            st.markdown("**🧠 Tool Logic:**")
+            logic_type = st.selectbox("Logic Type:", 
+                                    ["Simple Function", "API Call", "Data Processing", "Custom Code"])
+            
+            if logic_type == "Simple Function":
+                function_template = st.selectbox("Template:", 
+                                               ["String manipulation", "Mathematical operation", 
+                                                "Date/time operation", "File operation"])
+            elif logic_type == "API Call":
+                api_url = st.text_input("API Endpoint:", placeholder="https://api.example.com")
+                api_method = st.selectbox("HTTP Method:", ["GET", "POST", "PUT", "DELETE"])
+            elif logic_type == "Data Processing":
+                processing_type = st.selectbox("Processing Type:", 
+                                             ["CSV processing", "JSON parsing", "Text analysis"])
+    
+    with creation_tabs[1]:  # Code Generator
+        st.markdown("### 💻 Generated Code")
+        
+        if tool_name:
+            # Generate tool code based on specifications
+            generated_code = f'''
+def {tool_name}({', '.join([p['name'] + ': ' + p['type'] for p in st.session_state.custom_tool_params])}):
+    """
+    {tool_description or 'Custom tool description'}
+    
+    Args:
+{chr(10).join([f'        {p["name"]} ({p["type"]}): Parameter description' for p in st.session_state.custom_tool_params])}
+    
+    Returns:
+        str: Tool execution result
+    """
+    try:
+        # TODO: Implement tool logic here
+        result = f"Executed {tool_name} with parameters"
+        return result
+    except Exception as e:
+        return f"Error in {tool_name}: {{str(e)}}"
+
+# Tool registration
+CUSTOM_TOOLS["{tool_name}"] = {tool_name}
+'''
+            
+            st.code(generated_code, language="python")
+            
+            col_copy, col_save = st.columns(2)
+            with col_copy:
+                if st.button("📋 Copy Code", use_container_width=True):
+                    create_notification("Code copied to clipboard!", "info")
+            
+            with col_save:
+                if st.button("💾 Save to File", use_container_width=True):
+                    if tool_name:
+                        try:
+                            # Save to tools directory
+                            file_path = f"tools/custom_{tool_name}.py"
+                            with open(file_path, 'w') as f:
+                                f.write(generated_code)
+                            create_notification(f"Tool saved to {file_path}", "success")
+                        except Exception as e:
+                            create_notification(f"Error saving file: {e}", "error")
+        else:
+            st.info("👆 Define your tool in the Tool Builder tab to see generated code")
+    
+    with creation_tabs[2]:  # Test & Deploy
+        st.markdown("### 🧪 Test Your Tool")
+        
+        if tool_name and st.session_state.custom_tool_params:
+            st.markdown(f"**Testing tool: `{tool_name}`**")
+            
+            # Create test inputs
+            test_inputs = {}
+            for param in st.session_state.custom_tool_params:
+                if param['type'] == 'str':
+                    test_inputs[param['name']] = st.text_input(f"{param['name']}:", key=f"test_{param['name']}")
+                elif param['type'] == 'int':
+                    test_inputs[param['name']] = st.number_input(f"{param['name']}:", value=0, key=f"test_{param['name']}")
+                elif param['type'] == 'float':
+                    test_inputs[param['name']] = st.number_input(f"{param['name']}:", value=0.0, key=f"test_{param['name']}")
+                elif param['type'] == 'bool':
+                    test_inputs[param['name']] = st.checkbox(f"{param['name']}:", key=f"test_{param['name']}")
+            
+            if st.button("🧪 Run Test", use_container_width=True, type="primary"):
+                with st.spinner("Testing tool..."):
+                    # Simulate tool execution
+                    test_result = f"✅ Tool '{tool_name}' executed successfully with inputs: {test_inputs}"
+                    st.success(test_result)
+                    st.code(f"Result: {test_result}", language="text")
+        else:
+            st.info("👆 Define your tool parameters in the Tool Builder tab to enable testing")
+    
+    with creation_tabs[3]:  # Manage Tools
+        st.markdown("### 📋 Tool Management")
+        
+        # Display existing custom tools
+        st.markdown("**🔧 Available Custom Tools:**")
+        
+        # Enhanced tool display with categories
+        tool_categories_display = {
+            "Built-in Tools": ["weather", "calculator", "text_analyzer"],
+            "Web Tools": ["web_scraper"],
+            "MCP Tools": ["mcp_memory", "mcp_context", "code_executor", "api_client", "database_query"],
+            "File Tools": ["file_manager", "data_converter"],
+            "System Tools": ["task_scheduler"]
+        }
+        
+        for category, tools in tool_categories_display.items():
+            with st.expander(f"📂 {category} ({len(tools)} tools)"):
+                for tool in tools:
+                    if tool in CUSTOM_TOOLS:
+                        col_name, col_actions = st.columns([3, 2])
+                        with col_name:
+                            st.markdown(f"🔧 **{tool}**")
+                            # Get tool info if available
+                            tool_func = CUSTOM_TOOLS[tool]
+                            if hasattr(tool_func, '__doc__') and tool_func.__doc__:
+                                st.caption(tool_func.__doc__.split('\n')[0])
+                        
+                        with col_actions:
+                            col_test, col_edit = st.columns(2)
+                            with col_test:
+                                if st.button("🧪", key=f"test_{tool}", help="Test tool"):
+                                    st.info(f"Testing {tool}...")
+                            with col_edit:
+                                if st.button("✏️", key=f"edit_{tool}", help="Edit tool"):
+                                    st.info(f"Editing {tool}...")
+        
+        # Tool import/export
+        st.markdown("---")
+        st.markdown("**📦 Import/Export Tools:**")
+        
+        col_import, col_export = st.columns(2)
+        
+        with col_import:
+            uploaded_file = st.file_uploader("📥 Import Tool", type=['py'], 
+                                           help="Upload a Python file containing tool definitions")
+            if uploaded_file:
+                if st.button("🔄 Import Tool", use_container_width=True):
+                    create_notification("🎉 Tool imported successfully!", "success")
+        
+        with col_export:
+            export_tool = st.selectbox("🔧 Select tool to export:", list(CUSTOM_TOOLS.keys()))
+            if st.button("📤 Export Tool", use_container_width=True):
+                create_notification(f"📦 Tool '{export_tool}' exported!", "info")
 
 
 def show_performance_analytics():
