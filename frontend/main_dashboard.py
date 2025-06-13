@@ -2867,9 +2867,9 @@ def show_evaluation_framework():
                 status_icon = test["status"].split()[0]
                 
                 st.markdown(f"""
-                <div style="display: flex; align-items: center; padding: 0.5rem; margin: 0.5rem 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid {'#dc3545' if 'Critical' in test['risk'] else '#ffc107' if 'High' in test['risk'] else '#17a2b8'};">
+                <div style="display: flex; align-items: center; padding: 0.5rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid {'#dc3545' if 'Critical' in test['risk'] else '#ffc107' if 'High' in test['risk'] else '#17a2b8'};">
                     <div style="flex: 1;"><strong>{test['name']}</strong></div>
-                    <div style="margin: 0 1rem; color: #6c757d;">{test['risk']} Risk</div>
+                    <div style="margin: 0 1rem;">{test['risk']} Risk</div>
                     <div>{test['status']}</div>
                 </div>
                 """, unsafe_allow_html=True)
