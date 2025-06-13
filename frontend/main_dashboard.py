@@ -39,7 +39,7 @@ from frontend.ui_utils import (
     add_chat_message, clear_chat_history, create_progress_indicator,
     create_agent_network_visualization, create_code_block, create_expandable_section,
     create_data_table, create_notification, format_timestamp, create_tabs_with_icons,
-    format_agent_response, create_network_visualization
+    format_agent_response, display_agent_response, create_network_visualization
 )
 
 
@@ -775,7 +775,7 @@ def show_multi_agent_systems():
             # Final result with better formatting
             if result["success"]:
                 st.markdown("**📋 Final Result:**")
-                format_agent_response(result["final_result"], "Project Output")
+                display_agent_response(result["final_result"], "Project Output")
             
             # Show forced research result if available
             if 'force_research_result' in st.session_state:
@@ -784,7 +784,7 @@ def show_multi_agent_systems():
                 research_result = st.session_state.force_research_result
                 if research_result.success:
                     create_status_card("🔍 Research Completed", "Enhanced research phase successful", "success", "✨")
-                    format_agent_response(research_result.result, "Research Output")
+                    display_agent_response(research_result.result, "Research Output")
                 else:
                     create_status_card("❌ Research Failed", f"Research error: {research_result.result}", "error", "⚠️")
         
@@ -975,7 +975,7 @@ def show_a2a_protocol():
                         
                         # Display message details
                         st.markdown("**📋 Sent Message Details:**")
-                        format_agent_response(json.dumps(message_obj, indent=2), "A2A Message")
+                        display_agent_response(json.dumps(message_obj, indent=2), "A2A Message")
                         
                         # Store in session for history
                         if 'a2a_message_history' not in st.session_state:
@@ -1392,7 +1392,7 @@ def show_custom_tools():
         # Display tool results
         if 'tool_result' in st.session_state:
             st.markdown(f"**⚡ Results from {st.session_state.get('last_tool_executed', 'Unknown')}:**")
-            format_agent_response(str(st.session_state.tool_result), "Tool Output")
+            display_agent_response(str(st.session_state.tool_result), "Tool Output")
             
             # Export results
             col_copy, col_download = st.columns(2)
@@ -1468,7 +1468,7 @@ def show_custom_tools():
                             response = st.session_state.tool_agent.process_request(query)
                         
                         st.markdown("**🤖 Agent Response:**")
-                        format_agent_response(response, "Tool Agent")
+                        display_agent_response(response, "Tool Agent")
                         
                         # Show tool usage analytics
                         create_status_card(
