@@ -1443,7 +1443,7 @@ def tools_interface():
     st.markdown("""
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                 padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">
-        <h1 style="color: white; text-align: center; margin: 0;">🛠️ Advanced Tools Laboratory</h1>
+        <h1 style="text-align: center; margin: 0;">🛠️ Advanced Tools Laboratory</h1>
         <p style="color: white; text-align: center; opacity: 0.9; margin: 0.5rem 0 0 0;">
             Code execution, tool testing, and custom tool creation
         </p>
@@ -1738,21 +1738,21 @@ def tools_interface():
                 "Python Function:",
                 height=300,
                 placeholder="""def my_tool(param1: str, param2: int = 10) -> str:
-    \"\"\"
-    Your tool description here.
-    
-    Args:
-        param1: Description of parameter 1
-        param2: Description of parameter 2
-    
-    Returns:
-        Tool result as string
-    \"\"\"
-    # Your tool logic here
-    result = f"Processing {param1} with value {param2}"
-    return result""",
-                help="Write a Python function that will become your tool"
-            )
+                                \"\"\"
+                                Your tool description here.
+                                
+                                Args:
+                                    param1: Description of parameter 1
+                                    param2: Description of parameter 2
+                                
+                                Returns:
+                                    Tool result as string
+                                \"\"\"
+                                # Your tool logic here
+                                result = f"Processing {param1} with value {param2}"
+                                return result""",
+                                help="Write a Python function that will become your tool"
+                                )
             
             # Validation
             if tool_code:
