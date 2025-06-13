@@ -35,7 +35,17 @@ from utils import validate_environment, display_welcome, console
 from agents.basic import create_agent, SimpleAgent, SearchAgent, ToolAgent, StatefulAgent
 from agents.multi_agent import CoordinatorAgent, WorkflowOrchestrator, EXAMPLE_WORKFLOWS
 from agents.a2a import SmartA2AAgent, A2AOrchestrator
-from tools import CUSTOM_TOOLS, get_tool_info, list_user_tools
+
+# Import tools with error handling
+try:
+    from tools import CUSTOM_TOOLS, get_tool_info, list_user_tools
+except ImportError as e:
+    console.print(f"[yellow]Warning: Could not import some tools functions: {e}[/yellow]")
+    from tools import CUSTOM_TOOLS, get_tool_info
+    
+    # Define a fallback for list_user_tools if it's not available
+    def list_user_tools():
+        return []
 from frontend.ui_utils import (
     load_css, create_header, create_feature_card, create_status_card,
     create_metric_card, display_agent_response, create_chat_interface,

@@ -1050,3 +1050,32 @@ def get_all_tools():
     for name, info in USER_CREATED_TOOLS.items():
         all_tools[name] = info["function"]
     return all_tools
+
+
+# Export commonly used functions
+__all__ = [
+    'CUSTOM_TOOLS',
+    'USER_CREATED_TOOLS', 
+    'weather_api_tool',
+    'calculator_tool',
+    'text_analyzer_tool',
+    'web_scraper_tool',
+    'file_manager_tool',
+    'data_converter_tool',
+    'task_scheduler_tool',
+    'mcp_memory_tool',
+    'mcp_context_tool',
+    'code_executor_tool',
+    'api_client_tool',
+    'database_query_tool',
+    'create_custom_tool',
+    'execute_custom_tool',
+    'list_user_tools',
+    'delete_user_tool',
+    'get_user_tool_code',
+    'validate_tool_code',
+    'get_tool',
+    'list_available_tools',
+    'get_tool_info',
+    'get_all_tools'
+]
