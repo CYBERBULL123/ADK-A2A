@@ -270,7 +270,7 @@ class SmartA2AAgent(A2AAgent):
         self.register_handler("chat", self._handle_chat)
         self.register_handler("analyze", self._handle_analyze)
         self.register_handler("collaborate", self._handle_collaborate)
-    
+
     def _extract_response(self, events) -> str:
         """Extract text response from ADK events."""
         for event in events:
@@ -279,6 +279,57 @@ class SmartA2AAgent(A2AAgent):
                     if hasattr(part, 'text'):
                         return part.text
         return "No response generated"
+    
+    def process_a2a_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process A2A message and return response for UI demonstration."""
+        try:
+            action = message_data.get("action", "chat")
+            content = message_data.get("content", "")
+            sender = message_data.get("sender", "unknown")
+            
+            # Process based on action type
+            if action == "chat":
+                prompt = f"Agent {sender} says: {content}. Please respond naturally."
+            elif action == "analyze":
+                prompt = f"Please analyze this request from {sender}: {content}"
+            elif action == "collaborate":
+                prompt = f"Agent {sender} wants to collaborate on: {content}. How can you help?"
+            elif action == "ping":
+                return {
+                    "response": f"Pong from {self.name}! I'm online and ready.",
+                    "status": "active",
+                    "agent": self.name,
+                    "timestamp": datetime.now().isoformat()
+                }
+            elif action == "data_transfer":
+                prompt = f"Agent {sender} sent data: {content}. Please acknowledge and summarize."
+            elif action == "task_request":
+                prompt = f"Agent {sender} requests task: {content}. Please respond with your capability to handle this."
+            else:
+                prompt = f"Agent {sender} sent: {content}. Action type: {action}. Please respond appropriately."
+            
+            # Run the LLM to generate response
+            events = list(self.runner.run(prompt))
+            response = self._extract_response(events)
+            
+            return {
+                "response": response,
+                "action": action,
+                "processed_by": self.name,
+                "original_sender": sender,
+                "timestamp": datetime.now().isoformat(),
+                "success": True
+            }
+            
+        except Exception as e:
+            return {
+                "response": f"Error processing message: {str(e)}",
+                "action": message_data.get("action", "unknown"),
+                "processed_by": self.name,
+                "error": True,
+                "timestamp": datetime.now().isoformat(),
+                "success": False
+            }
     
     async def _handle_chat(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle chat requests using AI."""
