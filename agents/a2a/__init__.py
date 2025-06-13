@@ -245,6 +245,7 @@ class A2AAgent:
 
 class SmartA2AAgent(A2AAgent):
     """A2A agent with AI capabilities using ADK."""
+    
     def __init__(self, agent_id: str, name: str, model: str = None, port: int = None):
         super().__init__(agent_id, name, port)
         
@@ -293,7 +294,7 @@ class SmartA2AAgent(A2AAgent):
             except Exception as e:
                 logger.error(f"Failed to initialize session: {e}")
                 raise
-
+    
     def process_a2a_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process A2A message and return response for UI demonstration."""
         try:
@@ -301,32 +302,23 @@ class SmartA2AAgent(A2AAgent):
             content = message_data.get("content", "")
             sender = message_data.get("sender", "unknown")
             
-            # Process based on action type
-            if action == "chat":
-                prompt = f"Agent {sender} says: {content}. Please respond naturally."
-            elif action == "analyze":
-                prompt = f"Please analyze this request from {sender}: {content}"
-            elif action == "collaborate":
-                prompt = f"Agent {sender} wants to collaborate on: {content}. How can you help?"
-            elif action == "ping":
+            # Handle ping quickly without AI
+            if action == "ping":
                 return {
                     "response": f"Pong from {self.name}! I'm online and ready.",
                     "status": "active",
                     "agent": self.name,
                     "timestamp": datetime.now().isoformat()
                 }
-            elif action == "data_transfer":
-                prompt = f"Agent {sender} sent data: {content}. Please acknowledge and summarize."
-            elif action == "task_request":
-                prompt = f"Agent {sender} requests task: {content}. Please respond with your capability to handle this."
-            else:
-                prompt = f"Agent {sender} sent: {content}. Action type: {action}. Please respond appropriately."
             
-            # Run the LLM to generate response using async pattern
+            # For all other actions, use AI processing
             try:
-                response = asyncio.run(self._process_message_async(prompt))
-            except Exception as llm_error:
-                response = f"I'm {self.name}, an AI agent. I encountered an issue processing your request: {llm_error}"
+                # Process using async runner like basic agents
+                response = asyncio.run(self._process_message_async(content, action, sender))
+            except Exception as ai_error:
+                # Fallback to static response if AI fails
+                logger.error(f"AI processing failed: {ai_error}")
+                response = self._generate_fallback_response(content, action, sender)
             
             return {
                 "response": response,
@@ -347,24 +339,53 @@ class SmartA2AAgent(A2AAgent):
                 "success": False
             }
     
-    async def _process_message_async(self, prompt: str) -> str:
-        """Process message using proper ADK async pattern."""
+    def _generate_fallback_response(self, content: str, action: str, sender: str) -> str:
+        """Generate a fallback response when AI processing fails."""
+        if action == "chat":
+            return f"Hello {sender}! I'm {self.name}. You said: '{content}'. I'm here to help with agent communication."
+        elif action == "analyze":
+            return f"Analysis request from {sender} received. Content: '{content}' - would perform detailed analysis."
+        elif action == "collaborate":
+            return f"Collaboration request from {sender}: '{content}'. Ready to work together!"
+        elif action == "data_transfer":
+            return f"Data received from {sender}: '{content}'. Processing complete."
+        elif action == "task_request":
+            return f"Task request from {sender}: '{content}'. Capabilities available for processing."
+        else:
+            return f"Message from {sender} with action '{action}': '{content}'. Ready to assist!"
+    
+    async def _process_message_async(self, content: str, action: str, sender: str) -> str:
+        """Process message using proper ADK async pattern - same as basic agents."""
         try:
             from google.genai import types
             
             # Ensure session is initialized
             await self._initialize_session()
             
-            # Create message content
-            content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            # Create contextual prompt based on action
+            if action == "chat":
+                prompt = f"Agent {sender} says: {content}. Please respond naturally as an AI agent."
+            elif action == "analyze":
+                prompt = f"Please analyze this request from agent {sender}: {content}"
+            elif action == "collaborate":
+                prompt = f"Agent {sender} wants to collaborate on: {content}. How can you help?"
+            elif action == "data_transfer":
+                prompt = f"Agent {sender} sent data: {content}. Please acknowledge and summarize."
+            elif action == "task_request":
+                prompt = f"Agent {sender} requests task: {content}. Respond with your capabilities."
+            else:
+                prompt = f"Agent {sender} sent: {content}. Action: {action}. Please respond appropriately."
             
-            # Get response from agent using proper async pattern
+            # Create message content
+            message_content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            
+            # Get response from agent using the same pattern as basic agents
             final_response_text = "Agent did not produce a final response."
             
             async for event in self.runner.run_async(
                 user_id=self.user_id,
                 session_id=self.session_id,
-                new_message=content
+                new_message=message_content
             ):
                 if event.is_final_response():
                     if event.content and event.content.parts:
@@ -372,19 +393,18 @@ class SmartA2AAgent(A2AAgent):
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
                     break
-            
+                logger.info(f"A2A Agent {self.name} processed {action} from {sender}")
             return final_response_text
             
         except Exception as e:
-            logger.error(f"Error in async message processing: {e}")
-            return f"Error: {str(e)}"
-        
-        
+            logger.error(f"Error in A2A async processing: {e}")
+            return f"Processing error: {str(e)}"
+    
     async def _handle_chat(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle chat requests using AI."""
         message = data.get("message", "")
         try:
-            response = await self._process_message_async(message)
+            response = await self._process_message_async(message, "chat", "api_caller")
             return {
                 "response": response,
                 "agent": self.name,
@@ -396,13 +416,11 @@ class SmartA2AAgent(A2AAgent):
     async def _handle_analyze(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle analysis requests using AI."""
         content = data.get("content", "")
-        analysis_type = data.get("type", "general")       
+        analysis_type = data.get("type", "general")
         try:
-            prompt = f"Analyze the following content using {analysis_type} analysis:\n{content}"
-            analysis = await self._process_message_async(prompt)
-            
+            response = await self._process_message_async(content, "analyze", "api_caller")
             return {
-                "analysis": analysis,
+                "analysis": response,
                 "type": analysis_type,
                 "agent": self.name,
                 "timestamp": datetime.now().isoformat()
@@ -413,22 +431,20 @@ class SmartA2AAgent(A2AAgent):
     async def _handle_collaborate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle collaboration requests with other agents."""
         task = data.get("task", "")
-        context = data.get("context", {})       
+        context = data.get("context", {})
         try:
             prompt = (
                 f"Collaborate on this task: {task}\n"
                 f"Context: {json.dumps(context, indent=2)}\n"
                 "Provide your contribution to this collaborative effort."
             )
-            
-            contribution = await self._process_message_async(prompt)
-            
+            response = await self._process_message_async(prompt, "collaborate", "api_caller")
             return {
-                "contribution": contribution,
+                "contribution": response,
                 "task": task,
                 "agent": self.name,
                 "timestamp": datetime.now().isoformat()
-            }
+            }       
         except Exception as e:
             return {"error": f"Collaboration failed: {str(e)}"}
 

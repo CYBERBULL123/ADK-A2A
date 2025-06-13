@@ -86,13 +86,6 @@ def render_markdown_content(content: str) -> None:
 
 def main():
     """Main dashboard function."""
-    # Modern header
-    create_header(
-        "ADK & A2A Learning Dashboard", 
-        "Master Agent Development Kit and Agent-to-Agent protocols through interactive learning",
-        "🤖"
-    )
-    
     # Sidebar navigation with modern styling
     st.sidebar.markdown("""
     <div style="background: linear-gradient(135deg, #2E86AB 0%, #A23B72 100%); 
@@ -154,6 +147,13 @@ def main():
 
 def show_overview():
     """Show project overview and learning objectives."""
+    
+    # Modern header - only on overview page
+    create_header(
+        "ADK & A2A Learning Dashboard", 
+        "Master Agent Development Kit and Agent-to-Agent protocols through interactive learning",
+        "🤖"
+    )
     
     # Learning objectives section with modern cards
     st.markdown("## 🎯 Learning Objectives")
