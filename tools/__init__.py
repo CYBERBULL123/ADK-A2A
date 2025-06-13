@@ -586,7 +586,9 @@ def code_executor_tool(language: str, code: str, timeout: int = 30) -> str:
                 import re
                 prints = re.findall(r'print\((.*?)\)', code)
                 if prints:
-                    result = "\n".join([f"Output: {p.strip('\"\'')}" for p in prints])
+                    # Fix f-string issue by extracting strip operation
+                    stripped_prints = [p.strip('\"\'') for p in prints]
+                    result = "\n".join([f"Output: {p}" for p in stripped_prints])
                 else:
                     result = "Code executed successfully (no output)"
             elif "=" in code and not any(op in code for op in ["==", "!=", "<=", ">="]):
@@ -600,7 +602,8 @@ def code_executor_tool(language: str, code: str, timeout: int = 30) -> str:
             if "console.log" in code:
                 import re
                 logs = re.findall(r'console\.log\((.*?)\)', code)
-                result = "\n".join([f"Console: {log.strip('\"\'')}" for log in logs])
+                stripped_logs = [log.strip('\"\'') for log in logs]
+                result = "\n".join([f"Console: {log}" for log in stripped_logs])
             else:
                 result = "JavaScript code executed successfully"
         
