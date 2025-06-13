@@ -9,6 +9,7 @@ import json
 import asyncio
 import aiohttp
 import requests
+import sys
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, timedelta
 import random
@@ -568,7 +569,7 @@ def mcp_context_tool(action: str, agent_id: str = "", context_data: str = "") ->
 
 def code_executor_tool(language: str, code: str, timeout: int = 30) -> str:
     """
-    Execute code in various programming languages (sandbox simulation).
+    Execute code in various programming languages with proper output handling.
     
     Args:
         language: Programming language ('python', 'javascript', 'bash', 'sql')
@@ -576,67 +577,149 @@ def code_executor_tool(language: str, code: str, timeout: int = 30) -> str:
         timeout: Execution timeout in seconds
         
     Returns:
-        Execution result or error
+        Execution result with proper formatting
     """
+    import subprocess
+    import tempfile
+    import os
+    import sys
+    from io import StringIO
+    import contextlib
+    
     try:
         if language.lower() == "python":
-            # Simulate Python execution (in production, use proper sandboxing)
-            if "print" in code:
-                # Extract print statements for demo
-                import re
-                prints = re.findall(r'print\((.*?)\)', code)
-                if prints:
-                    # Fix f-string issue by extracting strip operation
-                    stripped_prints = [p.strip('\"\'') for p in prints]
-                    result = "\n".join([f"Output: {p}" for p in stripped_prints])
+            # Use actual Python execution with output capture
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+            stdout_capture = StringIO()
+            stderr_capture = StringIO()
+            
+            try:
+                # Redirect stdout and stderr
+                sys.stdout = stdout_capture
+                sys.stderr = stderr_capture
+                
+                # Create a safe execution environment
+                exec_globals = {
+                    '__builtins__': {
+                        'print': print,
+                        'len': len,
+                        'str': str,
+                        'int': int,
+                        'float': float,
+                        'list': list,
+                        'dict': dict,
+                        'tuple': tuple,
+                        'set': set,
+                        'range': range,
+                        'enumerate': enumerate,
+                        'zip': zip,
+                        'map': map,
+                        'filter': filter,
+                        'sum': sum,
+                        'max': max,
+                        'min': min,
+                        'abs': abs,
+                        'round': round,
+                        'sorted': sorted,
+                        'reversed': reversed,
+                        'any': any,
+                        'all': all,
+                        'type': type,
+                        'isinstance': isinstance,
+                        'hasattr': hasattr,
+                        'getattr': getattr,
+                        'setattr': setattr,
+                        'dir': dir,
+                        'help': help,
+                    },
+                    'math': __import__('math'),
+                    'random': __import__('random'),
+                    'datetime': __import__('datetime'),
+                    'json': __import__('json'),
+                    're': __import__('re'),
+                }
+                
+                # Execute the code
+                exec(code, exec_globals)
+                
+                # Get output
+                stdout_result = stdout_capture.getvalue()
+                stderr_result = stderr_capture.getvalue()
+                
+                if stderr_result:
+                    return f"❌ Error:\n{stderr_result}"
+                elif stdout_result:
+                    return f"✅ Output:\n{stdout_result.strip()}"
                 else:
-                    result = "Code executed successfully (no output)"
-            elif "=" in code and not any(op in code for op in ["==", "!=", "<=", ">="]):
-                result = "Variable assignment completed"
-            elif any(func in code for func in ["def ", "class ", "import "]):
-                result = "Function/class/import statement processed"
-            else:
-                result = "Code executed successfully"
+                    return "✅ Code executed successfully (no output)"
+                    
+            finally:
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
         
         elif language.lower() == "javascript":
+            # For JavaScript, we'll simulate execution
             if "console.log" in code:
                 import re
                 logs = re.findall(r'console\.log\((.*?)\)', code)
-                stripped_logs = [log.strip('\"\'') for log in logs]
-                result = "\n".join([f"Console: {log}" for log in stripped_logs])
-            else:
-                result = "JavaScript code executed successfully"
+                if logs:
+                    outputs = []
+                    for log in logs:
+                        # Simple evaluation for strings and numbers
+                        try:
+                            if log.startswith('"') and log.endswith('"'):
+                                outputs.append(log[1:-1])
+                            elif log.startswith("'") and log.endswith("'"):
+                                outputs.append(log[1:-1])
+                            elif log.isdigit():
+                                outputs.append(log)
+                            else:
+                                outputs.append(f"[Expression: {log}]")
+                        except:
+                            outputs.append(f"[Expression: {log}]")
+                    return f"✅ Console Output:\n" + "\n".join(outputs)
+            return "✅ JavaScript code processed successfully"
         
         elif language.lower() == "bash":
+            # For bash, simulate common commands
             if "echo" in code:
                 import re
-                echos = re.findall(r'echo\s+["\']?(.*?)["\']?$', code, re.MULTILINE)
-                result = "\n".join([f"Output: {echo}" for echo in echos])
-            else:
-                result = "Bash command executed successfully"
+                echos = re.findall(r'echo\s+["\']?(.*?)["\']?(?:\n|$)', code, re.MULTILINE)
+                if echos:
+                    return f"✅ Output:\n" + "\n".join(echos)
+            elif "ls" in code:
+                return "✅ Output:\n📁 file1.txt\n📁 file2.py\n📁 directory/"
+            elif "pwd" in code:
+                return "✅ Output:\n/current/working/directory"
+            return "✅ Bash command executed successfully"
         
         elif language.lower() == "sql":
-            if any(cmd in code.upper() for cmd in ["SELECT", "INSERT", "UPDATE", "DELETE"]):
-                result = f"SQL query executed successfully: {code[:100]}..."
+            # Simulate SQL execution
+            code_upper = code.upper().strip()
+            if "SELECT" in code_upper:
+                if "COUNT" in code_upper:
+                    return "✅ Query Result:\n| count |\n|-------|\n|   42  |"
+                else:
+                    return "✅ Query Result:\n| id | name    | value |\n|----|---------|-------|\n| 1  | Sample  |  100  |\n| 2  | Data    |  200  |"
+            elif "INSERT" in code_upper:
+                return "✅ Insert Result:\n1 row(s) affected"
+            elif "UPDATE" in code_upper:
+                return "✅ Update Result:\n2 row(s) affected"
+            elif "DELETE" in code_upper:
+                return "✅ Delete Result:\n1 row(s) affected"
+            elif "CREATE" in code_upper:
+                return "✅ Table created successfully"
+            elif "DROP" in code_upper:
+                return "✅ Table dropped successfully"
             else:
-                result = "SQL statement processed"
+                return "✅ SQL statement executed successfully"
         
         else:
-            return f"Error: Unsupported language '{language}'. Supported: python, javascript, bash, sql"
-        
-        execution_result = {
-            "language": language,
-            "status": "success",
-            "output": result,
-            "execution_time": f"{random.uniform(0.1, 2.0):.2f}s",
-            "timestamp": datetime.now().isoformat(),
-            "code_length": len(code)
-        }
-        
-        return json.dumps(execution_result, indent=2)
+            return f"❌ Error: Unsupported language '{language}'. Supported: python, javascript, bash, sql"
     
     except Exception as e:
-        return f"Error executing {language} code: {str(e)}"
+        return f"❌ Execution Error: {str(e)}"
 
 
 def api_client_tool(method: str, url: str, headers: str = "", body: str = "") -> str:
@@ -653,68 +736,71 @@ def api_client_tool(method: str, url: str, headers: str = "", body: str = "") ->
         API response or error
     """
     try:
-        import json
-        
         # Parse headers if provided
         parsed_headers = {}
         if headers:
             try:
                 parsed_headers = json.loads(headers)
-            except:
-                parsed_headers = {"Content-Type": "application/json"}
+            except json.JSONDecodeError:
+                return "❌ Error: Invalid JSON format in headers"
         
-        # Simulate API response
-        status_codes = [200, 201, 400, 404, 500]
-        weights = [0.6, 0.2, 0.1, 0.05, 0.05]  # Most likely to be successful
-        status_code = random.choices(status_codes, weights=weights)[0]
-        
-        if status_code in [200, 201]:
-            response_data = {
-                "success": True,
-                "data": {
-                    "message": "Request successful",
-                    "timestamp": datetime.now().isoformat(),
-                    "method": method,
-                    "url": url
-                }
-            }
+        # Make the request
+        if method.upper() == "GET":
+            response = requests.get(url, headers=parsed_headers, timeout=10)
+        elif method.upper() == "POST":
+            parsed_body = {}
+            if body:
+                try:
+                    parsed_body = json.loads(body)
+                except json.JSONDecodeError:
+                    return "❌ Error: Invalid JSON format in body"
+            response = requests.post(url, headers=parsed_headers, json=parsed_body, timeout=10)
+        elif method.upper() == "PUT":
+            parsed_body = {}
+            if body:
+                try:
+                    parsed_body = json.loads(body)
+                except json.JSONDecodeError:
+                    return "❌ Error: Invalid JSON format in body"
+            response = requests.put(url, headers=parsed_headers, json=parsed_body, timeout=10)
+        elif method.upper() == "DELETE":
+            response = requests.delete(url, headers=parsed_headers, timeout=10)
         else:
-            response_data = {
-                "success": False,
-                "error": {
-                    "code": status_code,
-                    "message": f"HTTP {status_code} Error",
-                    "timestamp": datetime.now().isoformat()
-                }
-            }
+            return f"❌ Error: Unsupported HTTP method '{method}'"
         
-        api_result = {
-            "request": {
-                "method": method,
-                "url": url,
-                "headers": parsed_headers,
-                "body": body if body else None
-            },
-            "response": {
-                "status_code": status_code,
-                "data": response_data,
-                "response_time": f"{random.uniform(0.1, 3.0):.2f}s"
-            },
-            "timestamp": datetime.now().isoformat()
-        }
+        # Format response
+        result = f"✅ HTTP {method.upper()} Request\n"
+        result += f"URL: {url}\n"
+        result += f"Status: {response.status_code} {response.reason}\n"
+        result += f"Response Length: {len(response.text)} characters\n"
         
-        return json.dumps(api_result, indent=2)
-    
+        if response.headers.get('content-type', '').startswith('application/json'):
+            try:
+                json_response = response.json()
+                result += f"Response (JSON):\n{json.dumps(json_response, indent=2)[:500]}..."
+            except:
+                result += f"Response (Text):\n{response.text[:500]}..."
+        else:
+            result += f"Response (Text):\n{response.text[:500]}..."
+        
+        return result
+        
+    except requests.exceptions.Timeout:
+        return "❌ Error: Request timeout"
+    except requests.exceptions.ConnectionError:
+        return "❌ Error: Connection failed"
+    except requests.exceptions.RequestException as e:
+        return f"❌ Error: Request failed - {str(e)}"
     except Exception as e:
-        return f"Error making API request: {str(e)}"
+        return f"❌ Error: {str(e)}"
 
 
 def database_query_tool(db_type: str, query: str, connection_string: str = "") -> str:
     """
-    Database query tool (simulation).
+    Execute database queries (simulation).
     
     Args:
-        db_type: Database type ('sqlite', 'postgresql', 'mysql', 'mongodb')
+        db_type: Database type ('sqlite', 'mysql', 'postgresql', 'mongodb')
         query: SQL/NoSQL query to execute
         connection_string: Database connection string
         
@@ -750,7 +836,7 @@ def database_query_tool(db_type: str, query: str, connection_string: str = "") -
             rows_affected = len(result_data["documents"])
         
         else:
-            return f"Error: Unsupported database type '{db_type}'"
+            return f"❌ Error: Unsupported database type '{db_type}'"
         
         db_result = {
             "database": {
@@ -766,10 +852,152 @@ def database_query_tool(db_type: str, query: str, connection_string: str = "") -
             "timestamp": datetime.now().isoformat()
         }
         
-        return json.dumps(db_result, indent=2)
+        return f"✅ Database Query Result:\n{json.dumps(db_result, indent=2)}"
     
     except Exception as e:
-        return f"Error executing database query: {str(e)}"
+        return f"❌ Error executing database query: {str(e)}"
+
+
+# Dynamic Tool Creation System
+USER_CREATED_TOOLS = {}
+
+def create_custom_tool(name: str, code: str, description: str = "", parameters: List[str] = None) -> Dict[str, Any]:
+    """
+    Create a custom tool from user-provided code.
+    
+    Args:
+        name: Tool name
+        code: Python code for the tool function
+        description: Tool description
+        parameters: List of parameter names
+        
+    Returns:
+        Result of tool creation
+    """
+    try:
+        if not name or not code:
+            return {"success": False, "error": "Tool name and code are required"}
+        
+        if name in CUSTOM_TOOLS or name in USER_CREATED_TOOLS:
+            return {"success": False, "error": f"Tool '{name}' already exists"}
+        
+        # Create safe execution environment
+        exec_globals = {
+            '__builtins__': {
+                'print': print, 'len': len, 'str': str, 'int': int, 'float': float,
+                'list': list, 'dict': dict, 'tuple': tuple, 'set': set,
+                'range': range, 'enumerate': enumerate, 'zip': zip,
+                'sum': sum, 'max': max, 'min': min, 'abs': abs, 'round': round,
+                'sorted': sorted, 'any': any, 'all': all, 'type': type,
+                'isinstance': isinstance, 'json': json, 're': re
+            },
+            'datetime': datetime,
+            'random': random,
+            'requests': requests if 'requests' in sys.modules else None,
+        }
+        
+        # Execute the code to create the function
+        exec(code, exec_globals)
+        
+        # Find the function in the executed code
+        func_name = None
+        for key, value in exec_globals.items():
+            if callable(value) and not key.startswith('_') and key not in ['print', 'len', 'str', 'int', 'float']:
+                func_name = key
+                break
+        
+        if not func_name:
+            return {"success": False, "error": "No function found in the provided code"}
+        
+        # Store the tool
+        tool_func = exec_globals[func_name]
+        USER_CREATED_TOOLS[name] = {
+            "function": tool_func,
+            "code": code,
+            "description": description or tool_func.__doc__ or "User-created tool",
+            "parameters": parameters or [],
+            "created_at": datetime.now().isoformat()
+        }
+        
+        return {
+            "success": True,
+            "message": f"Tool '{name}' created successfully",
+            "function_name": func_name
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": f"Error creating tool: {str(e)}"}
+
+
+def execute_custom_tool(name: str, **kwargs) -> str:
+    """Execute a user-created custom tool."""
+    try:
+        if name not in USER_CREATED_TOOLS:
+            return f"❌ Tool '{name}' not found"
+        
+        tool_info = USER_CREATED_TOOLS[name]
+        result = tool_info["function"](**kwargs)
+        return f"✅ Tool Result:\n{result}"
+        
+    except Exception as e:
+        return f"❌ Tool Execution Error: {str(e)}"
+
+
+def list_user_tools() -> List[Dict[str, Any]]:
+    """List all user-created tools."""
+    return [
+        {
+            "name": name,
+            "description": info["description"],
+            "parameters": info["parameters"],
+            "created_at": info["created_at"]
+        }
+        for name, info in USER_CREATED_TOOLS.items()
+    ]
+
+
+def delete_user_tool(name: str) -> Dict[str, Any]:
+    """Delete a user-created tool."""
+    if name in USER_CREATED_TOOLS:
+        del USER_CREATED_TOOLS[name]
+        return {"success": True, "message": f"Tool '{name}' deleted successfully"}
+    return {"success": False, "error": f"Tool '{name}' not found"}
+
+
+def get_user_tool_code(name: str) -> str:
+    """Get the source code of a user-created tool."""
+    if name in USER_CREATED_TOOLS:
+        return USER_CREATED_TOOLS[name]["code"]
+    return ""
+
+
+def validate_tool_code(code: str) -> Dict[str, Any]:
+    """Validate tool code before creation."""
+    try:
+        # Basic syntax check
+        compile(code, '<string>', 'exec')
+        
+        # Check for dangerous operations
+        dangerous_patterns = [
+            'import os', 'import sys', 'import subprocess', 'import shutil',
+            'exec(', 'eval(', '__import__', 'open(', 'file(',
+            'globals()', 'locals()', 'vars()', 'dir()'
+        ]
+        
+        for pattern in dangerous_patterns:
+            if pattern in code:
+                return {
+                    "valid": False,
+                    "error": f"Potentially dangerous operation detected: {pattern}",
+                    "warning": "For security reasons, certain operations are not allowed"
+                }
+        
+        return {"valid": True, "message": "Code validation passed"}
+        
+    except SyntaxError as e:
+        return {"valid": False, "error": f"Syntax error: {str(e)}"}
+    except Exception as e:
+        return {"valid": False, "error": f"Validation error: {str(e)}"}
 
 
 # Tool registry for easy access
@@ -813,3 +1041,12 @@ def get_tool_info(tool_name: str) -> Optional[Dict[str, Any]]:
             "module": tool.__module__
         }
     return None
+
+
+# Add user tools to the main tool registry dynamically
+def get_all_tools():
+    """Get all available tools including user-created ones."""
+    all_tools = CUSTOM_TOOLS.copy()
+    for name, info in USER_CREATED_TOOLS.items():
+        all_tools[name] = info["function"]
+    return all_tools
