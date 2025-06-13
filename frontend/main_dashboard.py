@@ -771,7 +771,7 @@ def show_multi_agent_systems():
                 st.markdown(f"""
                 <div style="border-left: 4px solid {status_color}; padding: 0.5rem 1rem; margin: 0.5rem 0; background: #f8f9fa; border-radius: 4px;">
                     <strong>{status_icon} Phase {i}:</strong> {task.task}
-                    {f'<br><span style="color: #dc3545; font-size: 0.9em;">Error: {task.result}</span>' if not task.success else ''}
+                    {f'<br><span style="font-size: 0.9em;">Error: {task.result}</span>' if not task.success else ''}
                 </div>
                 """, unsafe_allow_html=True)
             
