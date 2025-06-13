@@ -248,9 +248,11 @@ class SmartA2AAgent(A2AAgent):
     def __init__(self, agent_id: str, name: str, model: str = None, port: int = None):
         super().__init__(agent_id, name, port)
         
-        from google.adk.agents import LlmAgent
+        from google.adk.agents import Agent
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
         
-        self.llm_agent = LlmAgent(
+        self.agent = Agent(
             name=name,
             model=model or config.adk.default_model,
             instruction=(
@@ -260,10 +262,37 @@ class SmartA2AAgent(A2AAgent):
             ),
             description=f"Smart A2A agent: {name}"
         )
-          # Register AI-powered handlers
+        
+        # Set up session service and runner like in basic agents
+        self.session_service = InMemorySessionService()
+        self.runner = Runner(
+            agent=self.agent,
+            app_name=f"a2a_agent_{agent_id}",
+            session_service=self.session_service
+        )
+        
+        # Session details
+        self.user_id = "a2a_user"
+        self.session_id = f"{name}_a2a_session"
+        self.session = None  # Will be initialized when needed
+        
+        # Register AI-powered handlers
         self.register_handler("chat", self._handle_chat)
         self.register_handler("analyze", self._handle_analyze)
         self.register_handler("collaborate", self._handle_collaborate)
+
+    async def _initialize_session(self):
+        """Initialize the session."""
+        if self.session is None:
+            try:
+                self.session = await self.session_service.create_session(
+                    app_name=f"a2a_agent_{self.agent_id}",
+                    user_id=self.user_id,
+                    session_id=self.session_id
+                )
+            except Exception as e:
+                logger.error(f"Failed to initialize session: {e}")
+                raise
 
     def process_a2a_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process A2A message and return response for UI demonstration."""
@@ -291,12 +320,12 @@ class SmartA2AAgent(A2AAgent):
             elif action == "task_request":
                 prompt = f"Agent {sender} requests task: {content}. Please respond with your capability to handle this."
             else:
-                prompt = f"Agent {sender} sent: {content}. Action type: {action}. Please respond appropriately."            # Run the LLM to generate response
+                prompt = f"Agent {sender} sent: {content}. Action type: {action}. Please respond appropriately."
+            
+            # Run the LLM to generate response using async pattern
             try:
-                # Use the LLM agent chat method directly instead of runner
-                response = self.llm_agent.chat(prompt)
+                response = asyncio.run(self._process_message_async(prompt))
             except Exception as llm_error:
-                # If LLM agent fails, provide fallback response
                 response = f"I'm {self.name}, an AI agent. I encountered an issue processing your request: {llm_error}"
             
             return {
@@ -318,13 +347,44 @@ class SmartA2AAgent(A2AAgent):
                 "success": False
             }
     
+    async def _process_message_async(self, prompt: str) -> str:
+        """Process message using proper ADK async pattern."""
+        try:
+            from google.genai import types
+            
+            # Ensure session is initialized
+            await self._initialize_session()
+            
+            # Create message content
+            content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            
+            # Get response from agent using proper async pattern
+            final_response_text = "Agent did not produce a final response."
+            
+            async for event in self.runner.run_async(
+                user_id=self.user_id,
+                session_id=self.session_id,
+                new_message=content
+            ):
+                if event.is_final_response():
+                    if event.content and event.content.parts:
+                        final_response_text = event.content.parts[0].text
+                    elif event.actions and event.actions.escalate:
+                        final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+                    break
+            
+            return final_response_text
+            
+        except Exception as e:
+            logger.error(f"Error in async message processing: {e}")
+            return f"Error: {str(e)}"
+        
+        
     async def _handle_chat(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle chat requests using AI."""
         message = data.get("message", "")
         try:
-            # Use LLM agent chat method directly
-            response = self.llm_agent.chat(message)
-            
+            response = await self._process_message_async(message)
             return {
                 "response": response,
                 "agent": self.name,
@@ -339,8 +399,7 @@ class SmartA2AAgent(A2AAgent):
         analysis_type = data.get("type", "general")       
         try:
             prompt = f"Analyze the following content using {analysis_type} analysis:\n{content}"
-            # Use LLM agent chat method directly
-            analysis = self.llm_agent.chat(prompt)
+            analysis = await self._process_message_async(prompt)
             
             return {
                 "analysis": analysis,
@@ -362,8 +421,7 @@ class SmartA2AAgent(A2AAgent):
                 "Provide your contribution to this collaborative effort."
             )
             
-            # Use LLM agent chat method directly
-            contribution = self.llm_agent.chat(prompt)
+            contribution = await self._process_message_async(prompt)
             
             return {
                 "contribution": contribution,
