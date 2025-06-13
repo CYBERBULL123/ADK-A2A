@@ -21,7 +21,6 @@ import sys
 import random
 from pathlib import Path
 import os
-from pathlib import Path
 import markdown
 
 # Add project root to path
@@ -1082,13 +1081,12 @@ def show_a2a_protocol():
             {"Step": "4", "Phase": "Processing", "Description": "Receiver processes request and executes action"},
             {"Step": "5", "Phase": "Response", "Description": "Receiver sends back result or acknowledgment"},
             {"Step": "6", "Phase": "Correlation", "Description": "Messages linked via correlation ID"},
-            {"Step": "7", "Phase": "Error Handling", "Description": "Timeout, retry, and error management"}
-        ]
+            {"Step": "7", "Phase": "Error Handling", "Description": "Timeout, retry, and error management"}        ]
         
         create_data_table(flow_steps, "Communication Flow Steps")
         
         st.markdown("**📊 Flow Diagram:**")
-        create_progress_indicator(["Discovery", "Auth", "Request", "Process", "Response"], current_step=5)
+        create_progress_indicator(5, 7, ["Discovery", "Auth", "Request", "Process", "Response", "Correlation", "Error Handling"])
     
     with protocol_tabs[2]:  # Security & Auth
         st.markdown("**🔒 Security & Authentication:**")
