@@ -2821,15 +2821,23 @@ def show_evaluation_framework():
         # Integration test matrix
         st.markdown("---")
         st.markdown("### 🧪 Integration Test Matrix")
-        
-        # Mock integration matrix
-        matrix_data = {
+          # Mock integration matrix
+        matrix_data_dict = {
             "Component A": ["Simple Agent", "Tool Agent", "Multi-Agent", "A2A Agent"],
             "Component B": ["Tool Agent", "Search Agent", "A2A Agent", "Database"],
             "Test Status": ["✅ Pass", "⚠️ Warning", "✅ Pass", "❌ Fail"],
             "Compatibility": ["100%", "85%", "95%", "70%"],
             "Issues": ["None", "Timeout occasionally", "None", "Connection errors"]
         }
+        
+        # Convert to list of dictionaries format expected by create_data_table
+        matrix_data = []
+        num_rows = len(matrix_data_dict["Component A"])
+        for i in range(num_rows):
+            row = {}
+            for key, values in matrix_data_dict.items():
+                row[key] = values[i]
+            matrix_data.append(row)
         
         create_data_table(matrix_data, "Component Integration Matrix")
     
