@@ -245,12 +245,10 @@ class A2AAgent:
 
 class SmartA2AAgent(A2AAgent):
     """A2A agent with AI capabilities using ADK."""
-    
     def __init__(self, agent_id: str, name: str, model: str = None, port: int = None):
         super().__init__(agent_id, name, port)
         
         from google.adk.agents import LlmAgent
-        from google.adk.runners import InMemoryRunner
         
         self.llm_agent = LlmAgent(
             name=name,
@@ -262,24 +260,11 @@ class SmartA2AAgent(A2AAgent):
             ),
             description=f"Smart A2A agent: {name}"
         )
-        
-        # Create runner for the LLM agent
-        self.runner = InMemoryRunner(agent=self.llm_agent)
-        
-        # Register AI-powered handlers
+          # Register AI-powered handlers
         self.register_handler("chat", self._handle_chat)
         self.register_handler("analyze", self._handle_analyze)
         self.register_handler("collaborate", self._handle_collaborate)
 
-    def _extract_response(self, events) -> str:
-        """Extract text response from ADK events."""
-        for event in events:
-            if hasattr(event, 'content') and hasattr(event.content, 'parts'):
-                for part in event.content.parts:
-                    if hasattr(part, 'text'):
-                        return part.text
-        return "No response generated"
-    
     def process_a2a_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process A2A message and return response for UI demonstration."""
         try:
@@ -306,11 +291,13 @@ class SmartA2AAgent(A2AAgent):
             elif action == "task_request":
                 prompt = f"Agent {sender} requests task: {content}. Please respond with your capability to handle this."
             else:
-                prompt = f"Agent {sender} sent: {content}. Action type: {action}. Please respond appropriately."
-            
-            # Run the LLM to generate response
-            events = list(self.runner.run(prompt))
-            response = self._extract_response(events)
+                prompt = f"Agent {sender} sent: {content}. Action type: {action}. Please respond appropriately."            # Run the LLM to generate response
+            try:
+                # Use the LLM agent chat method directly instead of runner
+                response = self.llm_agent.chat(prompt)
+            except Exception as llm_error:
+                # If LLM agent fails, provide fallback response
+                response = f"I'm {self.name}, an AI agent. I encountered an issue processing your request: {llm_error}"
             
             return {
                 "response": response,
@@ -334,10 +321,10 @@ class SmartA2AAgent(A2AAgent):
     async def _handle_chat(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle chat requests using AI."""
         message = data.get("message", "")
-        
         try:
-            events = list(self.runner.run(message))
-            response = self._extract_response(events)
+            # Use LLM agent chat method directly
+            response = self.llm_agent.chat(message)
+            
             return {
                 "response": response,
                 "agent": self.name,
@@ -349,12 +336,11 @@ class SmartA2AAgent(A2AAgent):
     async def _handle_analyze(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle analysis requests using AI."""
         content = data.get("content", "")
-        analysis_type = data.get("type", "general")
-        
+        analysis_type = data.get("type", "general")       
         try:
             prompt = f"Analyze the following content using {analysis_type} analysis:\n{content}"
-            events = list(self.runner.run(prompt))
-            analysis = self._extract_response(events)
+            # Use LLM agent chat method directly
+            analysis = self.llm_agent.chat(prompt)
             
             return {
                 "analysis": analysis,
@@ -368,8 +354,7 @@ class SmartA2AAgent(A2AAgent):
     async def _handle_collaborate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Handle collaboration requests with other agents."""
         task = data.get("task", "")
-        context = data.get("context", {})
-        
+        context = data.get("context", {})       
         try:
             prompt = (
                 f"Collaborate on this task: {task}\n"
@@ -377,8 +362,8 @@ class SmartA2AAgent(A2AAgent):
                 "Provide your contribution to this collaborative effort."
             )
             
-            events = list(self.runner.run(prompt))
-            contribution = self._extract_response(events)
+            # Use LLM agent chat method directly
+            contribution = self.llm_agent.chat(prompt)
             
             return {
                 "contribution": contribution,

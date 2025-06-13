@@ -12,6 +12,7 @@ This interactive dashboard provides hands-on experience with:
 import streamlit as st
 import asyncio
 import json
+import uuid
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -876,328 +877,326 @@ def show_a2a_protocol():
     across different processes, servers, or geographic locations, creating truly distributed AI systems.
     """)
     
-    # Protocol demonstration with modern layout
-    col1, col2 = st.columns([1, 1])
+    # A2A Network Configuration Section - Full Width
+    st.markdown("## 🛠️ A2A Network Configuration")
     
-    with col1:
-        st.markdown("### 🛠️ A2A Network Configuration")
-        
-        # Agent configuration with enhanced UI
-        num_agents = st.slider("Number of A2A Agents:", 2, 5, 3, help="Configure the size of your agent network")
-        
-        agent_configs = []
-        for i in range(num_agents):
-            with st.expander(f"🤖 Agent {i+1} Configuration", expanded=(i < 2)):
-                col_name, col_port = st.columns([2, 1])
-                
-                with col_name:
-                    name = st.text_input(f"Agent Name:", value=f"A2A_Agent_{i+1}", key=f"agent_name_{i}")
-                
-                with col_port:
-                    port = st.number_input(f"Port:", value=8500+i, min_value=8500, max_value=9000, key=f"agent_port_{i}")
-                
-                agent_type = st.selectbox(f"Agent Type:", 
+    # Agent configuration with enhanced UI
+    num_agents = st.slider("Number of A2A Agents:", 2, 5, 3, help="Configure the size of your agent network")
+    
+    agent_configs = []
+    cols = st.columns(min(num_agents, 3))  # Create columns for agent configs
+    
+    for i in range(num_agents):
+        with cols[i % 3]:  # Distribute agents across columns
+            with st.container():
+                st.markdown(f"**🤖 Agent {i+1}:**")
+                name = st.text_input(f"Name:", value=f"A2A_Agent_{i+1}", key=f"agent_name_{i}")
+                port = st.number_input(f"Port:", value=8500+i, min_value=8500, max_value=9000, key=f"agent_port_{i}")
+                agent_type = st.selectbox(f"Type:", 
                                         ["Research Agent", "Analysis Agent", "Communication Hub", "Task Executor"],
                                         key=f"agent_type_{i}")
-                
                 agent_configs.append({"name": name, "port": port, "type": agent_type})
+    
+    if st.button("🚀 Start A2A Network", use_container_width=True, type="primary"):
+        st.session_state.a2a_agents = agent_configs
+        create_notification(f"✅ Configured {num_agents} A2A agents successfully!", "success")
         
-        if st.button("🚀 Start A2A Network", use_container_width=True, type="primary"):
-            st.session_state.a2a_agents = agent_configs
-            create_notification(f"✅ Configured {num_agents} A2A agents successfully!", "success")
-            
-            # Show network status
-            st.markdown("**🌐 Network Status:**")
-            for i, agent in enumerate(agent_configs):
+        # Show network status
+        st.markdown("**🌐 Network Status:**")
+        status_cols = st.columns(min(len(agent_configs), 4))
+        for i, agent in enumerate(agent_configs):
+            with status_cols[i % 4]:
                 create_status_card(
                     f"🤖 {agent['name']}", 
                     f"Type: {agent['type']}<br>Port: {agent['port']}<br>Status: Online",
                     "success",
                     "🟢"
-                )
+                )    
+    # Network Communication Section - Full Width
+    st.markdown("---")
+    st.markdown("## 💬 Network Communication")
     
-    with col2:
-        st.markdown("### 💬 Network Communication")
+    if 'a2a_agents' in st.session_state:
+        # Agent selection with improved UI
+        agent_names = [agent["name"] for agent in st.session_state.a2a_agents]
         
-        if 'a2a_agents' in st.session_state:
-            # Agent selection with improved UI
-            agent_names = [agent["name"] for agent in st.session_state.a2a_agents]
-            
-            col_sender, col_receiver = st.columns(2)
-            
-            with col_sender:
-                sender = st.selectbox("📤 Sender Agent:", agent_names, help="Choose the agent that will send the message")
-            
-            with col_receiver:
-                receiver = st.selectbox("📥 Receiver Agent:", 
-                                      [name for name in agent_names if name != sender],
-                                      help="Choose the target agent for the message")
-            
-            # Message configuration with enhanced options
-            st.markdown("**📋 Message Configuration:**")
-            
-            col_action, col_priority = st.columns([2, 1])
-            
-            with col_action:
-                action = st.selectbox("Action Type:", 
-                                    ["chat", "analyze", "collaborate", "ping", "data_transfer", "task_request"],
-                                    help="Select the type of action to perform")
-            
-            with col_priority:
-                priority = st.selectbox("Priority:", ["Low", "Medium", "High", "Critical"])
-            
-            message_data = st.text_area("💌 Message Content:", 
-                                      placeholder="Enter the message content or data to send...",
-                                      height=100)
-            
-            # Advanced options
-            with st.expander("⚙️ Advanced Options"):
-                correlation_id = st.text_input("Correlation ID:", placeholder="Optional - for request tracking")
-                timeout = st.number_input("Timeout (seconds):", value=30, min_value=5, max_value=300)
-                retry_count = st.number_input("Retry Attempts:", value=3, min_value=0, max_value=10)
+        col_sender, col_receiver = st.columns(2)
+        
+        with col_sender:
+            sender = st.selectbox("📤 Sender Agent:", agent_names, help="Choose the agent that will send the message")
+        
+        with col_receiver:
+            receiver = st.selectbox("📥 Receiver Agent:", 
+                                  [name for name in agent_names if name != sender],
+                                  help="Choose the target agent for the message")
+        
+        # Message configuration with enhanced options
+        st.markdown("**📋 Message Configuration:**")
+        
+        col_action, col_priority = st.columns([2, 1])
+        
+        with col_action:
+            action = st.selectbox("Action Type:", 
+                                ["chat", "analyze", "collaborate", "ping", "data_transfer", "task_request"],
+                                help="Select the type of action to perform")
+        
+        with col_priority:
+            priority = st.selectbox("Priority:", ["Low", "Medium", "High", "Critical"])
+        
+        message_data = st.text_area("💌 Message Content:", 
+                                  placeholder="Enter the message content or data to send...",
+                                  height=100)
+          # Advanced options
+        with st.expander("⚙️ Advanced Options"):
+            correlation_id = st.text_input("Correlation ID:", placeholder="Optional - for request tracking")
+            timeout = st.number_input("Timeout (seconds):", value=30, min_value=5, max_value=300)
+            retry_count = st.number_input("Retry Attempts:", value=3, min_value=0, max_value=10)
 
-            if st.button("📨 Send A2A Message", use_container_width=True, type="primary"):
-                if message_data:
-                    with st.spinner(f"📡 Sending {action} from {sender} to {receiver}..."):
-                        try:
-                            # Create actual A2A communication
-                            from agents.a2a import SmartA2AAgent
-                            
-                            # Initialize agents if not already done
-                            if 'a2a_active_agents' not in st.session_state:
-                                st.session_state.a2a_active_agents = {}
-                            
-                            # Create sender agent if not exists
-                            if sender not in st.session_state.a2a_active_agents:
-                                st.session_state.a2a_active_agents[sender] = SmartA2AAgent(sender)
-                            
-                            # Create receiver agent if not exists  
-                            if receiver not in st.session_state.a2a_active_agents:
-                                st.session_state.a2a_active_agents[receiver] = SmartA2AAgent(receiver)
-                            
-                            sender_agent = st.session_state.a2a_active_agents[sender]
-                            receiver_agent = st.session_state.a2a_active_agents[receiver]
-                            
-                            # Create the message
-                            message_obj = {
-                                "id": f"msg_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}",
-                                "type": "request",
-                                "action": action,
-                                "content": message_data,
-                                "sender": sender,
-                                "receiver": receiver,
-                                "priority": priority,
-                                "timestamp": datetime.now().isoformat(),
-                                "correlation_id": correlation_id if correlation_id else f"corr_{uuid.uuid4().hex[:8]}",
-                                "timeout": timeout,
-                                "retry_count": retry_count
-                            }
-                            
-                            # Process the message and get response
-                            response_obj = receiver_agent.process_a2a_message(message_obj)
-                            
-                            # Create response message
-                            response_message = {
-                                "id": f"resp_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}",
-                                "type": "response", 
-                                "original_message_id": message_obj["id"],
-                                "sender": receiver,
-                                "receiver": sender,
-                                "correlation_id": message_obj["correlation_id"],
-                                "timestamp": datetime.now().isoformat(),
-                                "response_data": response_obj,
-                                "processing_time": "~1.2s",
-                                "success": True
-                            }
-                            
-                            create_notification(f"✅ Message exchange completed between {sender} and {receiver}!", "success")
-                            
-                            # Display both request and response
-                            col_req, col_resp = st.columns(2)
-                            
-                            with col_req:
-                                st.markdown("**📤 Sent Message:**")
-                                display_agent_response(json.dumps(message_obj, indent=2), f"Request from {sender}")
-                            
-                            with col_resp:
-                                st.markdown("**📥 Received Response:**")
-                                display_agent_response(json.dumps(response_message, indent=2), f"Response from {receiver}")
-                            
-                            # Show actual agent responses
-                            st.markdown("---")
-                            st.markdown("**🤖 Agent Processing Results:**")
-                            
-                            col_sender_resp, col_receiver_resp = st.columns(2)
-                            
-                            with col_sender_resp:
-                                st.markdown(f"**📤 {sender} (Sender):**")
-                                sender_status = f"✅ Successfully sent '{action}' message to {receiver}"
-                                display_agent_response(sender_status, "Sender Status")
-                            
-                            with col_receiver_resp:
-                                st.markdown(f"**📥 {receiver} (Receiver):**")
-                                display_agent_response(response_obj.get("response", "No response content"), "Agent Response")
-                            
-                            # Store conversation in session for history
-                            if 'a2a_conversations' not in st.session_state:
-                                st.session_state.a2a_conversations = []
-                            
-                            conversation = {
-                                "conversation_id": message_obj["correlation_id"],
-                                "timestamp": datetime.now().isoformat(),
-                                "participants": [sender, receiver],
-                                "request": message_obj,
-                                "response": response_message,
-                                "agent_responses": {
-                                    "sender_status": sender_status,
-                                    "receiver_response": response_obj
-                                }
-                            }
-                            st.session_state.a2a_conversations.append(conversation)
-                            
-                        except Exception as e:
-                            create_notification(f"❌ A2A Communication Error: {str(e)}", "error")
-                            st.error(f"Failed to establish A2A communication: {e}")
-                else:
-                    create_notification("Please enter message content", "warning")
-              # Conversation history
-            if 'a2a_conversations' in st.session_state and st.session_state.a2a_conversations:
-                st.markdown("---")
-                st.markdown("**💬 A2A Conversation History:**")
-                
-                # Show recent conversations (last 3)
-                recent_conversations = list(reversed(st.session_state.a2a_conversations[-3:]))
-                
-                for i, conv in enumerate(recent_conversations):
-                    participants = " ↔ ".join(conv['participants'])
-                    timestamp = datetime.fromisoformat(conv['timestamp']).strftime("%H:%M:%S")
-                    
-                    with st.expander(f"🗣️ {participants} | {timestamp}", expanded=(i == 0)):
+        if st.button("📨 Send A2A Message", use_container_width=True, type="primary"):
+            if message_data:
+                with st.spinner(f"📡 Sending {action} from {sender} to {receiver}..."):
+                    try:
+                        # Create actual A2A communication
+                        from agents.a2a import SmartA2AAgent
+                        
+                        # Initialize agents if not already done
+                        if 'a2a_active_agents' not in st.session_state:
+                            st.session_state.a2a_active_agents = {}
+                        
+                        # Create sender agent if not exists
+                        if sender not in st.session_state.a2a_active_agents:
+                            st.session_state.a2a_active_agents[sender] = SmartA2AAgent(
+                                agent_id=f"agent_{sender.lower().replace(' ', '_')}",
+                                name=sender
+                            )                        
+                        # Create receiver agent if not exists  
+                        if receiver not in st.session_state.a2a_active_agents:
+                            st.session_state.a2a_active_agents[receiver] = SmartA2AAgent(
+                                agent_id=f"agent_{receiver.lower().replace(' ', '_')}",
+                                name=receiver
+                            )
+                        
+                        sender_agent = st.session_state.a2a_active_agents[sender]
+                        receiver_agent = st.session_state.a2a_active_agents[receiver]                        
+                        # Create the message
+                        message_obj = {
+                            "id": f"msg_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}",
+                            "type": "request",
+                            "action": action,
+                            "content": message_data,
+                            "sender": sender,
+                            "receiver": receiver,
+                            "priority": priority,
+                            "timestamp": datetime.now().isoformat(),
+                            "correlation_id": correlation_id if correlation_id else f"corr_{uuid.uuid4().hex[:8]}",
+                            "timeout": timeout,
+                            "retry_count": retry_count
+                        }
+                        
+                        # Process the message and get response
+                        response_obj = receiver_agent.process_a2a_message(message_obj)
+                        
+                        # Create response message
+                        response_message = {
+                            "id": f"resp_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}",
+                            "type": "response", 
+                            "original_message_id": message_obj["id"],
+                            "sender": receiver,
+                            "receiver": sender,
+                            "correlation_id": message_obj["correlation_id"],
+                            "timestamp": datetime.now().isoformat(),
+                            "response_data": response_obj,
+                            "processing_time": "~1.2s",
+                            "success": True
+                        }
+                        
+                        create_notification(f"✅ Message exchange completed between {sender} and {receiver}!", "success")
+                        
+                        # Display both request and response
                         col_req, col_resp = st.columns(2)
                         
                         with col_req:
-                            st.markdown("**📤 Request:**")
-                            st.code(f"""
+                            st.markdown("**📤 Sent Message:**")
+                            display_agent_response(json.dumps(message_obj, indent=2), f"Request from {sender}")
+                        
+                        with col_resp:
+                            st.markdown("**📥 Received Response:**")
+                            display_agent_response(json.dumps(response_message, indent=2), f"Response from {receiver}")
+                        
+                        # Show actual agent responses
+                        st.markdown("---")
+                        st.markdown("**🤖 Agent Processing Results:**")
+                        
+                        col_sender_resp, col_receiver_resp = st.columns(2)
+                        
+                        with col_sender_resp:
+                            st.markdown(f"**📤 {sender} (Sender):**")
+                            sender_status = f"✅ Successfully sent '{action}' message to {receiver}"
+                            display_agent_response(sender_status, "Sender Status")
+                        
+                        with col_receiver_resp:
+                            st.markdown(f"**📥 {receiver} (Receiver):**")
+                            display_agent_response(response_obj.get("response", "No response content"), "Agent Response")
+                        
+                        # Store conversation in session for history
+                        if 'a2a_conversations' not in st.session_state:
+                            st.session_state.a2a_conversations = []
+                        
+                        conversation = {
+                            "conversation_id": message_obj["correlation_id"],
+                            "timestamp": datetime.now().isoformat(),
+                            "participants": [sender, receiver],
+                            "request": message_obj,
+                            "response": response_message,
+                            "agent_responses": {
+                                "sender_status": sender_status,
+                                "receiver_response": response_obj
+                            }
+                        }
+                        st.session_state.a2a_conversations.append(conversation)
+                        
+                    except Exception as e:
+                        create_notification(f"❌ A2A Communication Error: {str(e)}", "error")
+                        st.error(f"Failed to establish A2A communication: {e}")
+            else:
+                create_notification("Please enter message content", "warning")        
+        # Conversation history
+        if 'a2a_conversations' in st.session_state and st.session_state.a2a_conversations:
+            st.markdown("---")
+            st.markdown("**💬 A2A Conversation History:**")
+            
+            # Show recent conversations (last 3)
+            recent_conversations = list(reversed(st.session_state.a2a_conversations[-3:]))
+            
+            for i, conv in enumerate(recent_conversations):
+                participants = " ↔ ".join(conv['participants'])
+                timestamp = datetime.fromisoformat(conv['timestamp']).strftime("%H:%M:%S")
+                
+                with st.expander(f"🗣️ {participants} | {timestamp}", expanded=(i == 0)):
+                    col_req, col_resp = st.columns(2)
+                    
+                    with col_req:
+                        st.markdown("**📤 Request:**")
+                        st.code(f"""
 Action: {conv['request']['action']}
 From: {conv['request']['sender']}
 To: {conv['request']['receiver']}
 Content: {conv['request']['content'][:100]}...
 """)
-                        
-                        with col_resp:
-                            st.markdown("**📥 Response:**")
-                            resp_content = conv['agent_responses']['receiver_response'].get('response', 'No content')
-                            st.code(f"""
+                    
+                    with col_resp:
+                        st.markdown("**📥 Response:**")
+                        resp_content = conv['agent_responses']['receiver_response'].get('response', 'No content')
+                        st.code(f"""
 Status: {conv['response']['success']}
 Processing: {conv['response']['processing_time']}
 Response: {resp_content[:100]}...
 """)
+                    
+                    # Show full conversation details
+                    if st.button(f"🔍 View Full Details", key=f"details_{conv['conversation_id']}"):
+                        st.markdown("**📋 Complete Conversation Log:**")
                         
-                        # Show full conversation details
-                        if st.button(f"🔍 View Full Details", key=f"details_{conv['conversation_id']}"):
-                            st.markdown("**📋 Complete Conversation Log:**")
-                            
-                            st.markdown("**🔹 Request Message:**")
-                            st.json(conv['request'])
-                            
-                            st.markdown("**🔹 Response Message:**")
-                            st.json(conv['response'])
-                            
-                            st.markdown("**🔹 Agent Processing:**")
-                            st.json(conv['agent_responses'])
-                  # Clear conversation history button
-                if st.button("🗑️ Clear Conversation History", type="secondary"):
-                    st.session_state.a2a_conversations = []
-                    create_notification("Conversation history cleared", "info")
-                    st.rerun()
+                        st.markdown("**🔹 Request Message:**")
+                        st.json(conv['request'])                        
+                        st.markdown("**🔹 Response Message:**")
+                        st.json(conv['response'])
+                        
+                        st.markdown("**🔹 Agent Processing:**")
+                        st.json(conv['agent_responses'])
             
-            # Show active agents status
-            if 'a2a_active_agents' in st.session_state and st.session_state.a2a_active_agents:
-                st.markdown("---")
-                st.markdown("**🤖 Active A2A Agents Status:**")
-                
-                agent_status_cols = st.columns(min(len(st.session_state.a2a_active_agents), 3))
-                
-                for i, (agent_name, agent_obj) in enumerate(st.session_state.a2a_active_agents.items()):
-                    with agent_status_cols[i % 3]:
-                        create_status_card(
-                            f"🤖 {agent_name}",
-                            f"Type: SmartA2AAgent<br>Status: Active<br>ID: {agent_obj.agent_id}",
-                            "success",
-                            "🟢"
-                        )
-                
-                # Quick test buttons
-                st.markdown("**⚡ Quick Agent Tests:**")
-                test_cols = st.columns(3)
-                
-                with test_cols[0]:
-                    if st.button("🏓 Ping All Agents", use_container_width=True):
-                        ping_results = []
-                        for agent_name, agent_obj in st.session_state.a2a_active_agents.items():
-                            try:
-                                result = agent_obj.process_a2a_message({
-                                    "action": "ping",
-                                    "content": "Health check",
-                                    "sender": "System"
-                                })
-                                ping_results.append(f"✅ {agent_name}: {result['response']}")
-                            except Exception as e:
-                                ping_results.append(f"❌ {agent_name}: Error - {e}")
+            # Clear conversation history button
+            if st.button("🗑️ Clear Conversation History", type="secondary"):
+                st.session_state.a2a_conversations = []
+                create_notification("Conversation history cleared", "info")
+                st.rerun()
+        
+        # Show active agents status
+        if 'a2a_active_agents' in st.session_state and st.session_state.a2a_active_agents:
+            st.markdown("---")
+            st.markdown("**🤖 Active A2A Agents Status:**")
+            
+            agent_status_cols = st.columns(min(len(st.session_state.a2a_active_agents), 3))
+            
+            for i, (agent_name, agent_obj) in enumerate(st.session_state.a2a_active_agents.items()):
+                with agent_status_cols[i % 3]:
+                    create_status_card(
+                        f"🤖 {agent_name}",
+                        f"Type: SmartA2AAgent<br>Status: Active<br>ID: {agent_obj.agent_id}",
+                        "success",
+                        "🟢"
+                    )
+            
+            # Quick test buttons
+            st.markdown("**⚡ Quick Agent Tests:**")
+            test_cols = st.columns(3)
+            
+            with test_cols[0]:
+                if st.button("🏓 Ping All Agents", use_container_width=True):
+                    ping_results = []
+                    for agent_name, agent_obj in st.session_state.a2a_active_agents.items():
+                        try:
+                            result = agent_obj.process_a2a_message({
+                                "action": "ping",
+                                "content": "Health check",
+                                "sender": "System"
+                            })
+                            ping_results.append(f"✅ {agent_name}: {result['response']}")
+                        except Exception as e:
+                            ping_results.append(f"❌ {agent_name}: Error - {e}")
+                    
+                    for result in ping_results:
+                        st.write(result)            
+            with test_cols[1]:
+                if st.button("🧠 Test AI Capabilities", use_container_width=True):
+                    test_question = "What is your role in this A2A network?"
+                    for agent_name, agent_obj in st.session_state.a2a_active_agents.items():
+                        try:
+                            result = agent_obj.process_a2a_message({
+                                "action": "chat",
+                                "content": test_question,
+                                "sender": "Tester"
+                            })
+                            st.write(f"🤖 **{agent_name}:** {result['response'][:100]}...")
+                        except Exception as e:
+                            st.write(f"❌ {agent_name}: Error - {e}")
+            
+            with test_cols[2]:
+                if st.button("🔄 Agent Round-Robin", use_container_width=True):
+                    agents = list(st.session_state.a2a_active_agents.keys())
+                    if len(agents) >= 2:
+                        # Send message from first agent to second, then second to third, etc.
+                        message = "Hello colleague! How are you doing?"
+                        chain_results = []
                         
-                        for result in ping_results:
-                            st.write(result)
-                
-                with test_cols[1]:
-                    if st.button("🧠 Test AI Capabilities", use_container_width=True):
-                        test_question = "What is your role in this A2A network?"
-                        for agent_name, agent_obj in st.session_state.a2a_active_agents.items():
+                        for i in range(len(agents)):
+                            sender = agents[i]
+                            receiver = agents[(i + 1) % len(agents)]
+                            
                             try:
-                                result = agent_obj.process_a2a_message({
+                                receiver_agent = st.session_state.a2a_active_agents[receiver]
+                                result = receiver_agent.process_a2a_message({
                                     "action": "chat",
-                                    "content": test_question,
-                                    "sender": "Tester"
+                                    "content": message,
+                                    "sender": sender
                                 })
-                                st.write(f"🤖 **{agent_name}:** {result['response'][:100]}...")
+                                chain_results.append(f"{sender} → {receiver}: {result['response'][:50]}...")
+                                message = result['response']  # Use response as next message
                             except Exception as e:
-                                st.write(f"❌ {agent_name}: Error - {e}")
-                
-                with test_cols[2]:
-                    if st.button("🔄 Agent Round-Robin", use_container_width=True):
-                        agents = list(st.session_state.a2a_active_agents.keys())
-                        if len(agents) >= 2:
-                            # Send message from first agent to second, then second to third, etc.
-                            message = "Hello colleague! How are you doing?"
-                            chain_results = []
-                            
-                            for i in range(len(agents)):
-                                sender = agents[i]
-                                receiver = agents[(i + 1) % len(agents)]
-                                
-                                try:
-                                    receiver_agent = st.session_state.a2a_active_agents[receiver]
-                                    result = receiver_agent.process_a2a_message({
-                                        "action": "chat",
-                                        "content": message,
-                                        "sender": sender
-                                    })
-                                    chain_results.append(f"{sender} → {receiver}: {result['response'][:50]}...")
-                                    message = result['response']  # Use response as next message
-                                except Exception as e:
-                                    chain_results.append(f"{sender} → {receiver}: Error - {e}")
-                            
-                            for result in chain_results:
-                                st.write(result)
-        else:
-            st.info("🔧 Configure and start A2A network first to enable communication")
-            
-            # Show network architecture diagram
-            st.markdown("**🏗️ Expected Network Architecture:**")
-            create_feature_card(
-                "Distributed Agent Network",
-                "Agents communicate across different servers and locations",
-                ["Cross-network messaging", "Load balancing", "Fault tolerance", "Security protocols"]
-            )
+                                chain_results.append(f"{sender} → {receiver}: Error - {e}")
+                        
+                        for result in chain_results:
+                            st.write(result)
+    else:
+        st.info("🔧 Configure and start A2A network first to enable communication")
+        
+        # Show network architecture diagram
+        st.markdown("**🏗️ Expected Network Architecture:**")
+        create_feature_card(
+            "Distributed Agent Network",
+            "Agents communicate across different servers and locations",
+            "🌐"
+        )
     
     # Protocol details with enhanced tabs
     st.markdown("---")
@@ -1326,20 +1325,17 @@ a2a_config = {
 from agents.a2a import SmartA2AAgent
 import asyncio
 
-async def setup_a2a_network():
-    # Create A2A enabled agents
+async def setup_a2a_network():    # Create A2A enabled agents
     research_agent = SmartA2AAgent(
         agent_id="research_001",
         name="Research Specialist", 
-        port=8501,
-        capabilities=["web_search", "data_collection"]
+        port=8501
     )
     
     analysis_agent = SmartA2AAgent(
         agent_id="analysis_002", 
         name="Analysis Specialist",
-        port=8502,
-        capabilities=["data_analysis", "pattern_recognition"]
+        port=8502
     )
     
     # Start network servers
