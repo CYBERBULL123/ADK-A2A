@@ -562,7 +562,7 @@ table tr:hover td {
     color: var(--text-color) !important;
 }
 
-.stMarkdown h1, .stMarkdown h2, .stMarkdown h3, 
+.stMarkdown h2, .stMarkdown h3, 
 .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
     color: var(--primary-color) !important;
 }
