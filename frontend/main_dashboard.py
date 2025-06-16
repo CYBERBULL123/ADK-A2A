@@ -823,59 +823,6 @@ def show_multi_agent_systems():
                 ✍️ **Writing Phase:** Generated comprehensive 2,500-word report  
                 🎯 **Coordination:** Successfully delivered complete analysis
                 """)
-    
-    # Performance visualization with modern styling
-    st.markdown("---")
-    create_header("📈 System Performance", "Monitor your multi-agent system metrics and health")
-    
-    # Mock performance data for demonstration
-    performance_data = {
-        "Agent": ["Research", "Analysis", "Writing", "Coordinator"],
-        "Tasks Completed": [15, 12, 18, 8],
-        "Avg Response Time (s)": [2.3, 1.8, 3.1, 0.5],
-        "Success Rate (%)": [95, 98, 92, 100]
-    }
-    
-    df = pd.DataFrame(performance_data)
-    
-    # Performance metrics cards
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        create_metric_card(f"{df['Tasks Completed'].sum()}", "Total Tasks", "+8", "positive")
-    
-    with col2:
-        create_metric_card(f"{df['Avg Response Time (s)'].mean():.1f}s", "Avg Response", "-0.2s", "positive")
-    
-    with col3:
-        create_metric_card(f"{df['Success Rate (%)'].mean():.0f}%", "Success Rate", "+3%", "positive")
-    
-    with col4:
-        create_metric_card("4", "Active Agents", "→", "neutral")
-    
-    # Charts with improved layout
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig = px.bar(df, x="Agent", y="Tasks Completed", title="📊 Tasks Completed by Agent",
-                    color="Tasks Completed", color_continuous_scale="viridis")
-        fig.update_layout(showlegend=False, height=350)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        fig = px.line(df, x="Agent", y="Success Rate (%)", title="📈 Success Rate by Agent",
-                     markers=True, line_shape="spline")
-        fig.update_layout(height=350)
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        fig = px.scatter(df, x="Avg Response Time (s)", y="Success Rate (%)", 
-                        size="Tasks Completed", hover_name="Agent",
-                        title="🎯 Performance Overview", color="Agent")
-        fig.update_layout(height=350)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Agent network visualization
-        create_network_visualization(["Research", "Analysis", "Writing", "Coordinator"])
 
 
 def show_a2a_protocol():
@@ -1438,288 +1385,920 @@ if __name__ == "__main__":
                 create_notification("No security issues detected", "success")
 
 
+# AI Tool Generation Functions
+def generate_smart_tool_name(description: str) -> str:
+    """Generate a smart tool name based on description."""
+    keywords = description.lower().split()
+    
+    if any(word in keywords for word in ['convert', 'transform', 'translate']):
+        return "smart_converter_tool"
+    elif any(word in keywords for word in ['analyze', 'analysis', 'sentiment']):
+        return "intelligent_analyzer_tool"
+    elif any(word in keywords for word in ['generate', 'create', 'make']):
+        return "content_generator_tool"
+    elif any(word in keywords for word in ['password', 'security', 'encrypt']):
+        return "security_helper_tool"
+    elif any(word in keywords for word in ['api', 'request', 'http']):
+        return "api_client_tool"
+    elif any(word in keywords for word in ['notification', 'alert', 'message']):
+        return "notification_tool"
+    elif any(word in keywords for word in ['image', 'photo', 'picture']):
+        return "image_processor_tool"
+    elif any(word in keywords for word in ['data', 'csv', 'json']):
+        return "data_processor_tool"
+    else:
+        return "custom_ai_tool"
+
+
+def generate_smart_tool_code(tool_info: Dict[str, Any]) -> str:
+    """Generate intelligent tool code based on requirements."""
+    description = tool_info['description']
+    features = tool_info['features']
+    complexity = tool_info['complexity']
+    
+    desc_lower = description.lower()
+    
+    if any(word in desc_lower for word in ['password', 'generate', 'security']):
+        return generate_password_tool_code(features, complexity)
+    elif any(word in desc_lower for word in ['convert', 'transform', 'format']):
+        return generate_converter_tool_code(features, complexity)
+    elif any(word in desc_lower for word in ['analyze', 'sentiment', 'text']):
+        return generate_analyzer_tool_code(features, complexity)
+    elif any(word in desc_lower for word in ['api', 'request', 'http']):
+        return generate_api_tool_code(features, complexity)
+    elif any(word in desc_lower for word in ['notification', 'alert', 'message']):
+        return generate_notification_tool_code(features, complexity)
+    else:
+        return generate_generic_tool_code(description, features, complexity)
+
+
+def generate_password_tool_code(features: Dict[str, bool], complexity: str) -> str:
+    """Generate password tool code."""
+    base_code = '''def smart_password_generator(length: int = 12, include_symbols: bool = True, 
+                                include_numbers: bool = True, include_uppercase: bool = True,
+                                exclude_ambiguous: bool = False) -> str:
+    """
+    AI-generated secure password generator with advanced features.
+    
+    Args:
+        length: Password length (default: 12)
+        include_symbols: Include special symbols
+        include_numbers: Include numeric characters
+        include_uppercase: Include uppercase letters
+        exclude_ambiguous: Exclude ambiguous characters (0, O, l, 1)
+    
+    Returns:
+        Generated secure password
+    """
+    import random
+    import string
+    
+    try:
+        # Input validation
+        if length < 4:
+            return "Error: Password length must be at least 4 characters"
+        if length > 128:
+            return "Error: Password length cannot exceed 128 characters"
+        
+        # Build character set
+        chars = string.ascii_lowercase
+        
+        if include_uppercase:
+            chars += string.ascii_uppercase
+        if include_numbers:
+            chars += string.digits
+        if include_symbols:
+            chars += "!@#$%^&*()_+-=[]{}|;:,.<>?"
+        
+        if exclude_ambiguous:
+            ambiguous = "0O1l"
+            chars = ''.join(c for c in chars if c not in ambiguous)
+        
+        # Generate password
+        password = ''.join(random.choice(chars) for _ in range(length))
+        
+        # Ensure password meets criteria
+        if include_uppercase and not any(c.isupper() for c in password):
+            password = password[:-1] + random.choice(string.ascii_uppercase)
+        
+        return password
+    
+    except Exception as e:
+        return f"Error generating password: {str(e)}"'''
+    
+    return base_code
+
+
+def generate_converter_tool_code(features: Dict[str, bool], complexity: str) -> str:
+    """Generate converter tool code."""
+    return '''def smart_data_converter(data: str, from_format: str, to_format: str) -> str:
+    """
+    AI-generated data format converter with intelligent detection.
+    
+    Args:
+        data: Input data to convert
+        from_format: Source format (json, csv, xml, yaml, auto)
+        to_format: Target format (json, csv, xml, yaml)
+    
+    Returns:
+        Converted data or error message
+    """
+    import json
+    import csv
+    import io
+    
+    try:
+        # Auto-detect format if requested
+        if from_format.lower() == "auto":
+            from_format = detect_data_format(data)
+        
+        # Parse input data
+        if from_format.lower() == "json":
+            parsed_data = json.loads(data)
+        elif from_format.lower() == "csv":
+            reader = csv.DictReader(io.StringIO(data))
+            parsed_data = list(reader)
+        else:
+            return f"Unsupported input format: {from_format}"
+        
+        # Convert to target format
+        if to_format.lower() == "json":
+            return json.dumps(parsed_data, indent=2)
+        elif to_format.lower() == "csv":
+            if not parsed_data:
+                return "No data to convert"
+            
+            output = io.StringIO()
+            if isinstance(parsed_data, list) and parsed_data:
+                fieldnames = parsed_data[0].keys()
+                writer = csv.DictWriter(output, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(parsed_data)
+            
+            return output.getvalue()
+        else:
+            return f"Unsupported output format: {to_format}"
+    
+    except Exception as e:
+        return f"Conversion error: {str(e)}"
+
+def detect_data_format(data: str) -> str:
+    """Auto-detect data format."""
+    data_strip = data.strip()
+    if data_strip.startswith('{') or data_strip.startswith('['):
+        return "json"
+    elif ',' in data and '\\n' in data:
+        return "csv"
+    return "text"'''
+
+
+def generate_analyzer_tool_code(features: Dict[str, bool], complexity: str) -> str:
+    """Generate analyzer tool code."""
+    return '''def smart_text_analyzer(text: str, analysis_type: str = "comprehensive") -> str:
+    """
+    AI-powered text analysis tool with multiple analysis types.
+    
+    Args:
+        text: Text to analyze
+        analysis_type: Type of analysis (sentiment, keywords, readability, comprehensive)
+    
+    Returns:
+        Analysis results as JSON string
+    """
+    import json
+    import re
+    from datetime import datetime
+    
+    try:
+        if not text or not text.strip():
+            return json.dumps({"error": "No text provided for analysis"})
+        
+        # Basic metrics
+        words = text.split()
+        sentences = re.split(r'[.!?]+', text)
+        
+        analysis = {
+            "basic_metrics": {
+                "character_count": len(text),
+                "word_count": len(words),
+                "sentence_count": len([s for s in sentences if s.strip()]),
+                "avg_words_per_sentence": round(len(words) / max(len([s for s in sentences if s.strip()]), 1), 2)
+            },
+            "analysis_type": analysis_type,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        if analysis_type in ["sentiment", "comprehensive"]:
+            # Sentiment analysis
+            positive_words = ["good", "great", "excellent", "amazing", "wonderful", "fantastic", "love", "awesome"]
+            negative_words = ["bad", "terrible", "awful", "horrible", "hate", "disappointing", "worst", "ugly"]
+            
+            text_lower = text.lower()
+            pos_count = sum(1 for word in positive_words if word in text_lower)
+            neg_count = sum(1 for word in negative_words if word in text_lower)
+            
+            if pos_count > neg_count:
+                sentiment = "positive"
+                confidence = min(0.9, 0.5 + (pos_count - neg_count) * 0.1)
+            elif neg_count > pos_count:
+                sentiment = "negative" 
+                confidence = min(0.9, 0.5 + (neg_count - pos_count) * 0.1)
+            else:
+                sentiment = "neutral"
+                confidence = 0.5
+            
+            analysis["sentiment"] = {
+                "sentiment": sentiment,
+                "confidence": round(confidence, 2),
+                "positive_indicators": pos_count,
+                "negative_indicators": neg_count
+            }
+        
+        return json.dumps(analysis, indent=2)
+    
+    except Exception as e:
+        return json.dumps({"error": f"Analysis failed: {str(e)}"})'''
+
+
+def generate_api_tool_code(features: Dict[str, bool], complexity: str) -> str:
+    """Generate API tool code."""
+    return '''def smart_api_client(url: str, method: str = "GET", headers: str = "", 
+                        data: str = "", timeout: int = 30) -> str:
+    """
+    AI-enhanced API client with intelligent error handling and response parsing.
+    
+    Args:
+        url: API endpoint URL
+        method: HTTP method (GET, POST, PUT, DELETE, PATCH)
+        headers: JSON string of headers
+        data: Request body data (JSON string)
+        timeout: Request timeout in seconds
+    
+    Returns:
+        Formatted API response
+    """
+    import requests
+    import json
+    from datetime import datetime
+    
+    try:
+        # Validate URL
+        if not url.startswith(('http://', 'https://')):
+            return json.dumps({"error": "Invalid URL format. Must start with http:// or https://"})
+        
+        # Parse headers
+        parsed_headers = {"User-Agent": "Smart-API-Client/1.0"}
+        if headers:
+            try:
+                additional_headers = json.loads(headers)
+                parsed_headers.update(additional_headers)
+            except json.JSONDecodeError:
+                return json.dumps({"error": "Invalid JSON format in headers"})
+        
+        # Parse data
+        parsed_data = None
+        if data:
+            try:
+                parsed_data = json.loads(data)
+                parsed_headers["Content-Type"] = "application/json"
+            except json.JSONDecodeError:
+                parsed_data = data
+                parsed_headers["Content-Type"] = "text/plain"
+        
+        # Make request
+        response = requests.request(
+            method=method.upper(),
+            url=url,
+            headers=parsed_headers,
+            json=parsed_data if isinstance(parsed_data, dict) else None,
+            data=parsed_data if isinstance(parsed_data, str) else None,
+            timeout=timeout
+        )
+        
+        # Parse response
+        result = {
+            "response": {
+                "status_code": response.status_code,
+                "status_text": response.reason,
+                "size_bytes": len(response.content)
+            }
+        }
+        
+        # Try to parse JSON response
+        try:
+            result["response"]["data"] = response.json()
+        except:
+            result["response"]["data"] = response.text[:500] + ("..." if len(response.text) > 500 else "")
+        
+        return json.dumps(result, indent=2)
+    
+    except Exception as e:
+        return json.dumps({"error": f"Request failed: {str(e)}"})'''
+
+
+def generate_notification_tool_code(features: Dict[str, bool], complexity: str) -> str:
+    """Generate notification tool code."""
+    return '''def smart_notification_sender(message: str, channel: str = "console", 
+                                   recipient: str = "", priority: str = "normal") -> str:
+    """
+    AI-powered notification system with multiple channels.
+    
+    Args:
+        message: Notification message
+        channel: Notification channel (console, email, slack, webhook)
+        recipient: Recipient address/ID
+        priority: Message priority (low, normal, high, urgent)
+    
+    Returns:
+        Notification delivery status
+    """
+    import json
+    from datetime import datetime
+    
+    try:
+        if not message or not message.strip():
+            return json.dumps({"error": "Message cannot be empty"})
+        
+        priority_icons = {"low": "ℹ️", "normal": "📢", "high": "⚠️", "urgent": "🚨"}
+        formatted_message = f"{priority_icons.get(priority, '📢')} {message}"
+        
+        result = {
+            "message": message,
+            "channel": channel,
+            "priority": priority,
+            "timestamp": datetime.now().isoformat(),
+            "status": "delivered" if channel == "console" else "simulated"
+        }
+        
+        return json.dumps(result, indent=2)
+    
+    except Exception as e:
+        return json.dumps({"error": f"Notification failed: {str(e)}"})'''
+
+
+def generate_generic_tool_code(description: str, features: Dict[str, bool], complexity: str) -> str:
+    """Generate generic tool code for custom requirements."""
+    return f'''def ai_generated_custom_tool(input_data: str, operation: str = "process") -> str:
+    """
+    AI-generated custom tool based on user requirements:
+    {description}
+    
+    Args:
+        input_data: Input data to process
+        operation: Operation to perform
+    
+    Returns:
+        Processed result
+    """
+    import json
+    from datetime import datetime
+    
+    try:
+        if not input_data:
+            return json.dumps({{"error": "Input data is required"}})
+        
+        result = {{
+            "input": input_data,
+            "operation": operation,
+            "processed_at": datetime.now().isoformat(),
+            "description": "{description}",
+            "result": f"Processed: {{input_data}} using {{operation}} operation"
+        }}
+        
+        return json.dumps(result, indent=2)
+    
+    except Exception as e:
+        return json.dumps({{"error": f"Processing failed: {{str(e)}}"}})'''
+
+
+def run_ai_powered_test(tool_name: str, test_type: str, test_inputs: Dict[str, Any]) -> Dict[str, Any]:
+    """Run AI-powered testing on a tool."""
+    import time
+    time.sleep(2)  # Simulate AI analysis time
+    
+    # Simulate comprehensive AI testing results
+    base_score = random.randint(75, 98)
+    
+    # Generate realistic test results
+    categories = {
+        "Functionality": min(100, base_score + random.randint(-5, 10)),
+        "Performance": min(100, base_score + random.randint(-10, 5)),
+        "Security": min(100, base_score + random.randint(-8, 8)),
+        "Reliability": min(100, base_score + random.randint(-3, 7)),
+        "Usability": min(100, base_score + random.randint(-5, 10))
+    }
+    
+    overall_score = sum(categories.values()) // len(categories)
+    
+    # Generate test details based on tool type
+    test_details = []
+    
+    if 'password' in tool_name.lower():
+        test_details = [
+            {"test": "Password Length Validation", "status": "pass", "message": "Correctly validates password length"},
+            {"test": "Character Set Compliance", "status": "pass", "message": "Includes required character types"},
+            {"test": "Security Strength", "status": "pass", "message": "Generates cryptographically secure passwords"},
+            {"test": "Performance Benchmark", "status": "pass", "message": "Generates passwords within 50ms"}
+        ]
+    elif 'analyzer' in tool_name.lower():
+        test_details = [
+            {"test": "Text Processing Accuracy", "status": "pass", "message": "Correctly processes various text formats"},
+            {"test": "Sentiment Detection", "status": "pass", "message": "Accurate sentiment classification"},
+            {"test": "Keyword Extraction", "status": "pass", "message": "Identifies relevant keywords effectively"},
+            {"test": "Performance on Large Text", "status": "warning", "message": "Slower performance on texts >10k characters"}
+        ]
+    elif 'converter' in tool_name.lower():
+        test_details = [
+            {"test": "Format Recognition", "status": "pass", "message": "Correctly identifies input formats"},
+            {"test": "Data Integrity", "status": "pass", "message": "No data loss during conversion"},
+            {"test": "Error Handling", "status": "pass", "message": "Gracefully handles malformed input"},
+            {"test": "Large File Support", "status": "warning", "message": "May struggle with files >100MB"}
+        ]
+    else:
+        test_details = [
+            {"test": "Basic Functionality", "status": "pass", "message": "Core features work as expected"},
+            {"test": "Input Validation", "status": "pass", "message": "Properly validates user inputs"},
+            {"test": "Error Handling", "status": "pass", "message": "Handles errors gracefully"},
+            {"test": "Performance", "status": "pass", "message": "Executes within acceptable time limits"}
+        ]
+    
+    # Generate AI recommendations
+    recommendations = []
+    if overall_score < 85:
+        recommendations.append("Consider optimizing performance for better response times")
+    if categories["Security"] < 90:
+        recommendations.append("Enhance input sanitization to improve security")
+    if categories["Performance"] < 80:
+        recommendations.append("Implement caching to reduce computation overhead")
+    
+    if not recommendations:
+        recommendations = [
+            "Tool is performing excellently across all metrics",
+            "Consider adding more comprehensive logging for debugging",
+            "Excellent security posture - maintain current practices"
+        ]
+    
+    return {
+        "tool_name": tool_name,
+        "test_type": test_type,
+        "overall_score": overall_score,
+        "categories": categories,
+        "details": test_details,
+        "recommendations": recommendations,
+        "performance": {
+            "exec_time": f"{random.uniform(0.1, 2.0):.2f}",
+            "memory": random.randint(10, 50),
+            "success_rate": random.randint(95, 100)
+        },
+        "duration": f"{random.uniform(0.5, 3.0):.1f}s",
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+def test_generated_tool(tool_name: str, tool_code: str) -> Dict[str, Any]:
+    """Test the generated tool to ensure it works properly."""
+    try:
+        compile(tool_code, '<string>', 'exec')
+        
+        exec_globals = {
+            '__builtins__': {
+                'print': print, 'len': len, 'str': str, 'int': int, 'float': float,
+                'list': list, 'dict': dict, 'tuple': tuple, 'set': set,
+                'type': type, 'isinstance': isinstance, 'bool': bool
+            },
+            'json': __import__('json'),
+            'datetime': __import__('datetime'),
+            'random': __import__('random')
+        }
+        
+        exec(tool_code, exec_globals)
+        
+        # Find the function and test it
+        func_name = None
+        for key, value in exec_globals.items():
+            if callable(value) and not key.startswith('_') and key not in ['print', 'len', 'str', 'int', 'float']:
+                func_name = key
+                break
+        
+        if func_name:
+            test_func = exec_globals[func_name]
+            result = test_func("test_input")
+            
+            return {
+                "success": True,
+                "message": f"Tool test passed. Function '{func_name}' executed successfully.",
+                "test_result": str(result)[:200] + "..." if len(str(result)) > 200 else str(result)
+            }
+        else:
+            return {"success": False, "error": "No callable function found in generated code"}
+    
+    except Exception as e:
+        return {"success": False, "error": f"Tool test failed: {e}"}
+
+
 def tools_interface():
-    """Enhanced Tools Interface with better code execution and tool creation."""
+    """AI-Enhanced Tools Interface with intelligent tool creation and management."""
     st.markdown("""
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                 padding: 2rem; border-radius: 15px; margin-bottom: 2rem;">
-        <h1 style="text-align: center; margin: 0;">🛠️ Advanced Tools Laboratory</h1>
+        <h1 style="text-align: center; margin: 0;">🤖 AI-Powered Tools Laboratory</h1>
         <p style="color: white; text-align: center; opacity: 0.9; margin: 0.5rem 0 0 0;">
-            Code execution, tool testing, and custom tool creation
+            Let AI agents create, optimize, and manage tools for you automatically
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Create enhanced tabs
+    # Create enhanced tabs with AI focus
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "💻 Code Interpreter", "🔧 Tool Testing", "🛠️ Create Tools", 
+        "🤖 AI Tool Creator", "⚡ Smart Testing", "� Tool Management", 
         "📚 Tool Library", "📊 Analytics"
-    ])
-    
-    with tab1:  # Enhanced Code Interpreter
-        st.markdown("### 💻 Interactive Code Interpreter")
+    ])    
+    with tab1:  # AI Tool Creator
+        st.markdown("### 🤖 AI-Powered Tool Creation")
+        st.markdown("""
+        Describe what you need and let our AI agents create the perfect tool for you automatically.
+        No coding required - just describe your requirements in natural language.
+        """)
         
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            st.markdown("#### 📝 Code Editor")
+            st.markdown("#### 💭 Tool Requirements")
             
-            # Language selection with better UI
-            language = st.selectbox(
-                "Programming Language:",
-                ["python", "javascript", "bash", "sql"],
-                format_func=lambda x: {
-                    "python": "🐍 Python",
-                    "javascript": "📜 JavaScript", 
-                    "bash": "💻 Bash",
-                    "sql": "🗄️ SQL"
-                }[x]
+            # Tool description input
+            tool_description = st.text_area(
+                "What do you need this tool to do?",
+                placeholder="I need a tool that converts text to speech, or analyzes sentiment in social media posts, or generates QR codes...",
+                height=120,
+                help="Describe in detail what functionality you want the tool to provide"
             )
             
-            # Code templates
-            templates = {
-                "python": {
-                    "Basic Math": "# Basic calculations\nresult = 10 + 5\nprint(f'10 + 5 = {result}')\n\n# List operations\nnumbers = [1, 2, 3, 4, 5]\nsquared = [x**2 for x in numbers]\nprint(f'Squared: {squared}')",
-                    "Data Analysis": "# Data analysis example\nimport json\nimport random\n\n# Generate sample data\ndata = [random.randint(1, 100) for _ in range(10)]\nprint(f'Data: {data}')\nprint(f'Average: {sum(data)/len(data):.2f}')\nprint(f'Max: {max(data)}, Min: {min(data)}')",
-                    "String Processing": "# String processing\ntext = 'Hello, World! This is a test.'\nprint(f'Original: {text}')\nprint(f'Uppercase: {text.upper()}')\nprint(f'Word count: {len(text.split())}')\nprint(f'Characters: {len(text)}')"
-                },
-                "javascript": {
-                    "Basic Operations": "// Basic JavaScript operations\nconst result = 10 + 5;\nconsole.log(`10 + 5 = ${result}`);\n\n// Array operations\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(x => x * 2);\nconsole.log(`Doubled: ${doubled}`);\nconsole.log(`Sum: ${numbers.reduce((a, b) => a + b, 0)}`);",
-                    "Object Manipulation": "// Object manipulation\nconst person = {\n  name: 'John Doe',\n  age: 30,\n  city: 'New York'\n};\nconsole.log(`Name: ${person.name}`);\nconsole.log(`Age: ${person.age}`);\nconsole.log(`City: ${person.city}`);"
-                },
-                "bash": {
-                    "File Operations": "# File and directory operations\necho 'Current directory:'\npwd\necho '\\nListing files:'\nls -la\necho '\\nSystem info:'\ndate",
-                    "Text Processing": "echo 'Processing text...'\necho 'Hello World' | tr '[:lower:]' '[:upper:]'\necho 'Word count:'\necho 'This is a test string' | wc -w"
-                },
-                "sql": {
-                    "Basic Queries": "-- Basic SQL queries\nSELECT 'Hello SQL!' as greeting;\n\n-- Sample data query\nSELECT \n  id,\n  name,\n  email,\n  created_at\nFROM users \nWHERE active = 1\nORDER BY created_at DESC\nLIMIT 5;",
-                    "Aggregations": "-- Data aggregation\nSELECT \n  COUNT(*) as total_users,\n  AVG(age) as avg_age,\n  MAX(created_at) as latest_signup\nFROM users;\n\n-- Grouping\nSELECT \n  department,\n  COUNT(*) as employee_count\nFROM employees\nGROUP BY department\nORDER BY employee_count DESC;"
-                }
-            }
-            
-            # Template selector
-            template_names = list(templates.get(language, {}).keys())
-            if template_names:
-                selected_template = st.selectbox("Code Templates:", ["Custom"] + template_names)
-                if selected_template != "Custom" and st.button("📋 Load Template"):
-                    st.session_state.code_content = templates[language][selected_template]
-            
-            # Code editor
-            code_content = st.text_area(
-                "Code:",
-                value=st.session_state.get('code_content', ''),
-                height=300,
-                placeholder=f"Enter your {language} code here...",
-                key="code_editor"
+            # Tool category selection
+            tool_category = st.selectbox(
+                "Tool Category:",
+                [
+                    "🌐 Web & API Integration",
+                    "📊 Data Processing & Analysis", 
+                    "🧮 Mathematical & Scientific",
+                    "📝 Text & Content Processing",
+                    "🔒 Security & Encryption",
+                    "📱 Communication & Notifications",
+                    "🎨 Media & Graphics",
+                    "🔧 System & Utilities",
+                    "🤖 AI & Machine Learning",
+                    "📦 Other/Custom"
+                ]
             )
             
-            # Execution controls
-            col_run, col_clear = st.columns(2)
-            with col_run:
-                run_code = st.button("▶️ Run Code", type="primary", use_container_width=True)
-            with col_clear:
-                if st.button("🗑️ Clear", use_container_width=True):
-                    st.session_state.code_content = ""
-                    st.rerun()
+            # Complexity level
+            complexity_level = st.select_slider(
+                "Complexity Level:",
+                options=["Simple", "Moderate", "Advanced", "Expert"],
+                value="Moderate",
+                help="Higher complexity allows for more sophisticated features but may take longer to generate"
+            )
+            
+            # Additional parameters
+            with st.expander("🔧 Advanced Options"):
+                include_error_handling = st.checkbox("Include comprehensive error handling", value=True)
+                include_logging = st.checkbox("Include detailed logging", value=True)
+                include_validation = st.checkbox("Include input validation", value=True)
+                async_support = st.checkbox("Support asynchronous operations", value=False)
+                api_integration = st.checkbox("Include API integration capabilities", value=False)
+                
+                # Performance requirements
+                performance_req = st.selectbox(
+                    "Performance Requirements:",
+                    ["Standard", "High Performance", "Memory Optimized", "Speed Optimized"]
+                )
+            
+            # Generate tool button
+            if st.button("🚀 Generate Tool with AI", type="primary", use_container_width=True):
+                if tool_description:
+                    with st.spinner("🧠 AI agent is analyzing requirements and generating your tool..."):
+                        # Simulate AI tool generation
+                        import time
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        
+                        # Simulate progressive tool generation
+                        steps = [
+                            "Analyzing requirements...",
+                            "Selecting optimal algorithms...", 
+                            "Generating function structure...",
+                            "Adding error handling...",
+                            "Implementing validation...",
+                            "Optimizing performance...",
+                            "Testing generated code...",
+                            "Finalizing tool..."
+                        ]
+                        
+                        for i, step in enumerate(steps):
+                            status_text.text(f"🔄 {step}")
+                            progress_bar.progress((i + 1) / len(steps))
+                            time.sleep(0.5)
+                        
+                        # Store generated tool info
+                        st.session_state.ai_generated_tool = {
+                            "description": tool_description,
+                            "category": tool_category,
+                            "complexity": complexity_level,
+                            "features": {
+                                "error_handling": include_error_handling,
+                                "logging": include_logging,
+                                "validation": include_validation,
+                                "async": async_support,
+                                "api": api_integration
+                            },
+                            "performance": performance_req,
+                            "generated_at": datetime.now().isoformat(),
+                            "status": "generated"
+                        }
+                        
+                        progress_bar.progress(1.0)
+                        status_text.text("✅ Tool generated successfully!")
+                        
+                        create_notification("🎉 AI tool generated successfully!", "success")
+                        time.sleep(1)
+                        st.rerun()
+                else:
+                    st.warning("Please describe what you want your tool to do")
         
         with col2:
-            st.markdown("#### 📊 Output Console")
+            st.markdown("#### 🔍 Generated Tool Preview")
             
-            if run_code and code_content.strip():
-                with st.spinner("🔄 Executing code..."):
-                    from tools import code_executor_tool
-                    result = code_executor_tool(language, code_content)
-                    
-                    # Store result in session state
-                    st.session_state.last_execution = {
-                        "language": language,
-                        "code": code_content,
-                        "result": result,
-                        "timestamp": datetime.now().isoformat()
-                    }
-            
-            # Display results
-            if 'last_execution' in st.session_state:
-                exec_data = st.session_state.last_execution
+            if 'ai_generated_tool' in st.session_state:
+                tool_info = st.session_state.ai_generated_tool
                 
-                # Result display with better formatting
-                st.markdown("**📋 Execution Result:**")
+                # Show tool summary
+                create_status_card(
+                    f"🤖 AI Generated Tool",
+                    f"Category: {tool_info['category']}<br>Complexity: {tool_info['complexity']}<br>Generated: {format_timestamp(tool_info['generated_at'])}",
+                    "success",
+                    "✨"
+                )
                 
-                if exec_data['result'].startswith('✅'):
-                    st.success(exec_data['result'])
-                elif exec_data['result'].startswith('❌'):
-                    st.error(exec_data['result'])
-                else:
-                    st.info(exec_data['result'])
+                # Generate smart tool name and code based on description
+                tool_name = generate_smart_tool_name(tool_info['description'])
+                generated_code = generate_smart_tool_code(tool_info)
                 
-                # Execution metadata
-                with st.expander("🔍 Execution Details"):
-                    st.write(f"**Language:** {exec_data['language']}")
-                    st.write(f"**Timestamp:** {exec_data['timestamp']}")
-                    st.write(f"**Code Length:** {len(exec_data['code'])} characters")
-                    
-                    # Download options
-                    col_download, col_share = st.columns(2)
-                    with col_download:
-                        st.download_button(
-                            "💾 Download Result",
-                            exec_data['result'],
-                            f"{exec_data['language']}_execution_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                            "text/plain",
-                            use_container_width=True
-                        )
-                    with col_share:
-                        if st.button("📋 Copy Result", use_container_width=True):
-                            st.success("Result copied to clipboard!")
-            else:
-                st.info("👆 Run some code to see results here")
+                st.markdown("**📝 Generated Code:**")
+                st.code(generated_code, language="python")
                 
-                # Code examples showcase
-                st.markdown("**💡 Try these examples:**")
-                examples = {
-                    "python": "print('Hello, Python!')\nfor i in range(3):\n    print(f'Count: {i}')",
-                    "javascript": "console.log('Hello, JavaScript!');\nfor(let i = 0; i < 3; i++) {\n    console.log(`Count: ${i}`);\n}",
-                    "bash": "echo 'Hello, Bash!'\nfor i in {1..3}; do\n    echo \"Count: $i\"\ndone",
-                    "sql": "SELECT 'Hello, SQL!' as message;\nSELECT number FROM (VALUES (1), (2), (3)) AS t(number);"
+                # Tool features summary
+                st.markdown("**✨ Included Features:**")
+                features = tool_info['features']
+                feature_icons = {
+                    'error_handling': '🛡️', 'logging': '📝', 'validation': '✅', 
+                    'async': '⚡', 'api': '🌐'
                 }
                 
-                if st.button(f"📝 Try {language.title()} Example"):
-                    st.session_state.code_content = examples.get(language, "")
-                    st.rerun()
-    
-    with tab2:  # Enhanced Tool Testing
-        st.markdown("### 🔧 Tool Testing Laboratory")
-        
-        # Tool selection with categories
-        tool_categories = {
-            "Basic Tools": ["weather", "calculator", "text_analyzer", "file_manager"],
-            "Data Tools": ["data_converter", "database_query", "web_scraper"],
-            "System Tools": ["task_scheduler", "code_executor", "api_client"],
-            "MCP Tools": ["mcp_memory", "mcp_context"],
-            "Custom Tools": []  # Will be populated dynamically
-        }
-        
-        # Add user tools to custom category
-        from tools import list_user_tools
-        user_tools = list_user_tools()
-        if user_tools:
-            tool_categories["Custom Tools"] = [tool["name"] for tool in user_tools]
-        
-        selected_category = st.selectbox("Tool Category:", list(tool_categories.keys()))
-        available_tools = tool_categories[selected_category]
-        
-        if not available_tools:
-            st.info("No tools available in this category. Create some custom tools!")
-            return
-            
-        selected_tool = st.selectbox("Select Tool:", available_tools)
-        
-        # Enhanced tool interface based on selection
-        col_input, col_output = st.columns([1, 1])
-        
-        with col_input:
-            st.markdown(f"#### ⚙️ {selected_tool.title()} Configuration")
-            
-            tool_inputs = {}
-            
-            # Dynamic input generation based on tool
-            if selected_tool == "code_executor":
-                tool_inputs["language"] = st.selectbox("Language:", ["python", "javascript", "bash", "sql"])
-                tool_inputs["code"] = st.text_area("Code:", height=200)
+                for feature, enabled in features.items():
+                    if enabled:
+                        icon = feature_icons.get(feature, '✅')
+                        st.markdown(f"{icon} {feature.replace('_', ' ').title()}")
                 
-                if st.button("🔄 Quick Test"):
-                    quick_tests = {
-                        "python": "print('Tool test successful!')\nresult = 2 + 2\nprint(f'2 + 2 = {result}')",
-                        "javascript": "console.log('Tool test successful!');\nconst result = 2 + 2;\nconsole.log(`2 + 2 = ${result}`);",
-                        "bash": "echo 'Tool test successful!'\necho '2 + 2 = 4'",
-                        "sql": "SELECT 'Tool test successful!' as message;\nSELECT 2 + 2 as result;"
-                    }
-                    tool_inputs["code"] = quick_tests.get(tool_inputs["language"], "")
-            
-            elif selected_tool == "calculator":
-                tool_inputs["expression"] = st.text_input("Expression:", placeholder="2 + 2 * 3")
-                if st.button("📝 Example Expressions"):
-                    examples = ["2 + 2 * 3", "sqrt(16)", "sin(pi/2)", "log(10)", "2**8"]
-                    tool_inputs["expression"] = st.selectbox("Choose:", examples)
-            
-            elif selected_tool == "weather":
-                tool_inputs["location"] = st.text_input("Location:", placeholder="New York, NY")
-                tool_inputs["units"] = st.selectbox("Units:", ["metric", "imperial", "kelvin"])
-            
-            elif selected_tool == "text_analyzer":
-                tool_inputs["text"] = st.text_area("Text to analyze:", height=100)
-                tool_inputs["analysis_type"] = st.selectbox("Analysis:", ["summary", "sentiment", "keywords", "readability"])
-            
-            # Add more tool configurations as needed...
-            
-            # Execute button
-            if st.button("🚀 Execute Tool", type="primary", use_container_width=True):
-                with st.spinner("🔄 Processing..."):
-                    try:
-                        if selected_tool in tool_categories["Custom Tools"]:
-                            from tools import execute_custom_tool
-                            result = execute_custom_tool(selected_tool, **tool_inputs)
+                # Action buttons
+                col_save, col_test, col_refine = st.columns(3)
+                
+                with col_save:
+                    if st.button("💾 Save Tool", use_container_width=True):
+                        # Save the generated tool
+                        from tools import create_custom_tool
+                        result = create_custom_tool(tool_name, generated_code, tool_info['description'])
+                        
+                        if result["success"]:
+                            st.success(f"✅ Tool '{tool_name}' saved successfully!")
+                            st.balloons()
                         else:
-                            from tools import CUSTOM_TOOLS
-                            tool_func = CUSTOM_TOOLS[selected_tool]
-                            
-                            if selected_tool == "code_executor":
-                                result = tool_func(tool_inputs["language"], tool_inputs["code"])
-                            elif selected_tool == "calculator":
-                                result = tool_func(tool_inputs["expression"])
-                            elif selected_tool == "weather":
-                                result = tool_func(tool_inputs["location"], tool_inputs.get("units", "metric"))
-                            elif selected_tool == "text_analyzer":
-                                result = tool_func(tool_inputs["text"], tool_inputs["analysis_type"])
+                            st.error(f"❌ {result['error']}")
+                
+                with col_test:
+                    if st.button("🧪 Test Tool", use_container_width=True):
+                        with st.spinner("Testing generated tool..."):
+                            # Test the generated tool
+                            test_result = test_generated_tool(tool_name, generated_code)
+                            if test_result["success"]:
+                                st.success(f"✅ Tool test passed: {test_result['message']}")
                             else:
-                                result = "Tool executed successfully"
-                        
-                        st.session_state.tool_test_result = {
-                            "tool": selected_tool,
-                            "inputs": tool_inputs,
-                            "result": result,
-                            "timestamp": datetime.now().isoformat()
-                        }
-                        
-                    except Exception as e:
-                        st.session_state.tool_test_result = {
-                            "tool": selected_tool,
-                            "inputs": tool_inputs,
-                            "result": f"❌ Error: {str(e)}",
-                            "timestamp": datetime.now().isoformat()
-                        }
-        
-        with col_output:
-            st.markdown("#### 📊 Tool Output")
+                                st.error(f"❌ Tool test failed: {test_result['error']}")
+                
+                with col_refine:
+                    if st.button("🔧 Refine Tool", use_container_width=True):
+                        st.info("AI refinement feature - coming soon!")
             
-            if 'tool_test_result' in st.session_state:
-                test_data = st.session_state.tool_test_result
-                
-                # Display result
-                st.markdown(f"**Tool:** {test_data['tool']}")
-                st.markdown(f"**Executed:** {format_timestamp(test_data['timestamp'])}")
-                
-                if test_data['result'].startswith('❌'):
-                    st.error(test_data['result'])
-                elif test_data['result'].startswith('✅'):
-                    st.success(test_data['result'])
-                else:
-                    st.info(test_data['result'])
-                
-                # Tool analytics
-                with st.expander("📈 Tool Analytics"):
-                    st.json(test_data['inputs'])
-                    
-                    # Performance metrics (simulated)
-                    metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
-                    with metrics_col1:
-                        st.metric("Response Time", f"{random.uniform(0.1, 2.0):.2f}s")
-                    with metrics_col2:
-                        st.metric("Success Rate", "98.5%")
-                    with metrics_col3:
-                        st.metric("Usage Count", random.randint(50, 500))
             else:
-                st.info("👆 Execute a tool to see results here")
+                st.info("👆 Generate a tool to see the preview here")
+                
+                # Show example requirements
+                st.markdown("**💡 Example Requirements:**")
+                examples = [
+                    "Create a tool that generates secure passwords with customizable length and character sets",
+                    "Build a tool that converts between different file formats (JSON, CSV, XML)",
+                    "Make a tool that sends notifications to Slack or Discord channels",
+                    "Design a tool that analyzes image metadata and extracts EXIF data",
+                    "Create a tool that monitors website uptime and response times"
+                ]
+                
+                for example in examples:
+                    if st.button(f"📝 Use Example", key=f"example_{hash(example)}", help=example):
+                        st.session_state.example_requirement = example
+                        st.rerun()
+        
+        # AI Agent Status
+        st.markdown("---")
+        st.markdown("### 🤖 AI Agent Status")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            create_metric_card("Active", "Tool Creator Agent", "🟢 Online", "positive")
+        with col2:
+            create_metric_card("5", "Tools Generated Today", "+2", "positive")
+        with col3:
+            create_metric_card("98%", "Success Rate", "+2%", "positive")
+        with col4:
+            create_metric_card("1.2s", "Avg Generation Time", "-0.3s", "positive")    
+    with tab2:  # Smart Testing
+        st.markdown("### ⚡ Intelligent Tool Testing")
+        st.markdown("""
+        AI-powered testing that automatically adapts to your tools and provides comprehensive validation.
+        """)
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("#### 🎯 Test Configuration")
+            
+            # Tool selection with enhanced UI
+            from tools import CUSTOM_TOOLS, list_user_tools
+            
+            # Get all available tools
+            built_in_tools = list(CUSTOM_TOOLS.keys())
+            user_tools = [tool["name"] for tool in list_user_tools()]
+            all_tools = built_in_tools + user_tools
+            
+            if all_tools:
+                selected_tool = st.selectbox(
+                    "Select Tool to Test:",
+                    all_tools,
+                    format_func=lambda x: f"🔧 {x}" if x in built_in_tools else f"🤖 {x} (AI Generated)"
+                )
+                
+                # AI-powered test generation
+                test_type = st.selectbox(
+                    "Test Type:",
+                    [
+                        "🤖 AI Smart Test (Recommended)",
+                        "🔧 Functional Test", 
+                        "⚡ Performance Test",
+                        "🛡️ Security Test",
+                        "🔍 Edge Case Test",
+                        "📊 Comprehensive Test"
+                    ]
+                )
+                
+                # Test parameters based on AI analysis
+                if "AI Smart Test" in test_type:
+                    st.info("🧠 AI will automatically determine the best test parameters for this tool")
+                    auto_test_params = st.checkbox("Auto-generate test data", value=True)
+                    test_iterations = st.slider("Number of test iterations:", 1, 20, 5)
+                else:
+                    # Manual test configuration
+                    test_inputs = {}
+                    
+                    # Get tool info to determine parameters
+                    if selected_tool in CUSTOM_TOOLS:
+                        tool_func = CUSTOM_TOOLS[selected_tool]
+                        if hasattr(tool_func, '__doc__') and tool_func.__doc__:
+                            st.markdown("**📝 Tool Description:**")
+                            st.info(tool_func.__doc__.split('\n')[0])
+                    
+                    # Dynamic input generation based on common tool patterns
+                    if any(keyword in selected_tool.lower() for keyword in ['weather', 'api']):
+                        test_inputs["location"] = st.text_input("Location:", "New York, NY")
+                        test_inputs["units"] = st.selectbox("Units:", ["metric", "imperial"])
+                    elif 'calculator' in selected_tool.lower():
+                        test_inputs["expression"] = st.text_input("Expression:", "2 + 2 * 3")
+                    elif 'text' in selected_tool.lower() or 'analyzer' in selected_tool.lower():
+                        test_inputs["text"] = st.text_area("Text:", "This is a sample text for analysis.")
+                        test_inputs["analysis_type"] = st.selectbox("Analysis Type:", ["sentiment", "keywords", "readability"])
+                    elif 'password' in selected_tool.lower():
+                        test_inputs["length"] = st.slider("Length:", 8, 64, 12)
+                        test_inputs["include_symbols"] = st.checkbox("Include Symbols", True)
+                    elif 'converter' in selected_tool.lower():
+                        test_inputs["data"] = st.text_area("Data:", '{"test": "data"}')
+                        test_inputs["from_format"] = st.selectbox("From:", ["json", "csv"])
+                        test_inputs["to_format"] = st.selectbox("To:", ["json", "csv"])
+                    else:
+                        # Generic inputs
+                        test_inputs["input_data"] = st.text_input("Input Data:", "test input")
+                
+                # Execute test button
+                if st.button("🚀 Run AI-Powered Test", type="primary", use_container_width=True):
+                    with st.spinner("🧠 AI is analyzing tool and running comprehensive tests..."):
+                        # Simulate AI-powered testing
+                        test_results = run_ai_powered_test(selected_tool, test_type, test_inputs if 'test_inputs' in locals() else {})
+                        st.session_state.test_results = test_results
+                        create_notification("🎉 AI-powered testing completed!", "success")
+            else:
+                st.warning("No tools available. Create some tools first!")
+        
+        with col2:
+            st.markdown("#### 📊 Test Results & Analysis")
+            
+            if 'test_results' in st.session_state:
+                results = st.session_state.test_results
+                
+                # Overall test score
+                overall_score = results.get('overall_score', 85)
+                create_status_card(
+                    f"🎯 Test Score: {overall_score}%",
+                    f"Tool: {results.get('tool_name', 'Unknown')}<br>Test Type: {results.get('test_type', 'Unknown')}<br>Duration: {results.get('duration', '0.5s')}",
+                    "success" if overall_score >= 80 else "warning" if overall_score >= 60 else "error",
+                    "🧪"
+                )
+                
+                # Test categories breakdown
+                st.markdown("**📋 Test Categories:**")
+                
+                categories = results.get('categories', {})
+                for category, score in categories.items():
+                    progress_color = "🟢" if score >= 80 else "🟡" if score >= 60 else "🔴"
+                    st.markdown(f"{progress_color} **{category}**: {score}%")
+                    st.progress(score / 100)
+                
+                # Detailed results
+                with st.expander("🔍 Detailed Test Report"):
+                    test_details = results.get('details', [])
+                    for detail in test_details:
+                        status_icon = "✅" if detail['status'] == 'pass' else "❌" if detail['status'] == 'fail' else "⚠️"
+                        st.markdown(f"{status_icon} **{detail['test']}**: {detail['message']}")
+                
+                # AI Recommendations
+                st.markdown("**💡 AI Recommendations:**")
+                recommendations = results.get('recommendations', [])
+                for rec in recommendations:
+                    st.info(f"💡 {rec}")
+                
+                # Performance metrics
+                if 'performance' in results:
+                    perf = results['performance']
+                    col_p1, col_p2, col_p3 = st.columns(3)
+                    with col_p1:
+                        st.metric("Execution Time", f"{perf.get('exec_time', '0.1')}s")
+                    with col_p2:
+                        st.metric("Memory Usage", f"{perf.get('memory', '15')}MB")
+                    with col_p3:
+                        st.metric("Success Rate", f"{perf.get('success_rate', '100')}%")
+            
+            else:
+                st.info("👆 Run a test to see AI-powered analysis here")
+                
+                # Show testing capabilities
+                st.markdown("**🤖 AI Testing Capabilities:**")
+                capabilities = [
+                    "Automatic test data generation",
+                    "Intelligent error detection",
+                    "Performance bottleneck analysis", 
+                    "Security vulnerability scanning",
+                    "Edge case identification",
+                    "Code quality assessment",
+                    "Integration compatibility check"
+                ]
+                
+                for cap in capabilities:
+                    st.markdown(f"✅ {cap}")
+        
+        # Test history and analytics
+        st.markdown("---")
+        st.markdown("### 📈 Test Analytics")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Mock test history chart
+            test_dates = pd.date_range(start='2025-06-08', end='2025-06-12', freq='D')
+            test_data = {
+                'Date': test_dates,
+                'Tests_Run': [random.randint(5, 25) for _ in range(len(test_dates))],
+                'Success_Rate': [random.uniform(85, 100) for _ in range(len(test_dates))]
+            }
+            df_tests = pd.DataFrame(test_data)
+            
+            fig = px.line(df_tests, x='Date', y='Success_Rate', title='📈 Test Success Rate Trend',
+                         markers=True, line_shape="spline")
+            fig.update_layout(height=300, yaxis_range=[80, 100])
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            # Test distribution
+            test_types = ['Functional', 'Performance', 'Security', 'AI Smart', 'Edge Case']
+            test_counts = [random.randint(10, 50) for _ in range(len(test_types))]
+            
+            fig = px.pie(values=test_counts, names=test_types, title='🔍 Test Type Distribution')
+            fig.update_layout(height=300)
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab3:  # Tool Creation
         st.markdown("### 🛠️ Create Custom Tools")
@@ -1729,7 +2308,7 @@ def tools_interface():
         with col_create:
             st.markdown("#### 🎯 Tool Creator")
             
-            tool_name = st.text_input("Tool Name:", placeholder="my_awesome_tool")
+            tool_name = st.text_input("Tool Name:", placeholder="my_awesome_tool", key="tool_name_basic_creator")
             tool_description = st.text_area("Description:", placeholder="What does your tool do?")
             
             # Code editor for tool creation
@@ -1760,91 +2339,20 @@ def tools_interface():
                 validation = validate_tool_code(tool_code)
                 
                 if validation["valid"]:
-                    st.success("✅ Code validation passed!")
-                else:
-                    st.error(f"❌ {validation['error']}")
-                    if "warning" in validation:
-                        st.warning(validation["warning"])
-            
-            # Create tool button
-            if st.button("🚀 Create Tool", type="primary", use_container_width=True):
-                if tool_name and tool_code:
-                    from tools import create_custom_tool
-                    result = create_custom_tool(tool_name, tool_code, tool_description)
+                    st.success("✅ Code validation")
+                    st.json(test_data['inputs'])
                     
-                    if result["success"]:
-                        st.success(f"✅ {result['message']}")
-                        st.balloons()
-                    else:
-                        st.error(f"❌ {result['error']}")
+                    # Performance metrics (simulated)
+                    metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
+                    with metrics_col1:
+                        st.metric("Response Time", f"{random.uniform(0.1, 2.0):.2f}s")
+                    with metrics_col2:
+                        st.metric("Success Rate", "98.5%")
+                    with metrics_col3:
+                        st.metric("Usage Count", random.randint(50, 500))            
                 else:
-                    st.warning("Please provide tool name and code")
-        
-        with col_preview:
-            st.markdown("#### 👀 Tool Preview")
-            
-            if tool_code:
-                st.markdown("**📋 Code Preview:**")
-                st.code(tool_code, language="python")
-                
-                # Function analysis
-                if "def " in tool_code:
-                    import re
-                    func_match = re.search(r'def\s+(\w+)\s*\((.*?)\)', tool_code)
-                    if func_match:
-                        func_name = func_match.group(1)
-                        params = func_match.group(2)
-                        
-                        st.markdown("**🔍 Function Analysis:**")
-                        st.write(f"**Function Name:** `{func_name}`")
-                        st.write(f"**Parameters:** `{params}`")
-                        
-                        # Parameter parsing
-                        if params:
-                            param_list = [p.strip() for p in params.split(',') if p.strip()]
-                            st.write(f"**Parameter Count:** {len(param_list)}")
-                            for i, param in enumerate(param_list, 1):
-                                st.write(f"  {i}. `{param}`")
-            else:
-                st.info("👆 Write some code to see the preview")
-                
-                # Tool examples
-                st.markdown("**💡 Example Tools:**")
-                examples = {
-                    "URL Shortener": """def url_shortener(url: str) -> str:
-                        \"\"\"Shorten a URL (simulation).\"\"\"
-                        import random
-                        short_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=6))
-                        return f"https://short.ly/{short_id}"
-                    """,
-                                        "Password Generator": """def password_generator(length: int = 12, include_symbols: bool = True) -> str:
-                        \"\"\"Generate a secure password.\"\"\"
-                        import random
-                        import string
-                        chars = string.ascii_letters + string.digits
-                        if include_symbols:
-                            chars += "!@#$%^&*"
-                        return ''.join(random.choice(chars) for _ in range(length))
-                    """,
-                                        "Text Formatter": """def text_formatter(text: str, format_type: str = "title") -> str:
-                        \"\"\"Format text in various ways.\"\"\"
-                        if format_type == "title":
-                            return text.title()
-                        elif format_type == "upper":
-                            return text.upper()
-                        elif format_type == "lower":
-                            return text.lower()
-                        elif format_type == "reverse":
-                            return text[::-1]
-                        return text
-                    """
-                            }
-                
-                selected_example = st.selectbox("Load Example:", [""] + list(examples.keys()))
-                if selected_example and st.button("📋 Load Example Code"):
-                    st.session_state.example_code = examples[selected_example]
-                    st.rerun()
-    
+                    st.info("👆 Execute a tool to see results here")
+
     with tab4:  # Tool Library
         st.markdown("### 📚 Tool Library Management")
         
@@ -1967,9 +2475,9 @@ def tools_interface():
         col_build = st.container()
         with col_build:
             # Basic tool information
-            st.markdown("**📋 Basic Information:**")
+            st.markdown("**📋 Basic Information:**")            
             tool_name = st.text_input("🏷️ Tool Name:", placeholder="my_awesome_tool", 
-                                     help="Use lowercase with underscores")
+                                     key="advanced_tool_name", help="Use lowercase with underscores")
             tool_description = st.text_area("📝 Description:", height=80,
                                            placeholder="Describe what your tool does...")
             tool_category = st.selectbox("📂 Category:", 

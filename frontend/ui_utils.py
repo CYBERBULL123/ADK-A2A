@@ -322,10 +322,17 @@ def create_loading_spinner(text: str = "Processing..."):
     return st.spinner(text)
 
 
-def format_timestamp(timestamp: datetime = None) -> str:
-    """Format timestamp for display."""
+def format_timestamp(timestamp = None) -> str:
+    """Format timestamp for display. Accepts datetime objects or ISO format strings."""
     if timestamp is None:
         timestamp = datetime.now()
+    elif isinstance(timestamp, str):
+        try:
+            # Parse ISO format string to datetime
+            timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+        except ValueError:
+            # If parsing fails, return the string as-is
+            return timestamp
     return timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
 
