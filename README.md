@@ -20,7 +20,12 @@ A comprehensive learning project for Google's Agent Development Kit (ADK) and Ag
 │   └── a2a/                  # A2A protocol examples
 ├── tools/                    # Custom tools and integrations
 ├── evaluations/              # Testing and evaluation frameworks
-├── frontend/                 # Streamlit applications
+├── frontend/                 # Modular Streamlit frontend
+│   ├── app.py               # Main application entry
+│   ├── core/                # Core navigation and config
+│   ├── pages/               # Modular page components
+│   ├── utils/               # Reusable UI components
+│   └── assets/              # CSS and static files
 ├── deployment/               # Docker and deployment configs
 ├── examples/                 # Progressive learning examples
 └── docs/                     # Documentation and guides
@@ -41,7 +46,8 @@ A comprehensive learning project for Google's Agent Development Kit (ADK) and Ag
 
 3. **Run Interactive Learning Dashboard**:
    ```bash
-   streamlit run frontend/main_dashboard.py
+   cd frontend
+   streamlit run app.py
    ```
 
 ## 📚 Learning Path
@@ -68,7 +74,7 @@ A comprehensive learning project for Google's Agent Development Kit (ADK) and Ag
 
 ## 🛠️ Key Features
 
-- **Interactive Dashboard**: Streamlit-based interface for testing and visualization
+- **Modern Frontend**: Modular Streamlit interface with responsive design
 - **Progressive Examples**: Step-by-step learning with increasing complexity
 - **Real-world Scenarios**: Practical use cases and applications
 - **Comprehensive Testing**: Evaluation frameworks and testing strategies

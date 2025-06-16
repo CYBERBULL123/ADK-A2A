@@ -1,0 +1,32 @@
+# Frontend Dependencies for ADK & A2A Dashboard
+
+# Core Streamlit
+streamlit>=1.28.0
+streamlit-option-menu>=0.3.6
+
+# Data Visualization
+plotly>=5.17.0
+pandas>=2.1.0
+numpy>=1.24.0
+
+# UI Enhancements
+streamlit-elements>=0.1.0
+streamlit-aggrid>=0.3.4
+streamlit-ace>=0.1.1
+
+# Documentation Processing
+markdown>=3.5.0
+pymdown-extensions>=10.0.0
+pygments>=2.15.0
+
+# System monitoring and utilities
+psutil>=5.9.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Additional utilities
+rich>=13.0.0
+
+# ADK and AI dependencies (for integration)
+google-generativeai>=0.3.0
+google-adk>=0.1.0  # Note: This may need to be installed separately or from a specific source
