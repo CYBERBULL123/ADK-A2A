@@ -496,12 +496,13 @@ def create_agent(agent_type: str, name: Optional[str] = None) -> Any:
         
     Returns:
         An instance of the requested agent type
-    """
+    """    
     agents = {
         "simple": SimpleAgent,
         "search": SearchAgent,
         "tool": ToolAgent,
-        "stateful": StatefulAgent
+        "stateful": StatefulAgent,
+        "code_generator": CodeGenerationAgent
     }
     
     if agent_type not in agents:
@@ -548,3 +549,221 @@ async def demonstrate_basic_agents():
 
 if __name__ == "__main__":
     asyncio.run(demonstrate_basic_agents())
+
+class CodeGenerationAgent:
+    """Specialized agent for generating Python tool code."""
+    
+    def __init__(self, name: str = "CodeGenerationAgent"):
+        self.name = name
+        self.agent = Agent(
+            name=name,
+            model=config.adk.default_model,
+            instruction=(
+                "You are an expert Python developer specializing in creating MCP (Model Context Protocol) tools. "
+                "Your role is to generate clean, functional, and well-documented Python functions based on user descriptions. "
+                
+                "IMPORTANT GUIDELINES:\n"
+                "1. Always create complete, executable Python functions\n"
+                "2. Include proper type hints and docstrings\n"
+                "3. Handle errors gracefully with try-catch blocks\n"
+                "4. Return structured data (Dict[str, Any]) with 'success' and 'result' fields\n"
+                "5. Import required modules within the function\n"
+                "6. Create realistic implementations, not just placeholders\n"
+                "7. Follow PEP 8 coding standards\n"
+                "8. Make the function name descriptive and snake_case\n"
+                
+                "RESPONSE FORMAT:\n"
+                "Provide ONLY the Python function code, no explanations or markdown formatting.\n"
+                "The function should be ready to execute immediately."
+            ),
+            description="A specialized agent for generating Python tool functions."
+        )
+        
+        # Set up session service and runner
+        self.session_service = InMemorySessionService()
+        self.runner = Runner(
+            agent=self.agent,
+            app_name="code_gen_agent_app",
+            session_service=self.session_service
+        )
+        
+        # Session details
+        self.user_id = "default_user"
+        self.session_id = f"{name}_session"
+        self.session = None
+    
+    async def _initialize_session(self):
+        """Initialize the session."""
+        if self.session is None:
+            try:
+                self.session = await self.session_service.create_session(
+                    app_name="code_gen_agent_app",
+                    user_id=self.user_id,
+                    session_id=self.session_id
+                )
+            except Exception as e:
+                logger.error(f"Failed to initialize session: {e}")
+                raise
+    
+    @timer
+    def generate_tool_code(self, description: str, category: str = "", complexity: str = "") -> str:
+        """Generate Python tool code based on description."""
+        try:
+            return asyncio.run(self._generate_code_async(description, category, complexity))
+        except Exception as e:
+            logger.error(f"Error in code generation: {e}")
+            return self._fallback_code_generation(description, category)
+    
+    async def _generate_code_async(self, description: str, category: str, complexity: str) -> str:
+        """Async implementation of code generation."""
+        try:
+            # Ensure session is initialized
+            await self._initialize_session()
+            
+            # Create detailed prompt for code generation
+            prompt = self._create_code_generation_prompt(description, category, complexity)
+            
+            # Create message content
+            content = types.Content(role='user', parts=[types.Part(text=prompt)])
+            
+            # Get response from agent
+            final_response_text = ""
+            
+            async for event in self.runner.run_async(
+                user_id=self.user_id,
+                session_id=self.session_id,
+                new_message=content
+            ):
+                if event.is_final_response():
+                    if event.content and event.content.parts:
+                        final_response_text = event.content.parts[0].text
+                    break
+            
+            logger.info(f"Code generation agent generated code for: {description[:50]}...")
+            
+            # Clean up the response to ensure it's valid Python code
+            return self._clean_generated_code(final_response_text)
+            
+        except Exception as e:
+            logger.error(f"Error in async code generation: {e}")
+            return self._fallback_code_generation(description, category)
+    
+    def _create_code_generation_prompt(self, description: str, category: str, complexity: str) -> str:
+        """Create a detailed prompt for code generation."""
+        return f"""
+Generate a Python function for this tool:
+
+DESCRIPTION: {description}
+CATEGORY: {category}
+COMPLEXITY: {complexity}
+
+REQUIREMENTS:
+- Function name should be descriptive and snake_case
+- Include proper type hints: -> Dict[str, Any]
+- Add comprehensive docstring
+- Handle all errors with try-except
+- Return dict with 'success' boolean and 'result' or 'error' fields
+- Import modules inside the function
+- Create a working implementation, not placeholder code
+
+EXAMPLES OF GOOD IMPLEMENTATIONS:
+
+For password generation:
+```python
+def generate_secure_password(length: int = 12, include_symbols: bool = True) -> Dict[str, Any]:
+    \"\"\"Generate a secure password with customizable options.\"\"\"
+    import random
+    import string
+    try:
+        chars = string.ascii_letters + string.digits
+        if include_symbols:
+            chars += "!@#$%^&*"
+        password = ''.join(random.choice(chars) for _ in range(length))
+        return {{'success': True, 'result': password, 'length': len(password)}}
+    except Exception as e:
+        return {{'success': False, 'error': str(e)}}
+```
+
+For file processing:
+```python
+def process_text_file(file_path: str, operation: str = "count_lines") -> Dict[str, Any]:
+    \"\"\"Process a text file with various operations.\"\"\"
+    import os
+    try:
+        if not os.path.exists(file_path):
+            return {{'success': False, 'error': 'File not found'}}
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        if operation == "count_lines":
+            result = len(content.splitlines())
+        elif operation == "word_count":
+            result = len(content.split())
+        else:
+            result = content
+            
+        return {{'success': True, 'result': result, 'operation': operation}}
+    except Exception as e:
+        return {{'success': False, 'error': str(e)}}
+```
+
+Generate a similar function for the given description. Return ONLY the Python code, no markdown or explanations.
+"""
+    
+    def _clean_generated_code(self, code: str) -> str:
+        """Clean and validate generated code."""
+        # Remove markdown code blocks if present
+        if "```python" in code:
+            code = code.split("```python")[1].split("```")[0]
+        elif "```" in code:
+            code = code.split("```")[1].split("```")[0]
+        
+        # Clean up extra whitespace
+        code = code.strip()
+        
+        # Ensure proper indentation
+        lines = code.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            if line.strip():  # Skip empty lines
+                cleaned_lines.append(line)
+            else:
+                cleaned_lines.append("")
+        
+        return '\n'.join(cleaned_lines)
+    
+    def _fallback_code_generation(self, description: str, category: str) -> str:
+        """Fallback code generation when AI is not available."""
+        # Extract function name from description
+        words = description.lower().split()
+        func_name = '_'.join([w for w in words if w.isalnum()][:3])
+        if not func_name:
+            func_name = "generated_tool"
+        
+        return f'''def {func_name}(input_data: str) -> Dict[str, Any]:
+    """
+    {description}
+    
+    Auto-generated fallback implementation.
+    """
+    from datetime import datetime
+    from typing import Dict, Any
+    
+    try:
+        # Process the input data
+        result = f"Processed: {{input_data}}"
+        
+        return {{
+            'success': True,
+            'result': result,
+            'description': '{description}',
+            'category': '{category}',
+            'timestamp': datetime.now().isoformat()
+        }}
+    except Exception as e:
+        return {{
+            'success': False,
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }}'''
