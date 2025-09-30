@@ -31,18 +31,24 @@ class BasicAgentWithTools:
     def __init__(self, name: str = "ToolIntegratedAgent"):
         self.name = name
         
-        # Create agent with tools
+        # Import the enhanced weather tool
+        from agents.basic import weather_tool, calculator_tool
+        
+        # Create agent with enhanced tools
         self.agent = Agent(
             name=name,
             model=config.adk.default_model,
             instruction=(
-                "You are a helpful assistant with access to various tools. "
-                "Use the available tools to provide comprehensive answers."
+                "You are a helpful assistant with access to real-time weather data and calculation tools. "
+                "Use the weather tool to get comprehensive, up-to-date weather information for any location. "
+                "The weather tool provides detailed information including temperature, humidity, wind, visibility, "
+                "sunrise/sunset times, and helpful weather-based advice. Always format weather responses clearly."
             ),
-            description="A basic agent with integrated custom tools",
+            description="A basic agent with enhanced weather and calculation tools",
             tools=[
                 google_search,  # Built-in ADK tool
-                weather_api_tool,  # Custom tool from our tools module
+                weather_tool,   # Enhanced real weather tool with OpenWeatherMap API
+                calculator_tool,  # Mathematical calculation tool
             ]
         )
         
@@ -394,11 +400,67 @@ async def demo_a2a_tool_protocol():
     console.print(f"Result: {result.get('result', 'N/A')}")
 
 
+async def demo_enhanced_weather_tool():
+    """Demonstrate the enhanced weather tool with real API data."""
+    console.print("\n[bold blue]🌤️ Enhanced Weather Tool Demonstration[/bold blue]")
+    
+    from agents.basic import weather_tool
+    
+    # Test locations with different formats
+    test_locations = [
+        "London",           # City name
+        "New York,US",      # City with country code
+        "Tokyo,JP",         # International city
+        "Paris,FR",         # European city
+    ]
+    
+    console.print("Testing weather tool with various locations...")
+    
+    for location in test_locations:
+        console.print(f"\n[yellow]📍 Getting weather for: {location}[/yellow]")
+        
+        try:
+            # Call the enhanced weather tool directly
+            result = weather_tool(location)
+            
+            # Display the formatted result
+            console.print("[green]Weather Report:[/green]")
+            console.print(result)
+            
+        except Exception as e:
+            console.print(f"[red]❌ Error getting weather for {location}: {e}[/red]")
+    
+    # Demonstrate agent integration
+    console.print("\n[bold yellow]🤖 Agent Integration Test[/bold yellow]")
+    
+    # Create agent with weather tool
+    agent_with_weather = BasicAgentWithTools("WeatherExpert")
+    
+    weather_questions = [
+        "What's the current weather in San Francisco?",
+        "Can you give me a weather report for Berlin, Germany?",
+        "Is it a good day for outdoor activities in Sydney?"
+    ]
+    
+    for question in weather_questions:
+        console.print(f"\n[cyan]User: {question}[/cyan]")
+        
+        try:
+            response = await agent_with_weather.process_request_with_tools(question)
+            console.print(f"[green]Agent: {response}[/green]")
+            
+        except Exception as e:
+            console.print(f"[red]❌ Agent error: {e}[/red]")
+
+
 async def main():
     """Run all tool integration demonstrations."""
     console.print("[bold green]🚀 ADK Tool Integration Demonstrations[/bold green]")
     
     try:
+        # Demo 0: Enhanced weather tool showcase
+        await demo_enhanced_weather_tool()
+        
         # Demo 1: Basic agent with tools
         await demo_basic_agent_tools()
         

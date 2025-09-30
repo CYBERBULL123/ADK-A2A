@@ -1945,12 +1945,85 @@ def _test_tool_with_agent(tool_name: str, category: str):
 
 
 def show_agent_tool_integration():
-    """Show agent-tool integration interface."""
+    """Show agent-tool integration interface with enhanced weather tool demo."""
     st.markdown("### 🤖 Agent-Tool Integration")
+    
+    # Enhanced Weather Tool Showcase
+    st.markdown("---")
+    st.markdown("#### 🌤️ Enhanced Weather Tool Demonstration")
+    st.markdown("**Real-time weather data with OpenWeatherMap API integration**")
+    
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.markdown("**🌍 Test Live Weather Data:**")
+        
+        # Location input
+        location = st.text_input(
+            "Enter location:",
+            placeholder="e.g., London, New York, Tokyo, Paris,FR",
+            key="weather_location_input"
+        )
+        
+        if st.button("🌤️ Get Weather", key="get_weather_btn"):
+            if location:
+                try:
+                    # Import and use the enhanced weather tool
+                    from agents.basic import weather_tool
+                    
+                    with st.spinner(f"🌍 Getting real-time weather for {location}..."):
+                        weather_result = weather_tool(location)
+                    
+                    # Display the comprehensive weather report
+                    st.success("✅ Weather data retrieved successfully!")
+                    st.markdown(weather_result)
+                    
+                except ImportError:
+                    st.error("❌ Weather tool not available. Please check installation.")
+                except Exception as e:
+                    st.error(f"❌ Error getting weather: {str(e)}")
+            else:
+                st.warning("⚠️ Please enter a location.")
+    
+    with col2:
+        st.markdown("**🤖 Agent Integration Example:**")
+        st.code("""
+# Enhanced Weather Tool with Agent
+from agents.basic import ToolAgent, weather_tool
+
+# Create agent with real weather capabilities
+agent = ToolAgent("WeatherExpert")
+
+# The weather tool provides:
+# • Real-time temperature & conditions
+# • Humidity, pressure, wind data
+# • Sunrise/sunset times
+# • Weather-based advice
+# • Multiple location formats support
+
+response = agent.process_request(
+    "What's the weather in Tokyo and should I bring an umbrella?"
+)
+        """, language="python")
+        
+        # API Key status
+        from config import config
+        if hasattr(config, 'openweather_api_key') and config.openweather_api_key:
+            st.success("✅ OpenWeatherMap API configured")
+        else:
+            st.warning("⚠️ OpenWeatherMap API key not configured")
+            st.markdown("**Setup Instructions:**")
+            st.markdown("""
+            1. Get free API key: [openweathermap.org/api](https://openweathermap.org/api)
+            2. Add `OPENWEATHER_API_KEY=your_key` to `.env` file
+            3. Restart the application
+            """)
+    
+    st.markdown("---")
     
     # Agent type selector
     agent_type = st.selectbox(
-        "Select Agent Type:",
+        "Select Agent Integration Type:",
         ["Basic Agent", "Multi-Agent System", "A2A Protocol"],
         key="agent_type_selector"
     )
@@ -1962,60 +2035,93 @@ def show_agent_tool_integration():
         
         # Show tools categorized by compatibility
         if agent_type == "Basic Agent":
-            st.markdown("**🔧 Built-in Tools (Direct Integration):**")
-            for tool in list(CUSTOM_TOOLS.keys())[:5]:
+            st.markdown("**🔧 Enhanced Built-in Tools:**")
+            st.markdown("• **🌤️ weather_tool** - Real-time weather data with OpenWeatherMap API")
+            st.markdown("• **🧮 calculator_tool** - Mathematical expression evaluator")
+            st.markdown("• **🔍 google_search** - Web search capabilities")
+            for tool in list(CUSTOM_TOOLS.keys())[:3]:
                 st.markdown(f"• {tool}")
                 
         elif agent_type == "Multi-Agent System":
             st.markdown("**🔄 Shared Tools (MCP Protocol):**")
-            for tool in list(mcp_manager.mcp_tools.keys())[:5]:
+            st.markdown("• **🌤️ Enhanced Weather Service** - Distributed weather data")
+            for tool in list(mcp_manager.mcp_tools.keys())[:4]:
                 st.markdown(f"• {tool}")
                 
         elif agent_type == "A2A Protocol":
             st.markdown("**🌐 Cross-Network Tools:**")
-            st.markdown("• weather_api_tool")
-            st.markdown("• database_query_tool")
-            st.markdown("• code_execution_tool")
+            st.markdown("• **🌤️ enhanced_weather_service** - Global weather network")
+            st.markdown("• **📊 database_query_tool** - Distributed data access")
+            st.markdown("• **⚡ code_execution_tool** - Remote code execution")
+            st.markdown("• **🔄 async_task_scheduler** - Cross-network scheduling")
     
     with col2:
         st.markdown("#### Integration Code")
         
         if agent_type == "Basic Agent":
             st.code("""
-# Basic Agent Tool Integration
-from agents.basic import ToolAgent
-from tools import CUSTOM_TOOLS
+# Enhanced Weather Tool Integration
+from agents.basic import ToolAgent, weather_tool, calculator_tool
 
-agent = ToolAgent("MyAgent")
-agent.add_tool(CUSTOM_TOOLS['weather_api_tool'])
+# Create agent with enhanced tools
+agent = ToolAgent("WeatherExpert")
 
-response = agent.chat("What's the weather like?")
+# Tools are automatically integrated
+# Real weather data from OpenWeatherMap API
+response = agent.process_request(
+    "What's the weather in London? Should I wear a coat?"
+)
+
+# Direct tool usage
+weather_data = weather_tool("New York,US")
+print(weather_data)  # Comprehensive weather report
+
+# Calculate wind chill
+calculation = calculator_tool("(temp - 32) * 5/9")
             """, language="python")
             
         elif agent_type == "Multi-Agent System":
             st.code("""
-# Multi-Agent Tool Sharing
+# Multi-Agent Enhanced Weather System
 from agents.multi_agent import AgentCoordinator
+from agents.basic import weather_tool
 
 coordinator = AgentCoordinator()
-coordinator.register_shared_tool('weather_api_tool')
+coordinator.register_shared_tool('enhanced_weather_service')
 
-# All agents can now access the tool
-agent1 = coordinator.create_agent("WeatherAgent")
-agent2 = coordinator.create_agent("PlanningAgent")
+# Specialized weather agents
+weather_agent = coordinator.create_agent("WeatherSpecialist")
+planning_agent = coordinator.create_agent("TripPlanner")
+advisory_agent = coordinator.create_agent("WeatherAdvisor")
+
+# Coordinated weather analysis
+weather_data = weather_agent.get_weather("Tokyo")
+travel_advice = planning_agent.plan_with_weather(weather_data)
+recommendations = advisory_agent.provide_advice(travel_advice)
             """, language="python")
             
         elif agent_type == "A2A Protocol":
             st.code("""
-# A2A Tool Exposure
+# A2A Enhanced Weather Network
 from agents.a2a import A2AProtocol
+from agents.basic import weather_tool
 
 protocol = A2AProtocol()
+
+# Expose enhanced weather service globally
 protocol.expose_tool(
-    'weather_api_tool',
-    agents=['weather_agent', 'planning_agent'],
-    permissions=['read', 'execute']
+    'enhanced_weather_service',
+    tool_function=weather_tool,
+    agents=['global_weather_network'],
+    permissions=['read', 'execute', 'cache'],
+    rate_limit=60,  # requests per minute
+    regions=['us-east', 'eu-west', 'asia-pacific']
 )
+
+# Cross-network weather coordination
+weather_mesh = protocol.create_mesh_network([
+    'weather_station_a', 'weather_station_b', 'forecast_ai'
+])
             """, language="python")
     
     # Tool binding interface

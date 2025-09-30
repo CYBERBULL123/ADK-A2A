@@ -220,17 +220,195 @@ class SearchAgent:
 
 def weather_tool(location: str) -> str:
     """
-    Custom tool to get weather information.
+    Get real weather information using OpenWeatherMap API.
     
     Args:
-        location: The location to get weather for
+        location: The location to get weather for (city name, city,country, or coordinates)
         
     Returns:
-        Weather information for the location
+        Comprehensive weather information for the location
     """
-    # This is a mock implementation
-    # In practice, you would integrate with a real weather API
-    return f"The weather in {location} is sunny with a temperature of 22°C."
+    import requests
+    import json
+    from datetime import datetime
+    
+    try:
+        # Get API key from config
+        api_key = config.openweather_api_key
+        if not api_key:
+            return "❌ Weather service unavailable: API key not configured. Please add OPENWEATHER_API_KEY to your .env file."
+        
+        # Clean and validate location input
+        location = location.strip()
+        if not location:
+            return "❌ Please provide a valid location name."
+        
+        # OpenWeatherMap API endpoint
+        base_url = "http://api.openweathermap.org/data/2.5/weather"
+        
+        # API parameters
+        params = {
+            'q': location,
+            'appid': api_key,
+            'units': 'metric',  # Celsius, use 'imperial' for Fahrenheit
+            'lang': 'en'
+        }
+        
+        # Make API request with timeout
+        response = requests.get(base_url, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Extract weather information
+            city = data['name']
+            country = data['sys']['country']
+            temp = data['main']['temp']
+            feels_like = data['main']['feels_like']
+            humidity = data['main']['humidity']
+            pressure = data['main']['pressure']
+            wind_speed = data['wind'].get('speed', 0)
+            wind_deg = data['wind'].get('deg', 0)
+            visibility = data.get('visibility', 0) / 1000  # Convert to km
+            
+            weather_main = data['weather'][0]['main']
+            weather_desc = data['weather'][0]['description'].title()
+            weather_icon = data['weather'][0]['icon']
+            
+            # Sunrise and sunset
+            sunrise = datetime.fromtimestamp(data['sys']['sunrise']).strftime('%H:%M')
+            sunset = datetime.fromtimestamp(data['sys']['sunset']).strftime('%H:%M')
+            
+            # Weather emoji mapping
+            weather_emojis = {
+                'Clear': '☀️',
+                'Clouds': '☁️',
+                'Rain': '🌧️',
+                'Drizzle': '🌦️',
+                'Thunderstorm': '⛈️',
+                'Snow': '❄️',
+                'Mist': '🌫️',
+                'Smoke': '💨',
+                'Haze': '🌫️',
+                'Dust': '💨',
+                'Fog': '🌫️',
+                'Sand': '💨',
+                'Ash': '💨',
+                'Squall': '💨',
+                'Tornado': '🌪️'
+            }
+            
+            weather_emoji = weather_emojis.get(weather_main, '🌤️')
+            
+            # Wind direction
+            wind_directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                             'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+            wind_dir = wind_directions[round(wind_deg / 22.5) % 16] if wind_speed > 0 else 'N/A'
+            
+            # Temperature conversion helper
+            temp_f = (temp * 9/5) + 32
+            feels_like_f = (feels_like * 9/5) + 32
+            
+            # Format comprehensive weather report
+            weather_report = f"""
+🌍 **Weather Report for {city}, {country}**
+
+{weather_emoji} **Current Conditions:** {weather_desc}
+
+🌡️ **Temperature:**
+   • Current: {temp:.1f}°C ({temp_f:.1f}°F)
+   • Feels like: {feels_like:.1f}°C ({feels_like_f:.1f}°F)
+
+💧 **Humidity:** {humidity}%
+🔽 **Pressure:** {pressure} hPa
+💨 **Wind:** {wind_speed:.1f} m/s ({wind_dir})
+👁️ **Visibility:** {visibility:.1f} km
+
+🌅 **Sunrise:** {sunrise}
+🌇 **Sunset:** {sunset}
+
+📊 **Weather Summary:** The weather in {city} is currently {weather_desc.lower()} with a temperature of {temp:.1f}°C. {_get_weather_advice(weather_main, temp, wind_speed, humidity)}
+            """.strip()
+            
+            logger.info(f"Successfully fetched weather data for {city}, {country}")
+            return weather_report
+            
+        elif response.status_code == 404:
+            return f"❌ Location '{location}' not found. Please check the spelling and try again. You can use formats like 'London', 'Paris,FR', or 'New York,US'."
+        
+        elif response.status_code == 401:
+            return "❌ Weather service authentication failed. Please check your API key configuration."
+        
+        else:
+            return f"❌ Weather service temporarily unavailable (Error {response.status_code}). Please try again later."
+    
+    except requests.exceptions.Timeout:
+        return f"⏱️ Weather service request timed out for '{location}'. Please try again."
+    
+    except requests.exceptions.ConnectionError:
+        return f"🌐 Unable to connect to weather service. Please check your internet connection."
+    
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Weather API request error: {e}")
+        return f"❌ Weather service error: {str(e)}"
+    
+    except KeyError as e:
+        logger.error(f"Weather data parsing error: {e}")
+        return f"❌ Unexpected weather data format. Please try again or contact support."
+    
+    except Exception as e:
+        logger.error(f"Unexpected weather tool error: {e}")
+        return f"❌ An unexpected error occurred while fetching weather data: {str(e)}"
+
+
+def _get_weather_advice(weather_main: str, temp: float, wind_speed: float, humidity: float) -> str:
+    """
+    Get weather-based advice for the current conditions.
+    
+    Args:
+        weather_main: Main weather condition
+        temp: Temperature in Celsius
+        wind_speed: Wind speed in m/s
+        humidity: Humidity percentage
+        
+    Returns:
+        Helpful advice based on current weather conditions
+    """
+    advice = []
+    
+    # Temperature-based advice
+    if temp < 0:
+        advice.append("It's freezing! Dress warmly and watch for icy conditions.")
+    elif temp < 10:
+        advice.append("It's quite cold. Consider wearing layers and a warm jacket.")
+    elif temp > 30:
+        advice.append("It's very warm! Stay hydrated and seek shade when possible.")
+    elif temp > 25:
+        advice.append("Pleasant warm weather. Perfect for outdoor activities!")
+    
+    # Weather condition advice
+    if weather_main in ['Rain', 'Drizzle']:
+        advice.append("Don't forget your umbrella or raincoat!")
+    elif weather_main == 'Thunderstorm':
+        advice.append("Thunderstorms expected. Stay indoors if possible and avoid outdoor activities.")
+    elif weather_main == 'Snow':
+        advice.append("Snowy conditions. Drive carefully and allow extra travel time.")
+    elif weather_main in ['Mist', 'Fog']:
+        advice.append("Reduced visibility due to fog. Drive carefully and use headlights.")
+    
+    # Wind advice
+    if wind_speed > 10:
+        advice.append("Very windy conditions. Secure loose objects and be cautious outdoors.")
+    elif wind_speed > 5:
+        advice.append("Breezy conditions. Light jacket recommended.")
+    
+    # Humidity advice
+    if humidity > 80:
+        advice.append("High humidity may make it feel warmer than it is.")
+    elif humidity < 30:
+        advice.append("Low humidity. Consider using moisturizer and stay hydrated.")
+    
+    return " ".join(advice) if advice else "Enjoy the weather!"
 
 
 def calculator_tool(expression: str) -> str:
