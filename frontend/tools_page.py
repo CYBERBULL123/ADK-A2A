@@ -1258,7 +1258,7 @@ def show_ai_tool_creator():
             )
         
         # Generate tool button
-        if st.button("🚀 Generate Tool with AI", type="primary", use_container_width=True):
+        if st.button("🚀 Generate Tool with AI", type="primary", width="stretch"):
             if tool_description:
                 with st.spinner("🧠 AI agent is analyzing requirements and generating your tool..."):
                     # Progress indicator
@@ -1351,7 +1351,7 @@ def show_ai_tool_creator():
             col_save, col_test, col_mcp = st.columns(3)
             
             with col_save:
-                if st.button("💾 Save Tool", use_container_width=True):
+                if st.button("💾 Save Tool", width="stretch"):
                     # Save the generated tool
                     save_result = save_generated_tool(tool_info)
                     if save_result["success"]:
@@ -1361,7 +1361,7 @@ def show_ai_tool_creator():
                         st.error(f"❌ {save_result['error']}")
             
             with col_test:
-                if st.button("🧪 Test Tool", use_container_width=True):
+                if st.button("🧪 Test Tool", width="stretch"):
                     with st.spinner("Testing generated tool..."):
                         test_result = test_generated_tool(tool_info)
                         if test_result["success"]:
@@ -1371,7 +1371,7 @@ def show_ai_tool_creator():
                             st.error(f"❌ Tool test failed: {test_result['error']}")
             
             with col_mcp:
-                if st.button("🔗 Register MCP", use_container_width=True):
+                if st.button("🔗 Register MCP", width="stretch"):
                     if tool_info['features'].get('mcp', False):
                         # Register tool with MCP
                         mcp_spec = {
@@ -1482,7 +1482,7 @@ def show_mcp_integration():
                     parameters[param] = st.text_input(f"{param}:", key=f"mcp_param_{param}")
                 
                 # Execute button
-                if st.button("🚀 Execute MCP Tool", type="primary", use_container_width=True):
+                if st.button("🚀 Execute MCP Tool", type="primary", width="stretch"):
                     with st.spinner("Executing MCP tool..."):
                         result = asyncio.run(mcp_manager.execute_mcp_tool(selected_tool, parameters))
                         
@@ -1522,7 +1522,7 @@ def show_mcp_integration():
             if success_data:
                 fig = px.line(y=success_data, title="Success Rate Trend", 
                              labels={'y': 'Success (1) / Failure (0)', 'index': 'Execution #'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
         
         with col_chart2:
             # Tool usage distribution
@@ -1533,7 +1533,7 @@ def show_mcp_integration():
             if tool_usage:
                 fig = px.pie(values=list(tool_usage.values()), names=list(tool_usage.keys()), 
                            title="Tool Usage Distribution")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
     else:
         st.info("No execution history available. Execute some MCP tools to see history.")
 
@@ -1595,7 +1595,7 @@ def show_smart_testing():
                 )
             
             # Execute test button
-            if st.button("🚀 Run AI-Powered Test", type="primary", use_container_width=True):
+            if st.button("🚀 Run AI-Powered Test", type="primary", width="stretch"):
                 with st.spinner("🧠 AI is analyzing tool and running comprehensive tests..."):
                     # Run the test
                     test_results = run_comprehensive_test(selected_tool, test_type)
@@ -1755,7 +1755,7 @@ def show_tool_analytics():
             names=list(agent_type_usage.keys()),
             title="Tool Usage Distribution"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     with col_chart2:
         st.markdown("**🔧 Most Popular Tools by Agent Type**")
@@ -1777,7 +1777,7 @@ def show_tool_analytics():
             title="Tool Popularity by Agent Type"
         )
         fig.update_layout(xaxis_tickangle=45)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     # Performance metrics
     st.markdown("#### ⚡ Performance Metrics")
@@ -1801,7 +1801,7 @@ def show_tool_analytics():
             color='Tool Category',
             title="Performance vs Reliability"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     with col_perf2:
         st.markdown("**� Cross-Agent Tool Sharing**")
@@ -1835,7 +1835,7 @@ def show_tool_analytics():
             yaxis=dict(title="Tools Shared", side="left"),
             yaxis2=dict(title="Agents Participating", side="right", overlaying="y")
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     # Real-time monitoring
     st.markdown("#### 🔴 Real-Time Tool Monitoring")
@@ -1855,7 +1855,7 @@ def show_tool_analytics():
         ])
         
         st.markdown("**Recent Tool Executions:**")
-        st.dataframe(df_recent, use_container_width=True)
+        st.dataframe(df_recent, width="stretch")
     else:
         st.info("No tool executions recorded yet. Use tools to see monitoring data.")
     
@@ -2295,7 +2295,7 @@ def show_mcp_integration():
         
         if df_bindings:
             df = pd.DataFrame(df_bindings)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
         else:
             st.info("No tool bindings yet. Use the Tool Binding interface above.")
     else:

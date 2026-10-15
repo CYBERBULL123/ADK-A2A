@@ -47,7 +47,7 @@ def create_feature_card(title: str, description: str, icon: str, action_text: st
     with col:
         st.markdown(card_html, unsafe_allow_html=True)
         if action_text and action_key:
-            return st.button(action_text, key=action_key, use_container_width=True)
+            return st.button(action_text, key=action_key, width="stretch")
     return False
 
 

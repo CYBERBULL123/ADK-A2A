@@ -392,7 +392,6 @@ class SmartA2AAgent(A2AAgent):
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
                 logger.info(f"A2A Agent {self.name} processed {action} from {sender}")
             return final_response_text
             

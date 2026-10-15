@@ -128,7 +128,6 @@ class ResearchAgent:
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
             
             execution_time = (datetime.now() - start_time).total_seconds()
             
@@ -262,7 +261,6 @@ class AnalysisAgent:
                         final_response_text = event.content.parts[0].text                    
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
             
             execution_time = (datetime.now() - start_time).total_seconds()
             
@@ -397,7 +395,6 @@ class WritingAgent:
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
             
             execution_time = (datetime.now() - start_time).total_seconds()
             

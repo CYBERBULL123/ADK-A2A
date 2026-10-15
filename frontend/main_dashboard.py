@@ -225,7 +225,7 @@ def show_overview():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("🤖 Try Basic Agent", use_container_width=True, type="primary"):
+        if st.button("🤖 Try Basic Agent", width="stretch", type="primary"):
             try:
                 st.session_state.demo_agent = SimpleAgent("QuickDemo")
                 response = st.session_state.demo_agent.chat("Hello! Tell me about ADK in one paragraph.")
@@ -234,7 +234,7 @@ def show_overview():
                 create_notification(f"Error creating demo agent: {e}", "error")
     
     with col2:
-        if st.button("🔧 Check Environment", use_container_width=True):
+        if st.button("🔧 Check Environment", width="stretch"):
             validation = config.validate_config()
             if validation["valid"]:
                 create_notification("Environment is properly configured!", "success")
@@ -251,7 +251,7 @@ def show_overview():
                 create_notification("Please configure your API keys in .env file", "warning")
     
     with col3:
-        if st.button("📖 View Documentation", use_container_width=True):
+        if st.button("📖 View Documentation", width="stretch"):
             st.info("📚 Navigate to the Documentation tab for comprehensive guides and examples!")
     
     # Recent activity simulation
@@ -273,7 +273,7 @@ def show_overview():
         fig = px.bar(df, x="Module", y="Completion", title="Learning Module Progress (%)",
                     color="Completion", color_continuous_scale="viridis")
         fig.update_layout(showlegend=False, height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     with col2:
         # Overall statistics
@@ -306,7 +306,7 @@ def show_basic_agents():
     for i, (col, config) in enumerate(zip(cols, agent_configs)):
         with col:
             if st.button(f"{config['icon']}\n{config['type']}", 
-                        use_container_width=True, 
+                        width="stretch", 
                         key=f"agent_select_{i}",
                         help=config['desc']):
                 selected_agent = config['type']
@@ -342,7 +342,7 @@ def show_basic_agents():
         
         agent_name = st.text_input("Agent Name", value=f"Demo_{agent_type.replace(' ', '_')}")
         
-        if st.button("🚀 Create Agent", use_container_width=True, type="primary"):
+        if st.button("🚀 Create Agent", width="stretch", type="primary"):
             try:
                 with st.spinner("Creating agent..."):
                     if agent_type == "Simple Agent":
@@ -402,7 +402,7 @@ def show_basic_agents():
                 key=input_key
             )
             
-            send_button = st.button("📤 Send Message", use_container_width=True, type="primary")
+            send_button = st.button("📤 Send Message", width="stretch", type="primary")
             
             if send_button and user_message:
                 # Add user message to chat
@@ -443,7 +443,7 @@ def show_basic_agents():
             col_clear, col_export = st.columns(2)
             
             with col_clear:
-                if st.button("🗑️ Clear Chat", use_container_width=True):
+                if st.button("🗑️ Clear Chat", width="stretch"):
                     clear_chat_history()
                     if hasattr(st.session_state.current_agent, 'clear_history'):
                         st.session_state.current_agent.clear_history()
@@ -451,7 +451,7 @@ def show_basic_agents():
                     st.rerun()
             
             with col_export:
-                if st.button("📥 Export Chat", use_container_width=True):
+                if st.button("📥 Export Chat", width="stretch"):
                     if 'chat_history' in st.session_state and st.session_state.chat_history:
                         chat_data = "\n".join([
                             f"[{msg['timestamp']}] {msg['sender']}: {msg['content']}"
@@ -462,7 +462,7 @@ def show_basic_agents():
                             chat_data,
                             f"chat_history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                             "text/plain",
-                            use_container_width=True
+                            width="stretch"
                         )
             
             # Tips based on agent type
@@ -571,7 +571,7 @@ def show_multi_agent_systems():
     for i, (col, config) in enumerate(zip(cols, system_configs)):
         with col:
             if st.button(f"{config['icon']}\n{config['type']}", 
-                        use_container_width=True, 
+                        width="stretch", 
                         key=f"system_select_{i}",
                         help=config['desc']):
                 selected_system = config['type']
@@ -614,7 +614,7 @@ def show_multi_agent_systems():
                 height=120,
                 help="Be specific about your requirements and desired outcomes"
             )            
-            if st.button("🚀 Execute Project", use_container_width=True, type="primary"):
+            if st.button("🚀 Execute Project", width="stretch", type="primary"):
                 if project_description:
                     with st.spinner("🤖 Agent team is working on your project..."):
                         try:
@@ -656,7 +656,7 @@ def show_multi_agent_systems():
                 col_continue1, col_continue2 = st.columns(2)
                 
                 with col_continue1:
-                    if st.button("🔄 Continue Workflow", use_container_width=True, type="secondary"):
+                    if st.button("🔄 Continue Workflow", width="stretch", type="secondary"):
                         if hasattr(st.session_state, 'last_coordinator'):
                             with st.spinner("🔄 Continuing workflow with enhanced context..."):
                                 try:
@@ -681,7 +681,7 @@ def show_multi_agent_systems():
                                     create_notification(f"Error continuing workflow: {e}", "error")
                 
                 with col_continue2:
-                    if st.button("🎯 Force Complete Research", use_container_width=True, type="secondary"):
+                    if st.button("🎯 Force Complete Research", width="stretch", type="secondary"):
                         if hasattr(st.session_state, 'last_coordinator'):
                             with st.spinner("🎯 Forcing comprehensive research completion..."):
                                 try:
@@ -726,7 +726,7 @@ def show_multi_agent_systems():
                     help=f"Enter the {input_field.replace('_', ' ')} for the workflow"
                 )
             
-            if st.button("⚙️ Execute Workflow", use_container_width=True, type="primary"):
+            if st.button("⚙️ Execute Workflow", width="stretch", type="primary"):
                 if all(inputs.values()):
                     with st.spinner("🔄 Executing workflow..."):
                         try:
@@ -856,7 +856,7 @@ def show_a2a_protocol():
                                         key=f"agent_type_{i}")
                 agent_configs.append({"name": name, "port": port, "type": agent_type})
     
-    if st.button("🚀 Start A2A Network", use_container_width=True, type="primary"):
+    if st.button("🚀 Start A2A Network", width="stretch", type="primary"):
         st.session_state.a2a_agents = agent_configs
         create_notification(f"✅ Configured {num_agents} A2A agents successfully!", "success")
         
@@ -911,7 +911,7 @@ def show_a2a_protocol():
             timeout = st.number_input("Timeout (seconds):", value=30, min_value=5, max_value=300)
             retry_count = st.number_input("Retry Attempts:", value=3, min_value=0, max_value=10)
 
-        if st.button("📨 Send A2A Message", use_container_width=True, type="primary"):
+        if st.button("📨 Send A2A Message", width="stretch", type="primary"):
             if message_data:
                 with st.spinner(f"📡 Sending {action} from {sender} to {receiver}..."):
                     try:
@@ -1091,7 +1091,7 @@ def show_a2a_protocol():
             test_cols = st.columns(3)
             
             with test_cols[0]:
-                if st.button("🏓 Ping All Agents", use_container_width=True):
+                if st.button("🏓 Ping All Agents", width="stretch"):
                     ping_results = []
                     for agent_name, agent_obj in st.session_state.a2a_active_agents.items():
                         try:
@@ -1107,7 +1107,7 @@ def show_a2a_protocol():
                     for result in ping_results:
                         st.write(result)            
             with test_cols[1]:
-                if st.button("🧠 Test AI Capabilities", use_container_width=True):
+                if st.button("🧠 Test AI Capabilities", width="stretch"):
                     test_question = "What is your role in this A2A network?"
                     for agent_name, agent_obj in st.session_state.a2a_active_agents.items():
                         try:
@@ -1121,7 +1121,7 @@ def show_a2a_protocol():
                             st.write(f"❌ {agent_name}: Error - {e}")
             
             with test_cols[2]:
-                if st.button("🔄 Agent Round-Robin", use_container_width=True):
+                if st.button("🔄 Agent Round-Robin", width="stretch"):
                     agents = list(st.session_state.a2a_active_agents.keys())
                     if len(agents) >= 2:
                         # Send message from first agent to second, then second to third, etc.
@@ -1340,7 +1340,7 @@ def show_a2a_protocol():
         col_validate, col_format = st.columns(2)
         
         with col_validate:
-            if st.button("✅ Validate Message", use_container_width=True):
+            if st.button("✅ Validate Message", width="stretch"):
                 try:
                     parsed = json.loads(test_message)
                     required_fields = ["id", "type", "sender", "receiver", "payload", "timestamp"]
@@ -1356,7 +1356,7 @@ def show_a2a_protocol():
                     create_notification(f"❌ Invalid JSON: {e}", "error")
         
         with col_format:
-            if st.button("🎨 Format Message", use_container_width=True):
+            if st.button("🎨 Format Message", width="stretch"):
                 try:
                     parsed = json.loads(test_message)
                     formatted = json.dumps(parsed, indent=2, sort_keys=True)
@@ -1375,15 +1375,15 @@ def show_a2a_protocol():
         diagnostic_cols = st.columns(3)
         
         with diagnostic_cols[0]:
-            if st.button("🏥 Health Check", use_container_width=True):
+            if st.button("🏥 Health Check", width="stretch"):
                 create_notification("All agents responding normally", "success")
         
         with diagnostic_cols[1]:
-            if st.button("📊 Performance Test", use_container_width=True):
+            if st.button("📊 Performance Test", width="stretch"):
                 create_notification("Average latency: 45ms", "info")
         
         with diagnostic_cols[2]:
-            if st.button("🛡️ Security Scan", use_container_width=True):
+            if st.button("🛡️ Security Scan", width="stretch"):
                 create_notification("No security issues detected", "success")
 
 
@@ -1478,7 +1478,7 @@ def show_performance_analytics():
             fig.update_layout(height=400)
             fig.add_hline(y=df['Requests'].mean(), line_dash="dash", 
                          annotation_text=f"Average: {df['Requests'].mean():.0f}")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         with col2:
             # Request distribution
@@ -1487,7 +1487,7 @@ def show_performance_analytics():
             
             fig_hourly = px.bar(x=hours, y=hourly_requests, title="⏰ Hourly Distribution")
             fig_hourly.update_layout(height=400, showlegend=False)
-            st.plotly_chart(fig_hourly, use_container_width=True)
+            st.plotly_chart(fig_hourly, width="stretch")
         
         # Request analytics
         st.markdown("**📋 Request Analytics:**")
@@ -1510,7 +1510,7 @@ def show_performance_analytics():
             fig.update_layout(height=400)
             fig.add_hline(y=2.0, line_dash="dash", line_color="red",
                          annotation_text="SLA Threshold: 2.0s")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         with col2:
             # Response time distribution
@@ -1525,7 +1525,7 @@ def show_performance_analytics():
                              y=list(response_percentiles.values()),
                              title="📊 Response Time Percentiles")
             fig_perc.update_layout(height=400, showlegend=False)
-            st.plotly_chart(fig_perc, use_container_width=True)
+            st.plotly_chart(fig_perc, width="stretch")
         
         # Performance status
         avg_response = df['Response_Time'].mean()
@@ -1555,7 +1555,7 @@ def show_performance_analytics():
             fig.update_layout(height=400, yaxis_range=[90, 100])
             fig.add_hline(y=95.0, line_dash="dash", line_color="orange",
                          annotation_text="Target: 95%")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         with col2:
             # Error breakdown (simulated)
@@ -1565,7 +1565,7 @@ def show_performance_analytics():
             fig_errors = px.pie(values=error_counts, names=error_types, 
                                title="🔍 Error Type Distribution")
             fig_errors.update_layout(height=400)
-            st.plotly_chart(fig_errors, use_container_width=True)
+            st.plotly_chart(fig_errors, width="stretch")
         
         # Success rate insights
         success_avg = df['Success_Rate'].mean()
@@ -1590,7 +1590,7 @@ def show_performance_analytics():
             fig.update_layout(height=350)
             fig.add_hline(y=80, line_dash="dash", line_color="red",
                          annotation_text="High Usage: 80%")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         with col2:
             fig = px.line(df, x='Date', y='Memory_Usage', title='🧠 Memory Usage Trends',
@@ -1598,7 +1598,7 @@ def show_performance_analytics():
             fig.update_layout(height=350)
             fig.add_hline(y=500, line_dash="dash", line_color="red",
                          annotation_text="Limit: 500MB")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         # Resource utilization cards
         col1, col2, col3 = st.columns(3)
@@ -1646,7 +1646,7 @@ def show_performance_analytics():
                      y=['Requests_Norm', 'Response_Time_Norm', 'Success_Rate_Norm'],
                      title='📈 Normalized Performance Comparison')
         fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         # Correlation analysis
         correlation_data = df[['Requests', 'Response_Time', 'Success_Rate', 'CPU_Usage', 'Memory_Usage']].corr()
@@ -1656,7 +1656,7 @@ def show_performance_analytics():
                             color_continuous_scale="RdBu",
                             aspect="auto")
         fig_corr.update_layout(height=400)
-        st.plotly_chart(fig_corr, use_container_width=True)
+        st.plotly_chart(fig_corr, width="stretch")
     
     # Agent-specific performance
     st.markdown("---")
@@ -1682,7 +1682,7 @@ def show_performance_analytics():
                         size="Requests", hover_name="Agent", color="Agent",
                         title="🎯 Agent Performance Scatter Plot")
         fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     with col2:
         # Top performing agents
@@ -1750,7 +1750,7 @@ def show_performance_analytics():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📥 Download CSV Report", use_container_width=True):
+        if st.button("📥 Download CSV Report", width="stretch"):
             csv_data = df.to_csv(index=False)
             st.download_button(
                 "💾 Download Performance Data",
@@ -1760,11 +1760,11 @@ def show_performance_analytics():
             )
     
     with col2:
-        if st.button("📈 Generate Summary", use_container_width=True):
+        if st.button("📈 Generate Summary", width="stretch"):
             create_notification("Performance summary generated successfully!", "success")
     
     with col3:
-        if st.button("⚙️ Configure Alerts", use_container_width=True):
+        if st.button("⚙️ Configure Alerts", width="stretch"):
             create_notification("Alert configuration panel would open here", "info")
 
 
@@ -1805,7 +1805,7 @@ def show_evaluation_framework():
             
             test_severity = st.selectbox("Test Severity:", ["Light", "Standard", "Comprehensive", "Stress"])
             
-            if st.button("🚀 Run Functionality Tests", use_container_width=True, type="primary"):
+            if st.button("🚀 Run Functionality Tests", width="stretch", type="primary"):
                 with st.spinner("🔄 Running functionality tests..."):
                     # Simulate test execution
                     st.session_state.func_test_results = {
@@ -1871,7 +1871,7 @@ def show_evaluation_framework():
                         color="Critical", title="📈 Test Coverage by Component",
                         color_discrete_map={True: "#dc3545", False: "#28a745"})
             fig.update_layout(height=350)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         with col2:
             avg_coverage = df_coverage["Coverage (%)"].mean()
@@ -1908,7 +1908,7 @@ def show_evaluation_framework():
             
             duration = st.slider("Test Duration (minutes):", 1, 30, 5)
             
-            if st.button("📊 Run Performance Tests", use_container_width=True, type="primary"):
+            if st.button("📊 Run Performance Tests", width="stretch", type="primary"):
                 with st.spinner("⚡ Running performance analysis..."):
                     # Simulate performance test
                     st.session_state.perf_results = {
@@ -1975,14 +1975,14 @@ def show_evaluation_framework():
                          markers=True, line_shape="spline")
             fig.add_hline(y=2.0, line_dash="dash", line_color="red", annotation_text="SLA: 2.0s")
             fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         
         with col2:
             fig = px.line(df_trends, x='Date', y='Throughput', title='📊 Throughput Trends',
                          markers=True, line_shape="spline")
             fig.add_hline(y=40, line_dash="dash", line_color="orange", annotation_text="Target: 40/min")
             fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
     
     with eval_tabs[2]:  # Integration Tests
         st.markdown("### 🔗 Integration Testing Suite")
@@ -2165,7 +2165,7 @@ def show_evaluation_framework():
             test_duration = st.slider("Duration (minutes):", 1, 60, 10)
             ramp_up_time = st.slider("Ramp-up Time (minutes):", 1, 30, 5)
             
-            if st.button("🚀 Start Load Test", use_container_width=True, type="primary"):
+            if st.button("🚀 Start Load Test", width="stretch", type="primary"):
                 with st.spinner("📈 Running load test..."):
                     # Simulate load test
                     st.session_state.load_test_results = {
@@ -2208,7 +2208,7 @@ def show_evaluation_framework():
                 fig.update_layout(height=300, 
                                 xaxis_title="Concurrent Users", 
                                 yaxis_title="Response Time (s)")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             else:
                 st.info("🔄 Run load test to see performance metrics")
         
@@ -2247,7 +2247,7 @@ def show_evaluation_framework():
             
             report_format = st.selectbox("Output Format:", ["PDF", "HTML", "JSON", "CSV"])
             
-            if st.button("📑 Generate Report", use_container_width=True, type="primary"):
+            if st.button("📑 Generate Report", width="stretch", type="primary"):
                 with st.spinner("📊 Generating comprehensive report..."):
                     create_notification("Report generated successfully!", "success")
                     st.session_state.report_generated = True
@@ -2280,11 +2280,11 @@ def show_evaluation_framework():
                 col_dl1, col_dl2 = st.columns(2)
                 
                 with col_dl1:
-                    if st.button("📄 Download PDF", use_container_width=True):
+                    if st.button("📄 Download PDF", width="stretch"):
                         create_notification("PDF report download started", "info")
                 
                 with col_dl2:
-                    if st.button("🔗 Share Report", use_container_width=True):
+                    if st.button("🔗 Share Report", width="stretch"):
                         create_notification("Report sharing link generated", "info")
             else:
                 st.info("📋 Generate a report to see summary and download options")
@@ -2308,7 +2308,7 @@ def show_evaluation_framework():
                      y=['Overall_Score', 'Security_Score', 'Performance_Score'],
                      title='📈 Evaluation Scores Over Time')
         fig.update_layout(height=400, yaxis_title="Score (%)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         
         # Recommendations
         st.markdown("### 💡 Recommendations")
@@ -2441,7 +2441,7 @@ def show_documentation():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("📄 Download All Docs", use_container_width=True):
+        if st.button("📄 Download All Docs", width="stretch"):
             # Create a combined markdown file
             combined_content = "# ADK & A2A Documentation\n\n"
             
@@ -2454,11 +2454,11 @@ def show_documentation():
                 combined_content,
                 f"adk_a2a_docs_{datetime.now().strftime('%Y%m%d')}.md",
                 "text/markdown",
-                use_container_width=True
+                width="stretch"
             )
     
     with col2:
-        if st.button("📁 Individual Files", use_container_width=True):
+        if st.button("📁 Individual Files", width="stretch"):
             st.markdown("**📂 Available Documentation Files:**")
             for tab_name, filename in doc_files.items():
                 docs_path = Path(__file__).parent.parent / "docs" / filename
@@ -2473,7 +2473,7 @@ def show_documentation():
                     )
     
     with col3:
-        if st.button("🔗 Docs Folder", use_container_width=True):
+        if st.button("🔗 Docs Folder", width="stretch"):
             docs_path = Path(__file__).parent.parent / "docs"
             if docs_path.exists():
                 st.info(f"📁 Documentation folder: `{docs_path.absolute()}`")

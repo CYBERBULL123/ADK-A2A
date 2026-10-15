@@ -193,7 +193,6 @@ class SearchAgent:
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
                 logger.info(f"Search agent processing query")
             
             # Log the full response for debugging
@@ -501,7 +500,6 @@ class ToolAgent:
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
                 logger.info(f"Tool agent processing request")
             
             # Log the full response for debugging
@@ -620,7 +618,6 @@ class StatefulAgent:
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
             
             # Add agent response to history
             self.add_to_history("assistant", final_response_text)
@@ -828,7 +825,6 @@ class CodeGenerationAgent:
                 if event.is_final_response():
                     if event.content and event.content.parts:
                         final_response_text = event.content.parts[0].text
-                    break
             
             logger.info(f"Code generation agent generated code for: {description[:50]}...")
             
