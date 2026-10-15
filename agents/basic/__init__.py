@@ -94,7 +94,6 @@ class SimpleAgent:
                         final_response_text = event.content.parts[0].text
                     elif event.actions and event.actions.escalate:
                         final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-                    break
             logger.info(f"Agent {self.name} responding to user message")
             
             # Log the full response for debugging (but not shown to user)
@@ -787,10 +786,24 @@ class CodeGenerationAgent:
     def generate_tool_code(self, description: str, category: str = "", complexity: str = "") -> str:
         """Generate Python tool code based on description."""
         try:
-            return asyncio.run(self._generate_code_async(description, category, complexity))
+            # Check if we're already in an event loop (like Streamlit)
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in a running event loop, so we need to use a different approach
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(self._run_code_generation, description, category, complexity)
+                    return future.result(timeout=30)  # 30 second timeout
+            except RuntimeError:
+                # No running event loop, safe to use asyncio.run()
+                return asyncio.run(self._generate_code_async(description, category, complexity))
         except Exception as e:
             logger.error(f"Error in code generation: {e}")
             return self._fallback_code_generation(description, category)
+    
+    def _run_code_generation(self, description: str, category: str, complexity: str) -> str:
+        """Helper method to run code generation in a separate thread."""
+        return asyncio.run(self._generate_code_async(description, category, complexity))
     
     async def _generate_code_async(self, description: str, category: str, complexity: str) -> str:
         """Async implementation of code generation."""

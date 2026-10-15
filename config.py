@@ -31,7 +31,7 @@ class ModelConfig:
 @dataclass
 class ADKConfig:
     """Configuration for ADK agents."""
-    default_model: str = "gemini-2.0-flash"
+    default_model: str = "gemini-2.5-flash-lite"
     default_temperature: float = 0.7
     max_sub_agents: int = 10
     default_timeout: int = 60
@@ -65,8 +65,8 @@ class Config:
         
         # Model configurations
         self.models = {
-            "gemini-2.0-flash": ModelConfig(
-                name="gemini-2.0-flash",
+            "gemini-2.5-flash-lite": ModelConfig(
+                name="gemini-2.5-flash-lite",
                 provider="google",
                 api_key=self.google_api_key,
                 temperature=0.7,

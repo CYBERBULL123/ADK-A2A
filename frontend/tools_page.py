@@ -28,7 +28,7 @@ sys.path.append(str(project_root))
 
 from config import config
 from utils import console, logger
-from agents.basic import SimpleAgent, ToolAgent
+from agents.basic import SimpleAgent, ToolAgent, CodeGenerationAgent, create_agent
 
 # Import tools with error handling
 try:
@@ -214,27 +214,40 @@ class AIToolGenerator:
     def __init__(self):
         """Initialize the AI tool generator with CodeGenerationAgent."""
         try:
-            # Import the CodeGenerationAgent from agents
-            from agents.basic import create_agent
-            self.code_agent = create_agent("code_generator", "ToolGenerator")
+            # Create CodeGenerationAgent directly
+            self.code_agent = CodeGenerationAgent("AIToolGenerator")
             self.available = True
             console.print("[green]✓ AI Tool Generator initialized with CodeGenerationAgent[/green]")
         except Exception as e:
-            self.code_agent = None
-            self.available = False
-            console.print(f"[yellow]Warning: Could not initialize CodeGenerationAgent: {e}. Using fallback mode.[/yellow]")    
+            try:
+                # Fallback: try using create_agent factory
+                self.code_agent = create_agent("code_generator", "ToolGenerator")
+                self.available = True
+                console.print("[green]✓ AI Tool Generator initialized with CodeGenerationAgent (via factory)[/green]")
+            except Exception as e2:
+                self.code_agent = None
+                self.available = False
+                console.print(f"[red]Error: Could not initialize CodeGenerationAgent: {e}, {e2}. Using fallback mode.[/red]")    
     async def generate_tool(self, description: str, category: str, complexity: str) -> Dict[str, Any]:
         """Generate a tool using CodeGenerationAgent."""
         try:
             if not self.available or not self.code_agent:
+                console.print("[yellow]CodeGenerationAgent not available, using fallback[/yellow]")
                 return self._fallback_generation(description, category, complexity)
+            
+            console.print(f"[blue]Using CodeGenerationAgent to generate tool for: {description[:50]}...[/blue]")
             
             # Generate tool using CodeGenerationAgent
             tool_name = self._generate_tool_name_simple(description)
             parameters = self._extract_parameters_simple(description)
             
             # Use the CodeGenerationAgent to generate the actual code
+            console.print("[blue]Calling CodeGenerationAgent.generate_tool_code...[/blue]")
+            console.print(f"[blue]Agent type: {type(self.code_agent).__name__}[/blue]")
+            console.print(f"[blue]Agent has generate_tool_code method: {hasattr(self.code_agent, 'generate_tool_code')}[/blue]")
+            
             code = self.code_agent.generate_tool_code(description, category, complexity)
+            console.print(f"[green]Code generated successfully, length: {len(code) if code else 0}[/green]")
             
             return {
                 'success': True,
@@ -254,6 +267,30 @@ class AIToolGenerator:
             console.print(f"[red]Error in AI generation: {e}[/red]")
             return self._fallback_generation(description, category, complexity)
     
+    def generate_tool_sync(self, description: str, category: str, complexity: str) -> Dict[str, Any]:
+        """Synchronous wrapper for generate_tool to work with Streamlit."""
+        try:
+            # Check if we're in an event loop
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an event loop, use thread executor
+                import concurrent.futures
+                
+                def run_async_generation():
+                    return asyncio.run(self.generate_tool(description, category, complexity))
+                
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_async_generation)
+                    return future.result(timeout=60)
+                    
+            except RuntimeError:
+                # No running event loop, safe to use asyncio.run()
+                return asyncio.run(self.generate_tool(description, category, complexity))
+                
+        except Exception as e:
+            console.print(f"[red]Error in sync generation: {e}[/red]")
+            return self._fallback_generation(description, category, complexity)
+
     async def _generate_tool_name_ai(self, description: str) -> str:
         """Generate a meaningful tool name using AI."""
         try:
@@ -379,6 +416,32 @@ class AIToolGenerator:
             console.print(f"[yellow]AI code generation failed: {e}[/yellow]")
             return self._fallback_code_generation(description, category, complexity, tool_name, parameters)
     
+    def _generate_tool_name_simple(self, description: str) -> str:
+        """Generate a simple tool name from description."""
+        words = description.lower().split()
+        key_words = [word for word in words if len(word) > 2 and word.isalnum()]
+        return '_'.join(key_words[:3]) if key_words else 'generated_tool'
+    
+    def _extract_parameters_simple(self, description: str) -> List[Dict[str, str]]:
+        """Simple parameter extraction from description."""
+        parameters = []
+        desc_lower = description.lower()
+        
+        if any(word in desc_lower for word in ['password', 'generate']):
+            parameters.append({'name': 'length', 'type': 'int', 'description': 'Length of the generated output'})
+        if any(word in desc_lower for word in ['file', 'path']):
+            parameters.append({'name': 'file_path', 'type': 'str', 'description': 'Path to the file'})
+        if any(word in desc_lower for word in ['text', 'string']):
+            parameters.append({'name': 'input_text', 'type': 'str', 'description': 'Input text to process'})
+        if any(word in desc_lower for word in ['url', 'web', 'api']):
+            parameters.append({'name': 'url', 'type': 'str', 'description': 'URL to process'})
+        
+        # Default parameter if none found
+        if not parameters:
+            parameters.append({'name': 'input_data', 'type': 'str', 'description': 'Input data to process'})
+        
+        return parameters
+
     def _fallback_generation(self, description: str, category: str, complexity: str) -> Dict[str, Any]:
         """Fallback generation when AI is not available."""
         tool_name = self._fallback_tool_name(description)
@@ -1019,7 +1082,17 @@ class AIToolGenerator:
 
 # Initialize global instances
 mcp_manager = MCPToolManager()
-ai_generator = AIToolGenerator()
+
+def get_ai_generator():
+    """Get AI generator with session state caching."""
+    if 'ai_generator' not in st.session_state:
+        try:
+            st.session_state.ai_generator = AIToolGenerator()
+            console.print("[green]AI Generator initialized and cached[/green]")
+        except Exception as e:
+            console.print(f"[red]Failed to initialize AI Generator: {e}[/red]")
+            st.session_state.ai_generator = None
+    return st.session_state.ai_generator
 
 
 def initialize_default_mcp_tools():
@@ -1210,9 +1283,15 @@ def show_ai_tool_creator():
                         asyncio.run(asyncio.sleep(0.3))
                     
                     # Generate tool using AI
-                    generation_result = asyncio.run(ai_generator.generate_tool(
-                        tool_description, tool_category, complexity_level
-                    ))
+                    ai_gen = get_ai_generator()
+                    if ai_gen is None:
+                        st.error("❌ AI Generator not available. Using fallback mode.")
+                        generation_result = {"success": False, "error": "AI Generator initialization failed"}
+                    else:
+                        # Use the synchronous wrapper
+                        generation_result = ai_gen.generate_tool_sync(
+                            tool_description, tool_category, complexity_level
+                        )
                     
                     if generation_result['success']:
                         # Store generated tool info
@@ -1887,35 +1966,6 @@ def run_comprehensive_test(tool_name: str, test_type: str) -> Dict[str, Any]:
             "Add comprehensive error handling"
         ]
     }
-
-def _generate_tool_name_simple(self, description: str) -> str:
-        """Generate a simple tool name from description."""
-        words = description.lower().split()
-        key_words = [word for word in words if len(word) > 2 and word.isalnum()]
-        return '_'.join(key_words[:3]) if key_words else 'generated_tool'
-    
-def _extract_parameters_simple(self, description: str) -> List[Dict[str, str]]:
-        """Simple parameter extraction from description."""
-        parameters = []
-        desc_lower = description.lower()
-        
-        if any(word in desc_lower for word in ['password', 'generate']):
-            parameters.append({'name': 'length', 'type': 'int', 'description': 'Length of the generated output'})
-        if any(word in desc_lower for word in ['file', 'path']):
-            parameters.append({'name': 'file_path', 'type': 'str', 'description': 'Path to the file'})
-        if any(word in desc_lower for word in ['text', 'string']):
-            parameters.append({'name': 'text', 'type': 'str', 'description': 'Input text to process'})
-        if any(word in desc_lower for word in ['url', 'api', 'endpoint']):
-            parameters.append({'name': 'url', 'type': 'str', 'description': 'URL or API endpoint'})
-        if any(word in desc_lower for word in ['data', 'input']):
-            parameters.append({'name': 'data', 'type': 'Any', 'description': 'Input data to process'})
-            
-        # Default parameter if none found
-        if not parameters:
-            parameters.append({'name': 'input_data', 'type': 'str', 'description': 'Input data for the tool'})
-            
-        return parameters
-
 
 # Helper functions for agent-tool integration
 def _test_tool_with_agent(tool_name: str, category: str):
